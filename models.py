@@ -20,12 +20,10 @@ class Order:
 
 class Position:
 
-    def __init__(self, symbol: str, quantity: float, average_price:float, realized_pnl:float):
+    def __init__(self, symbol: str, quantity: float, pnl:float):
         self.symbol = symbol
         self.quantity = quantity
-        self.average_price = average_price
-        self.realized_pnl = realized_pnl
-
+        self.pnl = pnl
 
 class Portfolio:
 
@@ -33,6 +31,31 @@ class Portfolio:
         self.cash = initial_cash
         self.positions: dict[str, Position] = {}
         self.order_history: list[Order] = []
+
+
+    def calculate_pnl(self, order:Order) -> float:
+        if order.action == "bid":
+            return -order.price * order.quantity
+        else:
+            return order.price * order.quantity
+
+
+    def update_position(self, order:Order):
+        if order.symbol not in self.positions:
+            self.positions[order.symbol] = Position(symbol=order.symbol, 
+                                                     quantity=order.quantity, 
+                                                     pnl = self.calculate_pnl(order))
+            
+        else:
+            if order.action == "bid":
+                self.positions[order.symbol].quantity += order.quantity
+            else:
+                self.positions[order.symbol].quantity -= order.quantity
+
+            self.positions[order.symbol].pnl += self.calculate_pnl(order)
+
+        self.cash += self.calculate_pnl(order)
+        self.order_history.append(order)
 
 
 class Strategy(ABC):

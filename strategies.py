@@ -16,7 +16,7 @@ class NaiveMovingAverageStrategy(Strategy):
 
 
     def calculateAverage(self, symbol: str):
-        return float(np.mean(self.past_prices[symbol]))
+        return float(np.mean(np.array(self.past_prices[symbol])))
 
 
     def generate_signal(self, tick: MarketDataPoint) -> list[Order]:
@@ -25,9 +25,9 @@ class NaiveMovingAverageStrategy(Strategy):
         current_price = tick.price
         
         if current_price > mean:
-            return Order(tick.symbol, tick.price, "ask", 1)
+            return Order(tick.timestamp, tick.symbol, tick.price, "ask", 1)
         else:
-            return Order(tick.symbol, tick.price, "bid", 1)
+            return Order(tick.timestamp, tick.symbol, tick.price, "bid", 1)
 
 
 
