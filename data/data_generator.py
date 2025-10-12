@@ -6,17 +6,16 @@ import random
 import time
 import csv
 
+
 @dataclass(frozen=True)
 class MarketDataPoint:
     timestamp: datetime.datetime
     symbol: str
     price: float
 
+
 def market_data_generator(
-    symbol: str,
-    start_price: float,
-    volatility: float = 0.01,
-    interval: float = 0.1
+    symbol: str, start_price: float, volatility: float = 0.01, interval: float = 0.1
 ):
     """
     Simulates a live market data feed for a given symbol using a
@@ -35,9 +34,7 @@ def market_data_generator(
         price = round(price, 2)
 
         yield MarketDataPoint(
-            timestamp=datetime.datetime.now(),
-            symbol=symbol,
-            price=price
+            timestamp=datetime.datetime.now(), symbol=symbol, price=price
         )
 
         time.sleep(interval)
@@ -49,7 +46,7 @@ def generate_market_csv(
     filename: str,
     num_ticks: int = 100,
     volatility: float = 0.01,
-    interval: float = 0.0
+    interval: float = 0.0,
 ):
     """
     Generates `num_ticks` of market data and writes them to a CSV file.
@@ -62,16 +59,13 @@ def generate_market_csv(
     :param interval: Pause in seconds between ticks (set to 0 for fast generation).
     """
     gen = market_data_generator(
-        symbol=symbol,
-        start_price=start_price,
-        volatility=volatility,
-        interval=interval
+        symbol=symbol, start_price=start_price, volatility=volatility, interval=interval
     )
 
-    with open(filename, 'w', newline='') as csvfile:
+    with open(filename, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         # Header
-        writer.writerow(['timestamp', 'symbol', 'price'])
+        writer.writerow(["timestamp", "symbol", "price"])
 
         for _ in range(num_ticks):
             tick = next(gen)
@@ -87,6 +81,6 @@ if __name__ == "__main__":
         filename="market_data.csv",
         num_ticks=500,
         volatility=0.02,
-        interval=0.01
+        interval=0.01,
     )
     print("market_data.csv generated with 500 ticks.")

@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from models import MarketDataPoint
 
+
 def market_data_loader(data_filepath: str) -> list[MarketDataPoint]:
     """
     Parses market_data.csv into a list of MarketDataPoints
@@ -12,7 +13,6 @@ def market_data_loader(data_filepath: str) -> list[MarketDataPoint]:
     data_filepath = Path(data_filepath)
 
     if data_filepath.exists():
-        
         with data_filepath.open(mode="r", newline="") as f:
             reader = csv.DictReader(f)
 
@@ -21,7 +21,9 @@ def market_data_loader(data_filepath: str) -> list[MarketDataPoint]:
                 symbol = row["symbol"]
                 price = float(row["price"])
                 data_point = MarketDataPoint(
-                    timestamp=datetime.fromisoformat(timestamp), symbol=symbol, price=price
+                    timestamp=datetime.fromisoformat(timestamp),
+                    symbol=symbol,
+                    price=price,
                 )
                 res.append(data_point)
 

@@ -1,9 +1,9 @@
 from data_loader import market_data_loader
 from strategies import NaiveMovingAverageStrategy
-from models import Order, Portfolio, MarketDataPoint
+from models import Portfolio
 
 
-'''
+"""
 Main structure of the main():
 
 - Load the data, create a new portfolio with no positions
@@ -11,17 +11,15 @@ Main structure of the main():
 - Fill the orders by updating the positions in the portfolio (and calculate pnL and cash internally)
 
 
-'''
+"""
 
 
-def main(data_path: str, initial_cash = float):
-
+def main(data_path: str, initial_cash=float):
     # Create a portfolio and market data_points
 
     simulation_portfolio = Portfolio(initial_cash=initial_cash)
 
     market_data = market_data_loader(data_filepath=data_path)
-
 
     # Add more strategies below:
 
@@ -34,14 +32,9 @@ def main(data_path: str, initial_cash = float):
         Naive_Order = Naive_Strat.generate_signal(tick)
         simulation_portfolio.update_position(Naive_Order)
 
-
         # For other strategies, enter below:
 
-
-
-
     return simulation_portfolio.cash
-
 
 
 if __name__ == "__main__":

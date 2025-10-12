@@ -9,6 +9,7 @@ class MarketDataPoint:
     symbol: str
     price: float
 
+
 @dataclass
 class Order:
     timestamp: datetime
@@ -19,33 +20,32 @@ class Order:
 
 
 class Position:
-
-    def __init__(self, symbol: str, quantity: float, pnl:float):
+    def __init__(self, symbol: str, quantity: float, pnl: float):
         self.symbol = symbol
         self.quantity = quantity
         self.pnl = pnl
 
-class Portfolio:
 
+class Portfolio:
     def __init__(self, initial_cash: float):
         self.cash = initial_cash
         self.positions: dict[str, Position] = {}
         self.order_history: list[Order] = []
 
-
-    def calculate_pnl(self, order:Order) -> float:
+    def calculate_pnl(self, order: Order) -> float:
         if order.action == "bid":
             return -order.price * order.quantity
         else:
             return order.price * order.quantity
 
-
-    def update_position(self, order:Order):
+    def update_position(self, order: Order):
         if order.symbol not in self.positions:
-            self.positions[order.symbol] = Position(symbol=order.symbol, 
-                                                     quantity=order.quantity, 
-                                                     pnl = self.calculate_pnl(order))
-            
+            self.positions[order.symbol] = Position(
+                symbol=order.symbol,
+                quantity=order.quantity,
+                pnl=self.calculate_pnl(order),
+            )
+
         else:
             if order.action == "bid":
                 self.positions[order.symbol].quantity += order.quantity
@@ -59,16 +59,6 @@ class Portfolio:
 
 
 class Strategy(ABC):
-
     @abstractmethod
-
     def generate_signal(self, tick: MarketDataPoint) -> list:
-
         pass
-
-
-
-
-
-
-
