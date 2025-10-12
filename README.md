@@ -19,3 +19,11 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
+After installing the depencies, call main.py
+
+```bash
+
+python main.py
+
+```
