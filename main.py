@@ -14,13 +14,13 @@ Main structure of the main():
 '''
 
 
-def main(data_path: str, initial_cash = float):
+def main(data_path: str, initial_cash: float, portion_of_data: float):
 
     # Create a portfolio and market data_points
 
     simulation_portfolio = Portfolio(initial_cash=initial_cash)
 
-    market_data = market_data_loader(data_filepath=data_path)
+    market_data = market_data_loader(data_filepath=data_path)[:portion_of_data]
 
 
     # Add more strategies below:
@@ -28,8 +28,8 @@ def main(data_path: str, initial_cash = float):
     Naive_Strat = NaiveMovingAverageStrategy()
 
     for tick in market_data:
-        print(f"Running tick {tick}, current cash is {simulation_portfolio.cash}")
         # For Naive Strategy: - first update the averages and then generate an order
+        
         Naive_Strat.update_price(tick)
         Naive_Order = Naive_Strat.generate_signal(tick)
         simulation_portfolio.update_position(Naive_Order)
@@ -45,4 +45,4 @@ def main(data_path: str, initial_cash = float):
 
 
 if __name__ == "__main__":
-    print(main(data_path="data/assignment3_market_data.csv", initial_cash=1000000))
+    main(data_path="data/assignment3_market_data.csv", initial_cash=1000000, portion_of_data=100000)

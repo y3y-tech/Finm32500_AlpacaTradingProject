@@ -1,6 +1,8 @@
 import numpy as np
 
 from models import Strategy, MarketDataPoint, Order
+from memory_profiler import profile
+
 
 
 class NaiveMovingAverageStrategy(Strategy):
@@ -19,6 +21,7 @@ class NaiveMovingAverageStrategy(Strategy):
         return float(np.mean(np.array(self.past_prices[symbol])))
 
 
+    @profile 
     def generate_signal(self, tick: MarketDataPoint) -> list[Order]:
         mean = self.calculateAverage(tick.symbol)
 
