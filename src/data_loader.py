@@ -1,16 +1,17 @@
 import csv
 from datetime import datetime
 from pathlib import Path
-from models import MarketDataPoint
+
+from .models import MarketDataPoint
 
 
-def market_data_loader(data_filepath: str) -> list[MarketDataPoint]:
+def market_data_loader(data_file: str) -> list[MarketDataPoint]:
     """
     Parses market_data.csv into a list of MarketDataPoints
     """
     res = []
 
-    data_filepath = Path(data_filepath)
+    data_filepath = Path(data_file)
 
     if data_filepath.exists():
         with data_filepath.open(mode="r", newline="") as f:

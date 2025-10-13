@@ -5,14 +5,14 @@ from abc import ABC, abstractmethod
 
 @dataclass(frozen=True)
 class MarketDataPoint:
-    timestamp: datetime
+    timestamp: datetime.datetime
     symbol: str
     price: float
 
 
 @dataclass
 class Order:
-    timestamp: datetime
+    timestamp: datetime.datetime
     symbol: str
     price: float
     action: str
@@ -21,14 +21,14 @@ class Order:
 
 class Position:
     def __init__(self, symbol: str, quantity: float, pnl: float):
-        self.symbol = symbol
-        self.quantity = quantity
-        self.pnl = pnl
+        self.symbol: str = symbol
+        self.quantity: float = quantity
+        self.pnl: float = pnl
 
 
 class Portfolio:
     def __init__(self, initial_cash: float):
-        self.cash = initial_cash
+        self.cash: float = initial_cash
         self.positions: dict[str, Position] = {}
         self.order_history: list[Order] = []
 
@@ -60,5 +60,5 @@ class Portfolio:
 
 class Strategy(ABC):
     @abstractmethod
-    def generate_signal(self, tick: MarketDataPoint) -> list:
+    def generate_signal(self, tick: MarketDataPoint) -> Order:
         pass

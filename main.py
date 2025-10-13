@@ -1,6 +1,6 @@
-from data_loader import market_data_loader
-from strategies import NaiveMovingAverageStrategy
-from models import Portfolio
+from src.data_loader import market_data_loader
+from src.strategies import NaiveMovingAverageStrategy, WindowedMovingAverageStrategy
+from src.models import Portfolio
 
 
 """
@@ -14,25 +14,22 @@ Main structure of the main():
 """
 
 
-def main(data_path: str, initial_cash=float):
+def main(data_path: str, initial_cash: float, n_ticks: int | None = None):
     # Create a portfolio and market data_points
 
     simulation_portfolio = Portfolio(initial_cash=initial_cash)
 
-    market_data = market_data_loader(data_filepath=data_path)
+    market_data = market_data_loader(data_file=data_path)[:n_ticks]
 
-    # Add more strategies below:
-
-    Naive_Strat = NaiveMovingAverageStrategy()
+    strats = [
+        NaiveMovingAverageStrategy(),
+        WindowedMovingAverageStrategy(20),
+    ]
 
     for tick in market_data:
-        print(f"Running tick {tick}, current cash is {simulation_portfolio.cash}")
-        # For Naive Strategy: - first update the averages and then generate an order
-        Naive_Strat.update_price(tick)
-        Naive_Order = Naive_Strat.generate_signal(tick)
-        simulation_portfolio.update_position(Naive_Order)
-
-        # For other strategies, enter below:
+        print(f"Running tick {tick}\nCurrent cash is ${simulation_portfolio.cash:,.2f}")
+        for strat in strats:
+            simulation_portfolio.update_position(strat.generate_signal(tick))
 
     return simulation_portfolio.cash
 
