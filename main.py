@@ -35,4 +35,4 @@ def main(data_path: str, initial_cash: float, n_ticks: int | None = None):
 
 
 if __name__ == "__main__":
-    main(data_path="data/assignment3_market_data.csv", initial_cash=1000000, portion_of_data=100000)
+    main(data_path="data/assignment3_market_data.csv", initial_cash=1000000, n_ticks=100000)
