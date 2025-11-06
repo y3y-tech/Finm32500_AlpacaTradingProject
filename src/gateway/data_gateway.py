@@ -7,7 +7,7 @@ Supports CSV files with configurable replay speed and multi-symbol streaming.
 import csv
 from datetime import datetime
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator
 import pandas as pd
 
 from src.models import MarketDataPoint
@@ -135,7 +135,7 @@ class DataGateway:
 
                 yield tick
 
-    def get_current_price(self, symbol: str) -> Optional[float]:
+    def get_current_price(self, symbol: str) -> float | None:
         """
         Get the most recent price for a symbol.
 

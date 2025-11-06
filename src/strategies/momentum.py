@@ -5,7 +5,6 @@ Buys when price momentum is positive and strong, sells when negative.
 """
 
 from collections import deque
-from typing import Optional
 
 from src.models import MarketDataPoint, Order, OrderSide, OrderType
 from src.trading.portfolio import TradingPortfolio

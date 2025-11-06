@@ -11,7 +11,6 @@ Implements probabilistic fill simulation with:
 import random
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from src.models import Order, Trade, OrderSide, OrderType, OrderStatus
 
@@ -56,7 +55,7 @@ class MatchingEngine:
         bid_ask_spread_bps: float = 5.0,
         sec_fee_rate: float = 0.0000278,
         liquidity_impact_factor: float = 0.0001,
-        random_seed: Optional[int] = None
+        random_seed: int | None = None
     ):
         """
         Initialize matching engine.
@@ -106,8 +105,8 @@ class MatchingEngine:
         self,
         order: Order,
         market_price: float,
-        best_bid: Optional[float] = None,
-        best_ask: Optional[float] = None
+        best_bid: float | None = None,
+        best_ask: float | None = None
     ) -> list[Trade]:
         """
         Execute order with probabilistic fill simulation.
@@ -177,8 +176,8 @@ class MatchingEngine:
         self,
         order: Order,
         market_price: float,
-        best_bid: Optional[float],
-        best_ask: Optional[float]
+        best_bid: float | None,
+        best_ask: float | None
     ) -> float:
         """
         Determine realistic fill price based on order type and market conditions.
@@ -292,9 +291,9 @@ class MatchingEngine:
 
     def set_probabilities(
         self,
-        fill_prob: Optional[float] = None,
-        partial_prob: Optional[float] = None,
-        cancel_prob: Optional[float] = None
+        fill_prob: float | None = None,
+        partial_prob: float | None = None,
+        cancel_prob: float | None = None
     ) -> None:
         """
         Update execution probabilities.

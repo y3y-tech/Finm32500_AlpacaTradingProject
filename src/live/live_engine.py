@@ -6,9 +6,7 @@ Integrates strategy execution, risk management, and order execution for live tra
 
 import time
 import signal
-import sys
 from datetime import datetime
-from typing import Optional
 from dataclasses import dataclass
 
 from src.models import MarketDataPoint, Order, OrderSide, Trade

@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 import datetime
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional
 import uuid
 
 
@@ -75,7 +74,7 @@ class Order:
     quantity: float
     timestamp: datetime.datetime = field(default_factory=datetime.datetime.now)
     order_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    price: Optional[float] = None
+    price: float | None = None
     status: OrderStatus = OrderStatus.NEW
     filled_quantity: float = 0.0
     average_fill_price: float = 0.0

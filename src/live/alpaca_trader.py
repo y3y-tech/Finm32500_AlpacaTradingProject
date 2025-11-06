@@ -8,7 +8,7 @@ import os
 import asyncio
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Callable
+from typing import Callable
 from dotenv import load_dotenv
 
 from alpaca.trading.client import TradingClient
@@ -124,7 +124,7 @@ class AlpacaTrader:
         # Track streaming state
         self.is_streaming = False
         self.subscribed_symbols: set[str] = set()
-        self.data_callback: Optional[Callable[[MarketDataPoint], None]] = None
+        self.data_callback: Callable[[MarketDataPoint], None]] | None = None
 
     def get_account(self) -> dict:
         """
@@ -279,7 +279,7 @@ class AlpacaTrader:
             for resp in responses
         ]
 
-    def get_open_orders(self, symbol: Optional[str] = None) -> list[dict]:
+    def get_open_orders(self, symbol: str | None = None) -> list[dict]:
         """
         Get all open orders.
 

@@ -9,7 +9,6 @@ Provides multiple types of stop-loss protection:
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 from enum import Enum
 
 from src.models import Order, OrderSide, OrderType, Position
@@ -111,14 +110,14 @@ class RiskManager:
 
         # Circuit breaker state
         self.circuit_breaker_triggered = False
-        self.circuit_breaker_time: Optional[datetime] = None
+        self.circuit_breaker_time: datetime | None = None
 
     def add_position_stop(
         self,
         symbol: str,
         entry_price: float,
         quantity: float,
-        stop_type: Optional[StopType] = None
+        stop_type: StopType | None = None
     ) -> None:
         """
         Add or update stop-loss for a position.

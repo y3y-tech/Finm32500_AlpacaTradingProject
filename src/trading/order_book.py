@@ -9,7 +9,6 @@ Implements a realistic order book with:
 """
 
 import heapq
-from typing import Optional
 from datetime import datetime
 import uuid
 
@@ -199,7 +198,7 @@ class OrderBook:
         order.status = OrderStatus.CANCELLED
         return True
 
-    def get_best_bid(self) -> Optional[float]:
+    def get_best_bid(self) -> float | None:
         """
         Get the best (highest) bid price.
 
@@ -215,7 +214,7 @@ class OrderBook:
 
         return -self.bids[0][0]  # Negate back to positive
 
-    def get_best_ask(self) -> Optional[float]:
+    def get_best_ask(self) -> float | None:
         """
         Get the best (lowest) ask price.
 
@@ -231,7 +230,7 @@ class OrderBook:
 
         return self.asks[0][0]
 
-    def get_spread(self) -> Optional[float]:
+    def get_spread(self) -> float | None:
         """
         Get the bid-ask spread.
 
@@ -246,7 +245,7 @@ class OrderBook:
 
         return ask - bid
 
-    def get_mid_price(self) -> Optional[float]:
+    def get_mid_price(self) -> float | None:
         """
         Get the mid price (average of best bid and ask).
 

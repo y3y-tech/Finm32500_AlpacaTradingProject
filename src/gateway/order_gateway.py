@@ -7,7 +7,6 @@ Tracks order submission, modifications, fills, and cancellations.
 import csv
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from src.models import Order, Trade, OrderStatus
 
@@ -127,7 +126,7 @@ class OrderGateway:
                 message
             ])
 
-    def get_order_history(self, order_id: Optional[str] = None) -> list[dict]:
+    def get_order_history(self, order_id: str | None = None) -> list[dict]:
         """
         Retrieve order history from log file.
 

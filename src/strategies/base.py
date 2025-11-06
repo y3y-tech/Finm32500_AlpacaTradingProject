@@ -5,7 +5,6 @@ All trading strategies must inherit from TradingStrategy and implement on_market
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from src.models import MarketDataPoint, Order
 from src.trading.portfolio import TradingPortfolio
@@ -27,7 +26,7 @@ class TradingStrategy(ABC):
                 return []
     """
 
-    def __init__(self, name: Optional[str] = None):
+    def __init__(self, name: str | None = None):
         """
         Initialize strategy.
 

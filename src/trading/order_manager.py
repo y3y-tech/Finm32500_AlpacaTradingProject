@@ -9,7 +9,6 @@ Checks:
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional
 from collections import deque
 
 from src.models import Order, OrderSide, Position
@@ -56,7 +55,7 @@ class OrderManager:
             print(f"Order rejected: {error}")
     """
 
-    def __init__(self, risk_config: Optional[RiskConfig] = None):
+    def __init__(self, risk_config: RiskConfig | None = None):
         """
         Initialize order manager.
 

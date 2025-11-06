@@ -5,7 +5,6 @@ Maintains complete state of portfolio with P&L calculation and equity curve trac
 """
 
 from datetime import datetime
-from typing import Optional
 import pandas as pd
 
 from src.models import Trade, Position, OrderSide
@@ -126,7 +125,7 @@ class TradingPortfolio:
         )
         return self.cash + position_value
 
-    def get_position(self, symbol: str) -> Optional[Position]:
+    def get_position(self, symbol: str) -> Position | None:
         """
         Get position for a symbol.
 

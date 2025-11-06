@@ -13,7 +13,6 @@ Integrates all components:
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 import pandas as pd
 
 from src.models import MarketDataPoint, Order, Trade, OrderType, OrderSide
@@ -84,8 +83,8 @@ class BacktestEngine:
         data_gateway: DataGateway,
         strategy: 'TradingStrategy',  # Forward reference
         initial_cash: float,
-        risk_config: Optional[RiskConfig] = None,
-        matching_engine: Optional[MatchingEngine] = None,
+        risk_config: RiskConfig | None = None,
+        matching_engine: MatchingEngine | None = None,
         order_log_file: str = "logs/orders.csv",
         record_equity_frequency: int = 100  # Record equity every N ticks
     ):
@@ -114,14 +113,14 @@ class BacktestEngine:
 
         # Current market state
         self.current_prices: dict[str, float] = {}
-        self.current_tick: Optional[MarketDataPoint] = None
+        self.current_tick: MarketDataPoint | None = None
 
         # Statistics
         self.tick_count = 0
         self.orders_submitted = 0
         self.orders_rejected = 0
 
-    def run(self, max_ticks: Optional[int] = None) -> BacktestResult:
+    def run(self, max_ticks: int | None = None) -> BacktestResult:
         """
         Run the backtest simulation.
 
