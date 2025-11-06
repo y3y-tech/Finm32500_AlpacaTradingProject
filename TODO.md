@@ -22,33 +22,33 @@
 ## 🚨 P0 - CRITICAL (Must Complete Before Competition)
 
 ### Live Trading Infrastructure
-- [ ] 🤖 **Implement AlpacaTrader class** (`src/live/alpaca_trader.py`)
+- [ ] 🤖 **Implement AlpacaTrader class** (`src/live/alpaca_trader.py`) [#1]
   - WebSocket market data streaming
   - Real-time order submission via Alpaca API
   - Connection management and reconnection logic
   - Error handling for API failures
   - **Estimated Time:** 4-6 hours
 
-- [ ] 🤝 **Create LiveTradingEngine** (`src/live/live_engine.py`)
+- [ ] 🤝 **Create LiveTradingEngine** (`src/live/live_engine.py`) [#2]
   - Adapt BacktestEngine for real-time execution
   - Handle market hours and pre/post-market sessions
   - Real-time portfolio updates
   - **Estimated Time:** 3-4 hours
 
-- [ ] 👤 **Verify Alpaca API credentials and permissions**
+- [ ] 👤 **Verify Alpaca API credentials and permissions** [#3]
   - Confirm paper trading account is active
   - Test API keys have correct scopes (trading, data streaming)
   - Document rate limits and restrictions
   - **Estimated Time:** 30 minutes
 
-- [ ] 🤖 **Add transaction cost modeling**
+- [ ] 🤖 **Add transaction cost modeling** [#4]
   - Implement Alpaca's commission structure (currently $0 but verify)
   - Add realistic slippage based on order size and liquidity
   - Model bid-ask spread impact
   - Update MatchingEngine with realistic costs
   - **Estimated Time:** 2-3 hours
 
-- [ ] 🤝 **Paper trading dry run** (24-48 hours minimum)
+- [ ] 🤝 **Paper trading dry run** (24-48 hours minimum) [#5]
   - Run full system in paper trading mode
   - Monitor for crashes, bugs, edge cases
   - Validate P&L calculations match Alpaca's
@@ -56,26 +56,26 @@
   - **Estimated Time:** 2 days continuous running + monitoring
 
 ### Strategy Development
-- [ ] 👤 **Develop/select 2-3 production strategies**
+- [ ] 👤 **Develop/select 2-3 production strategies** [#6]
   - Decide on final strategies to deploy
   - Ensure strategies are uncorrelated
   - Backtest on recent data (2023-2024)
   - **Owner:** [Assign team member]
   - **Estimated Time:** 1-2 days per strategy
 
-- [ ] 🤖 **Strategy parameter optimization**
+- [ ] 🤖 **Strategy parameter optimization** [#7]
   - Walk-forward optimization to avoid overfitting
   - Cross-validation on different time periods
   - Sensitivity analysis on key parameters
   - **Estimated Time:** 4-6 hours
 
 ### Risk Management
-- [ ] 🤖 **Add stop-loss mechanism**
+- [ ] 🤖 **Add stop-loss mechanism** [#8]
   - Automatic position exit on drawdown threshold
   - Per-position and portfolio-level stops
   - **Estimated Time:** 2 hours
 
-- [ ] 🤖 **Implement circuit breakers**
+- [ ] 🤖 **Implement circuit breakers** [#9]
   - Max daily loss limit (kill switch)
   - Max drawdown from peak
   - Pause trading on unusual conditions
@@ -86,7 +86,7 @@
 ## 📊 P1 - HIGH (Should Complete)
 
 ### Testing & Validation
-- [ ] 🤖 **Comprehensive edge case testing**
+- [ ] 🤖 **Comprehensive edge case testing** [#10]
   - Market halts and trading suspensions
   - After-hours trading behavior
   - Partial fill handling
@@ -94,14 +94,14 @@
   - Network timeout handling
   - **Estimated Time:** 3-4 hours
 
-- [ ] 🤖 **Stress testing**
+- [ ] 🤖 **Stress testing** [#11]
   - Simulate flash crash scenarios
   - High volatility regime testing
   - Rapid price movements
   - Validate risk limits trigger correctly
   - **Estimated Time:** 2-3 hours
 
-- [ ] 👤 **Strategy backtest validation**
+- [ ] 👤 **Strategy backtest validation** [#12]
   - Verify backtest results make financial sense
   - Check for data snooping bias
   - Out-of-sample testing
@@ -109,7 +109,7 @@
   - **Estimated Time:** 2-3 hours
 
 ### Monitoring & Observability
-- [ ] 🤝 **Real-time monitoring dashboard**
+- [ ] 🤝 **Real-time monitoring dashboard** [#13]
   - Live P&L tracking
   - Current positions display
   - Order status monitoring
@@ -117,27 +117,27 @@
   - **Options:** Jupyter notebook, Streamlit, or simple CLI
   - **Estimated Time:** 3-5 hours
 
-- [ ] 🤖 **Alert system**
+- [ ] 🤖 **Alert system** [#14]
   - Email/SMS alerts for critical events
   - Position limit breaches
   - Unusual P&L swings
   - System errors or disconnections
   - **Estimated Time:** 2-3 hours
 
-- [ ] 🤖 **Enhanced logging**
+- [ ] 🤖 **Enhanced logging** [#15]
   - Structured logging (JSON format)
   - Log rotation and retention
   - Different log levels for debugging vs production
   - **Estimated Time:** 1-2 hours
 
 ### Strategy Enhancements
-- [ ] 👤 **Market regime detection**
+- [ ] 👤 **Market regime detection** [#16]
   - Identify bull/bear/sideways/volatile regimes
   - Adjust strategy behavior based on regime
   - Turn strategies on/off dynamically
   - **Estimated Time:** 4-6 hours
 
-- [ ] 🤖 **Position sizing optimization**
+- [ ] 🤖 **Position sizing optimization** [#17]
   - Kelly Criterion or risk parity sizing
   - Dynamic sizing based on volatility
   - Correlation-aware allocation
@@ -148,21 +148,21 @@
 ## 🔧 P2 - MEDIUM (Nice to Have)
 
 ### Infrastructure Improvements
-- [ ] 🤖 **Configuration management system**
+- [ ] 🤖 **Configuration management system** [#18]
   - YAML/JSON config files for strategies
   - Separate configs for dev/staging/production
   - Strategy parameters in config (not hardcoded)
   - Risk limits configurable without code changes
   - **Estimated Time:** 2-3 hours
 
-- [ ] 🤖 **Database integration** (replace CSV logging)
+- [ ] 🤖 **Database integration** (replace CSV logging) [#19]
   - SQLite or PostgreSQL for order log
   - Trade history storage
   - Portfolio snapshots
   - Better querying and analysis
   - **Estimated Time:** 4-6 hours
 
-- [ ] 🤖 **Graceful shutdown handling**
+- [ ] 🤖 **Graceful shutdown handling** [#20]
   - SIGTERM/SIGINT handlers
   - Close positions on shutdown (optional)
   - Save state for recovery
@@ -170,21 +170,21 @@
   - **Estimated Time:** 1-2 hours
 
 ### Analytics & Reporting
-- [ ] 🤖 **Performance attribution analysis**
+- [ ] 🤖 **Performance attribution analysis** [#21]
   - P&L breakdown by strategy
   - P&L breakdown by symbol
   - Win rate per strategy
   - Best/worst trades analysis
   - **Estimated Time:** 2-3 hours
 
-- [ ] 🤖 **Trade analytics dashboard**
+- [ ] 🤖 **Trade analytics dashboard** [#22]
   - Holding period distribution
   - Entry/exit efficiency
   - Slippage analysis
   - Fill rate statistics
   - **Estimated Time:** 3-4 hours
 
-- [ ] 🤖 **Risk metrics calculator**
+- [ ] 🤖 **Risk metrics calculator** [#23]
   - Value at Risk (VaR)
   - Conditional VaR (CVaR)
   - Beta and correlation to market
@@ -192,22 +192,22 @@
   - **Estimated Time:** 3-4 hours
 
 ### Strategy Development
-- [ ] 👤 **Pairs trading strategy**
+- [ ] 👤 **Pairs trading strategy** [#24]
   - Cointegration-based pairs
   - Mean reversion on spread
   - **Estimated Time:** 6-8 hours
 
-- [ ] 👤 **Statistical arbitrage strategy**
+- [ ] 👤 **Statistical arbitrage strategy** [#25]
   - Multi-asset stat arb
   - PCA-based or sector-based
   - **Estimated Time:** 8-10 hours
 
-- [ ] 👤 **Breakout strategy**
+- [ ] 👤 **Breakout strategy** [#26]
   - Volume-confirmed breakouts
   - Support/resistance levels
   - **Estimated Time:** 4-6 hours
 
-- [ ] 🤖 **Strategy ensemble/meta-strategy**
+- [ ] 🤖 **Strategy ensemble/meta-strategy** [#27]
   - Combine signals from multiple strategies
   - Dynamic weighting based on recent performance
   - **Estimated Time:** 4-5 hours
@@ -217,47 +217,47 @@
 ## 🎨 P3 - LOW (Polish & Enhancement)
 
 ### Code Quality
-- [ ] 🤖 **Add type hints throughout codebase**
+- [ ] 🤖 **Add type hints throughout codebase** [#28]
   - Complete type coverage in all modules
   - Use mypy for static type checking
   - **Estimated Time:** 2-3 hours
 
-- [ ] 🤖 **Code documentation improvements**
+- [ ] 🤖 **Code documentation improvements** [#29]
   - Docstrings for all public methods
   - Usage examples in docstrings
   - Update ARCHITECTURE.md with latest changes
   - **Estimated Time:** 3-4 hours
 
-- [ ] 🤖 **Refactor for better separation of concerns**
+- [ ] 🤖 **Refactor for better separation of concerns** [#30]
   - Extract interfaces for better testability
   - Dependency injection where appropriate
   - **Estimated Time:** 4-6 hours
 
 ### Testing
-- [ ] 🤖 **Increase test coverage**
+- [ ] 🤖 **Increase test coverage** [#31]
   - Unit tests for all core components
   - Target 80%+ coverage
   - Add pytest fixtures for common setups
   - **Estimated Time:** 4-6 hours
 
-- [ ] 🤖 **Add property-based testing**
+- [ ] 🤖 **Add property-based testing** [#32]
   - Use Hypothesis for fuzz testing
   - Test invariants (e.g., cash + positions = equity)
   - **Estimated Time:** 3-4 hours
 
 ### Features
-- [ ] 🤖 **Multi-timeframe support**
+- [ ] 🤖 **Multi-timeframe support** [#33]
   - Allow strategies to use 1min, 5min, 1hour data
   - Aggregate lower timeframe to higher
   - **Estimated Time:** 3-4 hours
 
-- [ ] 🤖 **Short selling support**
+- [ ] 🤖 **Short selling support** [#34]
   - Verify borrow availability via Alpaca API
   - Track borrow costs
   - Update risk limits for short positions
   - **Estimated Time:** 2-3 hours
 
-- [ ] 🤖 **Options trading support** (if allowed in competition)
+- [ ] 🤖 **Options trading support** (if allowed in competition) [#35]
   - Options data models
   - Greeks calculation
   - Options-specific strategies
@@ -268,61 +268,61 @@
 ## 🚀 P4 - REACH (Wishlist)
 
 ### Advanced Features
-- [ ] 🤝 **Machine learning strategy**
+- [ ] 🤝 **Machine learning strategy** [#36]
   - Feature engineering from market data
   - Model training and validation
   - Online learning / model updates
   - **Estimated Time:** 2-3 days
 
-- [ ] 🤖 **Order execution algorithms**
+- [ ] 🤖 **Order execution algorithms** [#37]
   - TWAP (Time-Weighted Average Price)
   - VWAP (Volume-Weighted Average Price)
   - Iceberg orders (hidden size)
   - **Estimated Time:** 6-8 hours
 
-- [ ] 🤖 **Alternative data integration**
+- [ ] 🤖 **Alternative data integration** [#38]
   - Sentiment from Twitter/Reddit
   - News sentiment analysis
   - Unusual options activity
   - **Estimated Time:** 8-10 hours
 
-- [ ] 🤖 **Portfolio optimization**
+- [ ] 🤖 **Portfolio optimization** [#39]
   - Mean-variance optimization
   - Risk parity allocation
   - Black-Litterman model
   - **Estimated Time:** 6-8 hours
 
 ### Infrastructure
-- [ ] 🤖 **Distributed backtesting**
+- [ ] 🤖 **Distributed backtesting** [#40]
   - Parallel strategy evaluation
   - Grid search acceleration
   - **Estimated Time:** 4-6 hours
 
-- [ ] 🤖 **Kubernetes deployment** (if running on cloud)
+- [ ] 🤖 **Kubernetes deployment** (if running on cloud) [#41]
   - Containerize application
   - K8s manifests for production
   - Auto-scaling and health checks
   - **Estimated Time:** 6-8 hours
 
-- [ ] 🤖 **Web UI for strategy management**
+- [ ] 🤖 **Web UI for strategy management** [#42]
   - Start/stop strategies via UI
   - Parameter tuning interface
   - Real-time charts and metrics
   - **Estimated Time:** 10+ hours
 
 ### Research & Analysis
-- [ ] 👤 **Factor analysis of returns**
+- [ ] 👤 **Factor analysis of returns** [#43]
   - Decompose returns into known factors
   - Identify alpha vs beta
   - **Estimated Time:** 4-6 hours
 
-- [ ] 👤 **Transaction cost analysis (TCA)**
+- [ ] 👤 **Transaction cost analysis (TCA)** [#44]
   - Implementation shortfall
   - Slippage vs benchmarks
   - Optimal order sizing
   - **Estimated Time:** 3-4 hours
 
-- [ ] 👤 **Scenario analysis**
+- [ ] 👤 **Scenario analysis** [#45]
   - How strategies perform in 2008, 2020 crash
   - COVID-19 volatility regime
   - Interest rate shock scenarios
