@@ -90,7 +90,7 @@ def run_ma_crossover_backtest():
     print("=" * 80)
 
     # Load data
-    data_gateway = DataGateway(BASE_DIR / "data" / "assignment3_market_data.csv")
+    data_gateway = DataGateway(BASE_DIR / "equities_data" / "cleaned_data" / "tickers_cleaned.csv")
 
     # Configure MA crossover strategy
     strategy = MovingAverageCrossoverStrategy(
