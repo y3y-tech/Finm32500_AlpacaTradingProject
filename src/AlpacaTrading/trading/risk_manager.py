@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from src.models import Order, OrderSide, OrderType, Position
+from AlpacaTrading.models import Order, OrderSide, OrderType, Position
 
 
 class StopType(Enum):

@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from collections import deque
 
-from src.models import Order, OrderSide, Position
+from AlpacaTrading.models import Order, OrderSide, Position
 
 
 @dataclass

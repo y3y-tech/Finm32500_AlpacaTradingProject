@@ -7,8 +7,8 @@ Trades based on short-term vs long-term moving average relationship.
 from collections import deque
 import numpy as np
 
-from src.models import MarketDataPoint, Order, OrderSide, OrderType
-from src.trading.portfolio import TradingPortfolio
+from AlpacaTrading.models import MarketDataPoint, Order, OrderSide, OrderType
+from AlpacaTrading.trading.portfolio import TradingPortfolio
 from .base import TradingStrategy
 
 

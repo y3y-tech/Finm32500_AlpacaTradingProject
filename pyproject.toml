@@ -1,5 +1,9 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "financialsignalprocessing-finm32500"
+name = "AlpacaTrading"
 version = "2.0.0"
 requires-python = ">=3.13"
 dependencies = [
@@ -16,6 +20,7 @@ dependencies = [
     "pandas>=2.3.3",
     "pillow==11.3.0",
     "pyparsing==3.2.5",
+    "pytest>=9.0.1",
     "python-dateutil==2.9.0.post0",
     "python-dotenv>=1.2.1",
     "seaborn>=0.13.2",
@@ -23,8 +28,11 @@ dependencies = [
     "yfinance>=0.2.66",
 ]
 
-[tool.setuptools]
-packages = ["src"]
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.setuptools.package-data]
-src = ["py.typed"]
+AlpacaTrading = ["py.typed"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

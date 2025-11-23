@@ -30,7 +30,7 @@ from alpaca.data.live import StockDataStream
 from alpaca.data.models import Trade, Quote, Bar
 from alpaca.data.enums import DataFeed  # Import DataFeed enum
 
-from src.models import Order, OrderType, OrderSide, OrderStatus, MarketDataPoint
+from AlpacaTrading.models import Order, OrderType, OrderSide, OrderStatus, MarketDataPoint
 
 
 @dataclass

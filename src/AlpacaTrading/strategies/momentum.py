@@ -6,8 +6,8 @@ Buys when price momentum is positive and strong, sells when negative.
 
 from collections import deque
 
-from src.models import MarketDataPoint, Order, OrderSide, OrderType
-from src.trading.portfolio import TradingPortfolio
+from AlpacaTrading.models import MarketDataPoint, Order, OrderSide, OrderType
+from AlpacaTrading.trading.portfolio import TradingPortfolio
 from .base import TradingStrategy
 
 

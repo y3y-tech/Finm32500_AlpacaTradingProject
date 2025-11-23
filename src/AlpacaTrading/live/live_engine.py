@@ -9,17 +9,17 @@ import signal
 from datetime import datetime
 from dataclasses import dataclass
 
-from src.models import MarketDataPoint, Order, OrderSide, Trade
-from src.strategies.base import TradingStrategy
-from src.trading import (
+from AlpacaTrading.models import MarketDataPoint, Order, OrderSide, Trade
+from AlpacaTrading.strategies.base import TradingStrategy
+from AlpacaTrading.trading import (
     TradingPortfolio,
     OrderManager,
     RiskConfig,
     RiskManager,
     StopLossConfig
 )
-from src.gateway.order_gateway import OrderGateway
-from src.live.alpaca_trader import AlpacaTrader, AlpacaConfig
+from AlpacaTrading.gateway.order_gateway import OrderGateway
+from AlpacaTrading.live.alpaca_trader import AlpacaTrader, AlpacaConfig
 
 
 @dataclass

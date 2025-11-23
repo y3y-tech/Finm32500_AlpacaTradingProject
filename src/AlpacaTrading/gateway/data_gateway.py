@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Iterator
 import pandas as pd
 
-from src.models import MarketDataPoint
+from AlpacaTrading.models import MarketDataPoint
 
 
 class DataGateway:

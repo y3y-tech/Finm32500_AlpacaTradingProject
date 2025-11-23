@@ -12,7 +12,7 @@ import random
 import uuid
 from datetime import datetime
 
-from src.models import Order, Trade, OrderSide, OrderType, OrderStatus
+from AlpacaTrading.models import Order, Trade, OrderSide, OrderType, OrderStatus
 
 
 class MatchingEngine:

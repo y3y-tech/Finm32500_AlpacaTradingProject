@@ -6,8 +6,8 @@ All trading strategies must inherit from TradingStrategy and implement on_market
 
 from abc import ABC, abstractmethod
 
-from src.models import MarketDataPoint, Order
-from src.trading.portfolio import TradingPortfolio
+from AlpacaTrading.models import MarketDataPoint, Order
+from AlpacaTrading.trading.portfolio import TradingPortfolio
 
 
 class TradingStrategy(ABC):

@@ -7,7 +7,7 @@ Maintains complete state of portfolio with P&L calculation and equity curve trac
 from datetime import datetime
 import pandas as pd
 
-from src.models import Trade, Position, OrderSide
+from AlpacaTrading.models import Trade, Position, OrderSide
 
 
 class TradingPortfolio:

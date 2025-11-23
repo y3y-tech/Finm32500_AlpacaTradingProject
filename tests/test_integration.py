@@ -4,22 +4,22 @@ Integration tests for the trading system.
 Tests that all components work together correctly.
 """
 
-import unittest
+import pytest
 from datetime import datetime
 from pathlib import Path
 import tempfile
 
-from src.models import Order, OrderSide, OrderType, MarketDataPoint
-from src.gateway.data_gateway import DataGateway
-from src.gateway.order_gateway import OrderGateway
-from src.trading.order_manager import OrderManager, RiskConfig
-from src.trading.matching_engine import MatchingEngine
-from src.trading.portfolio import TradingPortfolio
-from src.strategies.momentum import MomentumStrategy
-from src.backtesting.engine import BacktestEngine
+from AlpacaTrading.models import Order, OrderSide, OrderType, MarketDataPoint, Trade
+from AlpacaTrading.gateway.data_gateway import DataGateway
+from AlpacaTrading.gateway.order_gateway import OrderGateway
+from AlpacaTrading.trading.order_manager import OrderManager, RiskConfig
+from AlpacaTrading.trading.matching_engine import MatchingEngine
+from AlpacaTrading.trading.portfolio import TradingPortfolio
+from AlpacaTrading.strategies.momentum import MomentumStrategy
+from AlpacaTrading.backtesting.engine import BacktestEngine
 
 
-class TestTradingSystemIntegration(unittest.TestCase):
+class TestTradingSystemIntegration:
     """Integration tests for complete trading system."""
 
     def test_order_lifecycle(self):
@@ -32,8 +32,8 @@ class TestTradingSystemIntegration(unittest.TestCase):
             quantity=10
         )
 
-        self.assertEqual(order.status.value, "NEW")
-        self.assertEqual(order.filled_quantity, 0)
+        assert order.status.value == "NEW"
+        assert order.filled_quantity == 0
 
         # Execute with matching engine
         engine = MatchingEngine(
@@ -44,16 +44,15 @@ class TestTradingSystemIntegration(unittest.TestCase):
 
         trades = engine.execute_order(order, market_price=100.0)
 
-        self.assertEqual(len(trades), 1)
-        self.assertEqual(trades[0].quantity, 10)
-        self.assertTrue(order.is_filled)
+        assert len(trades) == 1
+        assert trades[0].quantity == 10
+        assert order.is_filled
 
     def test_portfolio_trade_processing(self):
         """Test portfolio processes trades correctly."""
         portfolio = TradingPortfolio(initial_cash=10000)
 
         # Create and process buy trade
-        from src.models import Trade
         buy_trade = Trade(
             trade_id="test1",
             order_id="order1",
@@ -68,13 +67,13 @@ class TestTradingSystemIntegration(unittest.TestCase):
 
         # Check position
         position = portfolio.get_position("TEST")
-        self.assertIsNotNone(position)
-        self.assertEqual(position.quantity, 10)
-        self.assertEqual(position.average_cost, 100.0)
+        assert position is not None
+        assert position.quantity == 10
+        assert position.average_cost == 100.0
 
         # Check cash
         expected_cash = 10000 - (10 * 100.0)
-        self.assertEqual(portfolio.cash, expected_cash)
+        assert portfolio.cash == expected_cash
 
     def test_order_validation(self):
         """Test order manager validates orders correctly."""
@@ -100,7 +99,7 @@ class TestTradingSystemIntegration(unittest.TestCase):
             positions={},
             current_prices={"TEST": 100.0}
         )
-        self.assertTrue(is_valid)
+        assert is_valid
 
         # Test capital check - should fail
         order2 = Order(
@@ -117,8 +116,8 @@ class TestTradingSystemIntegration(unittest.TestCase):
             positions={},
             current_prices={"TEST": 100.0}
         )
-        self.assertFalse(is_valid)
-        self.assertIn("Insufficient capital", error)
+        assert not is_valid
+        assert "Insufficient capital" in error
 
     def test_strategy_generates_orders(self):
         """Test strategy generates valid orders."""
@@ -137,11 +136,11 @@ class TestTradingSystemIntegration(unittest.TestCase):
 
         # Should eventually generate buy orders due to positive momentum
         # (Last tick should trigger if momentum threshold is met)
-        self.assertIsInstance(orders, list)
+        assert isinstance(orders, list)
 
-    @unittest.skipIf(
+    @pytest.mark.skipif(
         not Path("data/assignment3_market_data.csv").exists(),
-        "Market data file not found"
+        reason="Market data file not found"
     )
     def test_full_backtest(self):
         """Test complete backtest with real data."""
@@ -163,21 +162,21 @@ class TestTradingSystemIntegration(unittest.TestCase):
             result = engine.run(max_ticks=100)
 
             # Verify result structure
-            self.assertIsNotNone(result)
-            self.assertIsNotNone(result.portfolio)
-            self.assertIsNotNone(result.performance_metrics)
-            self.assertTrue(result.total_ticks > 0)
+            assert result is not None
+            assert result.portfolio is not None
+            assert result.performance_metrics is not None
+            assert result.total_ticks > 0
 
             # Verify order log was created
-            self.assertTrue(log_file.exists())
+            assert log_file.exists()
 
 
-class TestDataGateway(unittest.TestCase):
+class TestDataGateway:
     """Test data gateway functionality."""
 
-    @unittest.skipIf(
+    @pytest.mark.skipif(
         not Path("data/assignment3_market_data.csv").exists(),
-        "Market data file not found"
+        reason="Market data file not found"
     )
     def test_data_streaming(self):
         """Test data gateway streams data correctly."""
@@ -186,17 +185,13 @@ class TestDataGateway(unittest.TestCase):
         # Stream first few ticks
         tick_count = 0
         for tick in gateway.stream():
-            self.assertIsInstance(tick, MarketDataPoint)
-            self.assertIsNotNone(tick.timestamp)
-            self.assertIsNotNone(tick.symbol)
-            self.assertGreater(tick.price, 0)
+            assert isinstance(tick, MarketDataPoint)
+            assert tick.timestamp is not None
+            assert tick.symbol is not None
+            assert tick.price > 0
 
             tick_count += 1
             if tick_count >= 10:
                 break
 
-        self.assertEqual(tick_count, 10)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert tick_count == 10

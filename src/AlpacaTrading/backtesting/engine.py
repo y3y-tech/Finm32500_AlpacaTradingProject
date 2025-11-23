@@ -15,12 +15,12 @@ from datetime import datetime
 from pathlib import Path
 import pandas as pd
 
-from src.models import MarketDataPoint, Order, Trade, OrderType, OrderSide
-from src.gateway.data_gateway import DataGateway
-from src.gateway.order_gateway import OrderGateway
-from src.trading.order_manager import OrderManager, RiskConfig
-from src.trading.matching_engine import MatchingEngine
-from src.trading.portfolio import TradingPortfolio
+from AlpacaTrading.models import MarketDataPoint, Order, Trade, OrderType, OrderSide
+from AlpacaTrading.gateway.data_gateway import DataGateway
+from AlpacaTrading.gateway.order_gateway import OrderGateway
+from AlpacaTrading.trading.order_manager import OrderManager, RiskConfig
+from AlpacaTrading.trading.matching_engine import MatchingEngine
+from AlpacaTrading.trading.portfolio import TradingPortfolio
 
 
 @dataclass

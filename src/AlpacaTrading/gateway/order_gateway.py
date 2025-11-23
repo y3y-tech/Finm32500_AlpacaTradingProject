@@ -8,7 +8,7 @@ import csv
 from datetime import datetime
 from pathlib import Path
 
-from src.models import Order, Trade, OrderStatus
+from AlpacaTrading.models import Order, Trade, OrderStatus
 
 
 class OrderGateway:
