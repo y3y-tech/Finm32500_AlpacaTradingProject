@@ -28,6 +28,7 @@ from alpaca.trading.requests import (
 from alpaca.trading.enums import OrderSide as AlpacaOrderSide, TimeInForce, QueryOrderStatus
 from alpaca.data.live import StockDataStream
 from alpaca.data.models import Trade, Quote, Bar
+from alpaca.data.enums import DataFeed  # Import DataFeed enum
 
 from src.models import Order, OrderType, OrderSide, OrderStatus, MarketDataPoint
 
@@ -46,7 +47,7 @@ class AlpacaConfig:
     api_key: str
     secret_key: str
     paper: bool = True
-    feed: str = "iex"  # IEX is free for paper trading
+    feed: DataFeed = DataFeed.IEX
 
     @classmethod
     def from_env(cls) -> "AlpacaConfig":
