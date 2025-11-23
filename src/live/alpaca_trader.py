@@ -124,7 +124,7 @@ class AlpacaTrader:
         # Track streaming state
         self.is_streaming = False
         self.subscribed_symbols: set[str] = set()
-        self.data_callback: Callable[[MarketDataPoint], None]] | None = None
+        self.data_callback: Callable[[MarketDataPoint], None] | None = None
 
     def get_account(self) -> dict:
         """

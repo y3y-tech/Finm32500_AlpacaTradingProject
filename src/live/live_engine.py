@@ -376,7 +376,7 @@ class LiveTradingEngine:
         print("=" * 60)
 
         # Call strategy initialization
-        self.strategy.on_start()
+        self.strategy.on_start(self.portfolio)
 
         # Sync positions from Alpaca
         self._sync_positions()
