@@ -27,7 +27,7 @@ from alpaca.trading.requests import (
     GetOrdersRequest
 )
 from alpaca.trading.enums import OrderSide as AlpacaOrderSide, TimeInForce, QueryOrderStatus
-from alpaca.data.live import StockDataStream, CryptoDataStream  # Added CryptoDataStream
+from alpaca.data.live import CryptoDataStream  # Added CryptoDataStream
 from alpaca.data.models import Trade, Quote, Bar
 from alpaca.data.enums import CryptoFeed
 
@@ -121,13 +121,6 @@ class AlpacaTrader:
             self.data_stream = CryptoDataStream(
                 api_key=config.api_key,
                 secret_key=config.secret_key
-            )
-        else:
-            # Stock stream
-            self.data_stream = StockDataStream(
-                api_key=config.api_key,
-                secret_key=config.secret_key,
-                feed=config.feed
             )
 
         # Track streaming state

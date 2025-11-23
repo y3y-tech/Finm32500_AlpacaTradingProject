@@ -11,7 +11,7 @@ This example shows how to:
 IMPORTANT: This uses PAPER TRADING by default. Ensure your .env is configured correctly.
 """
 
-from AlpacaTrading.live import LiveTradingEngine, LiveEngineConfig
+from AlpacaTrading.live.live_engine_crypto import LiveTradingEngine, LiveEngineConfig
 from AlpacaTrading.live.alpaca_trader_crypto import AlpacaTrader, AlpacaConfig
 from AlpacaTrading.strategies import MomentumStrategy
 from AlpacaTrading.trading import RiskConfig, StopLossConfig
