@@ -19,12 +19,18 @@ Built with performance, reliability, and extensibility in mind.
 ### 1. Environment Setup
 
 ```bash
-# Create and activate virtual environment
+# Mac Procedures
 python -m venv .venv
-source .venv/bin/activate  # On macOS/Linux
+source .venv/bin/activate
+pip install uv
+python -m uv sync
 
-# Install dependencies
-pip install -r requirements.txt
+# Window Procedures
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+.venv\Scripts\Activate.ps1
+pip install uv
+python -m uv sync
+
 ```
 
 ### 2. Configure Alpaca API
