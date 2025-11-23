@@ -117,7 +117,7 @@ def example_live_trading_dry_run():
         strategy = MomentumStrategy(
             lookback_period=20,
             momentum_threshold=0.02,  # 2% velocity threshold
-            max_positions=3
+            max_position=3
         )
 
         # Create engine
