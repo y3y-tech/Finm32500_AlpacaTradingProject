@@ -19,9 +19,9 @@ BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
 
-from src.live import AlpacaConfig, AlpacaTrader, LiveTradingEngine, LiveEngineConfig
-from src.strategies.momentum import MomentumStrategy
-from src.trading import RiskConfig, StopLossConfig
+from AlpacaTrading.live import AlpacaConfig, AlpacaTrader, LiveTradingEngine, LiveEngineConfig
+from AlpacaTrading.strategies.momentum import MomentumStrategy
+from AlpacaTrading.trading import RiskConfig, StopLossConfig
 
 
 def example_alpaca_connection():

@@ -7,6 +7,7 @@ Requires valid API credentials in .env file.
 import pytest
 import os
 import time
+import logging
 from dotenv import load_dotenv
 
 from alpaca.trading.client import TradingClient
@@ -14,6 +15,8 @@ from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 
 from AlpacaTrading.live.alpaca_trader import AlpacaConfig, AlpacaTrader
+
+logger = logging.getLogger(__name__)
 
 
 load_dotenv()
@@ -91,7 +94,7 @@ class TestBTCRoundTrip:
         Uses minimum quantity (0.0001 BTC) to minimize risk.
         """
         symbol = "BTC/USD"
-        qty = 0.0001  # Minimum BTC quantity on Alpaca
+        qty = 0.001  # Minimum BTC quantity on Alpaca
 
         # Get initial account state
         account_before = trading_client.get_account()
@@ -141,13 +144,13 @@ class TestBTCRoundTrip:
         cash_after = float(account_after.cash)
 
         # Report results
-        print(f"\n{'='*50}")
-        print(f"BTC/USD Round Trip Results")
-        print(f"{'='*50}")
-        print(f"Quantity:    {qty} BTC")
-        print(f"Buy Price:   ${buy_price:,.2f}")
-        print(f"Sell Price:  ${sell_price:,.2f}")
-        print(f"P&L:         ${pnl:,.4f}")
-        print(f"Cash Before: ${cash_before:,.2f}")
-        print(f"Cash After:  ${cash_after:,.2f}")
-        print(f"{'='*50}")
+        logger.info(f"\n{'='*50}")
+        logger.info(f"BTC/USD Round Trip Results")
+        logger.info(f"{'='*50}")
+        logger.info(f"Quantity:    {qty} BTC")
+        logger.info(f"Buy Price:   ${buy_price:,.2f}")
+        logger.info(f"Sell Price:  ${sell_price:,.2f}")
+        logger.info(f"P&L:         ${pnl:,.4f}")
+        logger.info(f"Cash Before: ${cash_before:,.2f}")
+        logger.info(f"Cash After:  ${cash_after:,.2f}")
+        logger.info(f"{'='*50}")

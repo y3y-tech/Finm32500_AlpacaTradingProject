@@ -12,19 +12,12 @@ Steps:
 6. Visualize performance
 """
 
-import sys
-from pathlib import Path
-
-# Add src to path
-BASE_DIR = Path(__file__).parent.parent
-sys.path.insert(0, str(BASE_DIR))
-
-from src.gateway.data_gateway import DataGateway
-from src.trading.order_manager import RiskConfig
-from src.trading.matching_engine import MatchingEngine
-from src.backtesting.engine import BacktestEngine
-from src.strategies.momentum import MomentumStrategy
-from src.strategies.mean_reversion import MovingAverageCrossoverStrategy
+from AlpacaTrading.gateway.data_gateway import DataGateway
+from AlpacaTrading.trading.order_manager import RiskConfig
+from AlpacaTrading.trading.matching_engine import MatchingEngine
+from AlpacaTrading.backtesting.engine import BacktestEngine
+from AlpacaTrading.strategies.momentum import MomentumStrategy
+from AlpacaTrading.strategies.mean_reversion import MovingAverageCrossoverStrategy
 
 
 def run_momentum_backtest():
