@@ -16,7 +16,8 @@ import sys
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+BASE_DIR = Path(__file__).parent.parent
+sys.path.insert(0, str(BASE_DIR))
 
 from src.gateway.data_gateway import DataGateway
 from src.trading.order_manager import RiskConfig
@@ -33,7 +34,7 @@ def run_momentum_backtest():
     print("=" * 80)
 
     # 1. Load market data
-    data_gateway = DataGateway("data/assignment3_market_data.csv")
+    data_gateway = DataGateway(BASE_DIR / "equities_data" / "cleaned_data" / "tickers_cleaned.csv")
 
     print(f"Data source: {data_gateway.data_source}")
     print(f"Date range: {data_gateway.get_date_range()}")
@@ -72,7 +73,7 @@ def run_momentum_backtest():
         initial_cash=100_000,
         risk_config=risk_config,
         matching_engine=matching_engine,
-        order_log_file="logs/momentum_backtest_orders.csv",
+        order_log_file=BASE_DIR / "logs" / "momentum_backtest_orders.csv",
         record_equity_frequency=100
     )
 
@@ -89,7 +90,7 @@ def run_ma_crossover_backtest():
     print("=" * 80)
 
     # Load data
-    data_gateway = DataGateway("data/assignment3_market_data.csv")
+    data_gateway = DataGateway(BASE_DIR / "data" / "assignment3_market_data.csv")
 
     # Configure MA crossover strategy
     strategy = MovingAverageCrossoverStrategy(
@@ -113,7 +114,7 @@ def run_ma_crossover_backtest():
         strategy=strategy,
         initial_cash=100_000,
         risk_config=risk_config,
-        order_log_file="logs/ma_crossover_orders.csv"
+        order_log_file=BASE_DIR / "logs" / "ma_crossover_orders.csv"
     )
 
     # Run
@@ -183,8 +184,8 @@ def compare_strategies():
 
 def save_results(result, filename: str = "backtest_results.csv"):
     """Save equity curve to CSV."""
-    output_path = Path("results") / filename
-    output_path.parent.mkdir(exist_ok=True)
+    output_path = BASE_DIR / "results" / filename
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     result.equity_curve.to_csv(output_path, index=False)
     print(f"\nEquity curve saved to: {output_path}")
@@ -209,8 +210,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Create necessary directories
-    Path("logs").mkdir(exist_ok=True)
-    Path("results").mkdir(exist_ok=True)
+    (BASE_DIR / "logs").mkdir(parents=True, exist_ok=True)
+    (BASE_DIR / "results").mkdir(parents=True, exist_ok=True)
 
     # Run requested backtest
     if args.strategy == "momentum":
@@ -228,7 +229,7 @@ if __name__ == "__main__":
 
     print("\n✅ Backtest complete!")
     print(f"\nNext steps:")
-    print("1. Review order logs in logs/ directory")
+    print(f"1. Review order logs in {BASE_DIR / 'logs'} directory")
     print("2. Analyze equity curves")
     print("3. Tune strategy parameters")
     print("4. Run on full dataset (remove max_ticks limit)")

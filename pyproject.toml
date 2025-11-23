@@ -20,6 +20,7 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "seaborn>=0.13.2",
     "six==1.17.0",
+    "yfinance>=0.2.66",
 ]
 
 [tool.setuptools]
