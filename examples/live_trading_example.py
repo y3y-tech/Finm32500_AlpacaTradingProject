@@ -11,6 +11,11 @@ This example shows how to:
 IMPORTANT: This uses PAPER TRADING by default. Ensure your .env is configured correctly.
 """
 
+import sys
+from pathlib import Path
+# Add parent folder to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from src.live import AlpacaConfig, AlpacaTrader, LiveTradingEngine, LiveEngineConfig
 from src.strategies.momentum import MomentumStrategy
 from src.trading import RiskConfig, StopLossConfig
