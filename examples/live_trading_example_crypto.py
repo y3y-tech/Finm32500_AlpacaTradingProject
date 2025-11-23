@@ -1,17 +1,18 @@
 """
-Live Trading Example - Demonstrates real-time trading with Alpaca.
+Live Trading Example (Crypto) - Demonstrates real-time trading with Alpaca.
 
 This example shows how to:
-1. Configure and connect to Alpaca API
+1. Configure and connect to Alpaca API for Crypto
 2. Set up a trading strategy
-3. Configure risk management
-4. Run live trading engine
+3. Configure risk management for fractional assets
+4. Run live trading engine with BTC/USD
 5. Monitor positions and P&L
 
 IMPORTANT: This uses PAPER TRADING by default. Ensure your .env is configured correctly.
 """
 
-from AlpacaTrading.live import AlpacaConfig, AlpacaTrader, LiveTradingEngine, LiveEngineConfig
+from AlpacaTrading.live import LiveTradingEngine, LiveEngineConfig
+from AlpacaTrading.live.alpaca_trader_crypto import AlpacaTrader, AlpacaConfig
 from AlpacaTrading.strategies import MomentumStrategy
 from AlpacaTrading.trading import RiskConfig, StopLossConfig
 
@@ -25,6 +26,8 @@ def example_alpaca_connection():
     try:
         # Load credentials from .env
         config = AlpacaConfig.from_env()
+        config.crypto = True  # IMPORTANT: Enable crypto mode
+        
         trader = AlpacaTrader(config)
 
         # Get account info
@@ -34,7 +37,6 @@ def example_alpaca_connection():
         print(f"  Portfolio Value: ${account['portfolio_value']:,.2f}")
         print(f"  Buying Power: ${account['buying_power']:,.2f}")
         print(f"  Equity: ${account['equity']:,.2f}")
-        print(f"  Pattern Day Trader: {account['pattern_day_trader']}")
 
         # Get positions (if any)
         positions = trader.get_positions()
@@ -48,15 +50,6 @@ def example_alpaca_connection():
         else:
             print("\n📦 No open positions")
 
-        # Get open orders (if any)
-        orders = trader.get_open_orders()
-        if orders:
-            print(f"\n📋 Open Orders ({len(orders)}):")
-            for order in orders:
-                print(f"  {order['side']} {order['qty']} {order['symbol']} @ {order['order_type']}")
-        else:
-            print("\n📋 No open orders")
-
         print("\n✅ Connection successful!")
 
     except Exception as e:
@@ -64,15 +57,14 @@ def example_alpaca_connection():
         print("\nMake sure:")
         print("  1. You have a .env file with ALPACA_API_KEY and ALPACA_SECRET_KEY")
         print("  2. Your API keys are valid")
-        print("  3. You're using paper trading credentials")
 
 
 def example_live_trading_dry_run():
     """Example 2: Run live trading in DRY RUN mode (no actual orders)."""
     print("\n\n" + "=" * 60)
-    print("EXAMPLE 2: Live Trading Dry Run")
+    print("EXAMPLE 2: Live Crypto Trading Dry Run")
     print("=" * 60)
-    print("\nThis will stream live market data and generate signals,")
+    print("\nThis will stream live BTC/USD trades and generate signals,")
     print("but will NOT submit actual orders (enable_trading=False).")
     print("\nPress Ctrl+C to stop.\n")
 
@@ -81,24 +73,25 @@ def example_live_trading_dry_run():
     try:
         # Configure Alpaca
         alpaca_config = AlpacaConfig.from_env()
+        alpaca_config.crypto = True  # Enable crypto streaming
 
-        # Configure risk management
+        # Configure risk management (adjusted for Crypto)
         risk_config = RiskConfig(
-            max_position_size=100,  # Max 100 shares per position
-            max_position_value=10_000,  # Max $10k per position
-            max_total_exposure=50_000,  # Max $50k total
-            max_orders_per_minute=10,  # Max 10 orders/minute
-            max_orders_per_symbol_per_minute=2,  # Max 2 orders/symbol/minute
-            min_cash_buffer=1000  # Keep $1k cash buffer
+            max_position_size=1.0,      # Max 1.0 BTC (adjusted for high price)
+            max_position_value=50_000,  # Max $50k per position
+            max_total_exposure=100_000, # Max $100k total
+            max_orders_per_minute=10,   
+            max_orders_per_symbol_per_minute=5,
+            min_cash_buffer=1000
         )
 
         # Configure stop-loss
         stop_config = StopLossConfig(
-            position_stop_pct=2.0,  # 2% stop loss
-            trailing_stop_pct=3.0,  # 3% trailing stop
-            portfolio_stop_pct=5.0,  # 5% portfolio circuit breaker
-            max_drawdown_pct=10.0,  # 10% max drawdown
-            use_trailing_stops=False,  # Use fixed stops for now
+            position_stop_pct=2.0,  
+            trailing_stop_pct=3.0, 
+            portfolio_stop_pct=5.0,  
+            max_drawdown_pct=10.0, 
+            use_trailing_stops=False,
             enable_circuit_breaker=True
         )
 
@@ -110,14 +103,15 @@ def example_live_trading_dry_run():
             enable_trading=False,  # DRY RUN - no actual orders
             enable_stop_loss=True,
             log_orders=True,
-            order_log_path="dry_run_orders.csv"
+            order_log_path="dry_run_crypto_orders.csv"
         )
 
         # Create strategy
         strategy = MomentumStrategy(
             lookback_period=20,
-            momentum_threshold=0.02,  # 2% velocity threshold
-            max_position=3
+            momentum_threshold=0.005,  # 0.5% velocity threshold (crypto is volatile)
+            position_size=5000,        # $5k position size
+            max_position=1             # Max 1 unit (will be limited by value anyway)
         )
 
         # Create engine
@@ -125,7 +119,7 @@ def example_live_trading_dry_run():
 
         # Run (blocking call - press Ctrl+C to stop)
         engine.run(
-            symbols=["AAPL", "MSFT", "GOOGL"],
+            symbols=["BTC/USD"],
             data_type="trades"  # Use real-time trades
         )
 
@@ -140,7 +134,7 @@ def example_live_trading_dry_run():
 def example_live_trading_paper():
     """Example 3: Run REAL live trading in PAPER mode."""
     print("\n\n" + "=" * 60)
-    print("EXAMPLE 3: Live Paper Trading")
+    print("EXAMPLE 3: Live Paper Trading (Crypto)")
     print("=" * 60)
     print("\n⚠️  WARNING: This will submit REAL orders to your paper account!")
     print("Make sure you understand the risks and have tested in dry run mode first.")
@@ -154,6 +148,7 @@ def example_live_trading_paper():
     try:
         # Configure Alpaca
         alpaca_config = AlpacaConfig.from_env()
+        alpaca_config.crypto = True  # Enable crypto streaming
 
         # Verify we're in paper mode
         if not alpaca_config.paper:
@@ -161,23 +156,23 @@ def example_live_trading_paper():
             print("Set ALPACA_PAPER=true in your .env file")
             return
 
-        # Configure risk management (more conservative for real trading)
+        # Configure risk management (conservative for high-volatility crypto)
         risk_config = RiskConfig(
-            max_position_size=50,  # Max 50 shares
-            max_position_value=5_000,  # Max $5k per position
-            max_total_exposure=25_000,  # Max $25k total
-            max_orders_per_minute=5,  # Max 5 orders/minute
-            max_orders_per_symbol_per_minute=1,  # Max 1 order/symbol/minute
-            min_cash_buffer=5000  # Keep $5k buffer
+            max_position_size=0.5,      # Max 0.5 BTC
+            max_position_value=25_000,  # Max $25k per position
+            max_total_exposure=50_000,  # Max $50k total
+            max_orders_per_minute=5,
+            max_orders_per_symbol_per_minute=2,
+            min_cash_buffer=5000
         )
 
         # Configure stop-loss
         stop_config = StopLossConfig(
-            position_stop_pct=2.0,  # 2% stop loss
-            trailing_stop_pct=3.0,  # 3% trailing stop
-            portfolio_stop_pct=3.0,  # 3% portfolio circuit breaker (conservative)
-            max_drawdown_pct=5.0,  # 5% max drawdown (conservative)
-            use_trailing_stops=False,
+            position_stop_pct=3.0,  # Wider stop for crypto volatility
+            trailing_stop_pct=5.0,  # Wider trailing stop
+            portfolio_stop_pct=5.0, 
+            max_drawdown_pct=10.0,
+            use_trailing_stops=True, # Use trailing stops to lock in crypto gains
             enable_circuit_breaker=True
         )
 
@@ -189,22 +184,24 @@ def example_live_trading_paper():
             enable_trading=True,  # REAL TRADING ENABLED
             enable_stop_loss=True,
             log_orders=True,
-            order_log_path="paper_trading_orders.csv"
+            order_log_path="paper_crypto_orders.csv"
         )
 
-        # Create strategy (conservative settings)
+        # Create strategy
         strategy = MomentumStrategy(
             lookback_period=30,
-            momentum_threshold=0.03,  # Higher threshold = fewer trades
-            max_positions=2  # Limit to 2 positions
+            momentum_threshold=0.01,   # 1% threshold
+            position_size=1000,        # $1000 per trade
+            max_position=1             # Max 1 position count per symbol
         )
 
         # Create engine
         engine = LiveTradingEngine(engine_config, strategy)
 
         # Run (blocking call - press Ctrl+C to stop)
+        print("Starting engine for BTC/USD...")
         engine.run(
-            symbols=["AAPL", "MSFT"],  # Start with just 2 liquid stocks
+            symbols=["BTC/USD"],
             data_type="trades"
         )
 
@@ -220,7 +217,7 @@ def main():
     """Run all examples (interactive)."""
     print("""
 ╔══════════════════════════════════════════════════════════╗
-║         LIVE TRADING WITH ALPACA - EXAMPLES              ║
+║      LIVE CRYPTO TRADING WITH ALPACA - EXAMPLES          ║
 ╚══════════════════════════════════════════════════════════╝
 
 Choose an example to run:
@@ -228,13 +225,12 @@ Choose an example to run:
 1. Test Alpaca Connection (safe - read-only)
 2. Live Trading Dry Run (safe - no orders submitted)
 3. Paper Trading (⚠️  submits real paper orders)
-4. Run all examples in sequence
 
 0. Exit
     """)
 
     while True:
-        choice = input("\nEnter your choice (0-4): ").strip()
+        choice = input("\nEnter your choice (0-3): ").strip()
 
         if choice == "0":
             print("\nGoodbye!")
@@ -245,12 +241,8 @@ Choose an example to run:
             example_live_trading_dry_run()
         elif choice == "3":
             example_live_trading_paper()
-        elif choice == "4":
-            example_alpaca_connection()
-            example_live_trading_dry_run()
-            example_live_trading_paper()
         else:
-            print("Invalid choice. Please enter 0-4.")
+            print("Invalid choice. Please enter 0-3.")
 
 
 if __name__ == "__main__":
@@ -259,9 +251,10 @@ if __name__ == "__main__":
     if not os.path.exists(".env"):
         print("❌ ERROR: .env file not found!")
         print("\nPlease create a .env file with your Alpaca credentials:")
-        print("  cp .env.example .env")
-        print("  # Then edit .env with your actual API keys")
-        print("\nSee SETUP_CREDENTIALS.md for details.")
+        print("  ALPACA_API_KEY=...")
+        print("  ALPACA_SECRET_KEY=...")
+        print("  ALPACA_PAPER=true")
+        print("  ALPACA_CRYPTO=true")
         exit(1)
 
     main()
