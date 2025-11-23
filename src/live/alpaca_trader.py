@@ -4,6 +4,14 @@ Alpaca Live Trading Integration.
 Provides real-time market data streaming and order execution via Alpaca API.
 """
 
+import sys
+from pathlib import Path
+
+# Add src to path
+BASE_DIR = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(BASE_DIR))
+
+
 import os
 import asyncio
 from dataclasses import dataclass

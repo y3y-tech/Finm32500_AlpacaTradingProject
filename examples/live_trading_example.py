@@ -13,8 +13,11 @@ IMPORTANT: This uses PAPER TRADING by default. Ensure your .env is configured co
 
 import sys
 from pathlib import Path
-# Add parent folder to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Add src to path
+BASE_DIR = Path(__file__).parent.parent
+sys.path.insert(0, str(BASE_DIR))
+
 
 from src.live import AlpacaConfig, AlpacaTrader, LiveTradingEngine, LiveEngineConfig
 from src.strategies.momentum import MomentumStrategy
@@ -225,7 +228,7 @@ def main():
     """Run all examples (interactive)."""
     print("""
 ╔══════════════════════════════════════════════════════════╗
-║         LIVE TRADING WITH ALPACA - EXAMPLES             ║
+║         LIVE TRADING WITH ALPACA - EXAMPLES              ║
 ╚══════════════════════════════════════════════════════════╝
 
 Choose an example to run:
