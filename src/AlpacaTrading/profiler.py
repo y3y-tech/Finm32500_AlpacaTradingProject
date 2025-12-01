@@ -1,6 +1,6 @@
 import timeit
 from strategies import NaiveMovingAverageStrategy
-from models import MarketDataPoint, Portfolio
+from models import MarketDataPoint
 import datetime
 
 def run_strategy_with_mock():

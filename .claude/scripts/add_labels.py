@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Add labels to existing GitHub issues based on title and content."""
 
-import re
 import subprocess
 import json
 

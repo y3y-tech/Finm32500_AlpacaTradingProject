@@ -78,7 +78,7 @@ def main():
     changes, stats = sync_todo_with_github(todo_file)
 
     print(f"\n{'='*50}")
-    print(f"Sync Summary:")
+    print("Sync Summary:")
     print(f"{'='*50}")
     print(f"Total issues found: {stats['open'] + stats['closed']}")
     print(f"  ✓ Closed on GitHub: {stats['closed']}")

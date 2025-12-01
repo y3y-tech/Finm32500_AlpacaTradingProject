@@ -11,7 +11,6 @@ import tempfile
 
 from AlpacaTrading.models import Order, OrderSide, OrderType, MarketDataPoint, Trade
 from AlpacaTrading.gateway.data_gateway import DataGateway
-from AlpacaTrading.gateway.order_gateway import OrderGateway
 from AlpacaTrading.trading.order_manager import OrderManager, RiskConfig
 from AlpacaTrading.trading.matching_engine import MatchingEngine
 from AlpacaTrading.trading.portfolio import TradingPortfolio

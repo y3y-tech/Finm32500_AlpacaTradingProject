@@ -4,33 +4,37 @@ Alpaca Live Trading Integration.
 Provides real-time market data streaming and order execution via Alpaca API.
 """
 
-import sys
-from pathlib import Path
-
-# Add src to path
-BASE_DIR = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(BASE_DIR))
-
-
+import logging
 import os
-import asyncio
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Callable
+from typing import Any, Callable
+
+from alpaca.data.enums import DataFeed  # Import DataFeed enum
+from alpaca.data.live import StockDataStream
+from alpaca.data.models import Bar, Quote, Trade
+from alpaca.trading.client import TradingClient
+from alpaca.trading.enums import (
+    OrderSide as AlpacaOrderSide,
+)
+from alpaca.trading.enums import (
+    QueryOrderStatus,
+    TimeInForce,
+)
+from alpaca.trading.requests import (
+    GetOrdersRequest,
+    LimitOrderRequest,
+    MarketOrderRequest,
+)
 from dotenv import load_dotenv
 
-from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import (
-    MarketOrderRequest,
-    LimitOrderRequest,
-    GetOrdersRequest
+from AlpacaTrading.models import (
+    MarketDataPoint,
+    Order,
+    OrderSide,
+    OrderType,
 )
-from alpaca.trading.enums import OrderSide as AlpacaOrderSide, TimeInForce, QueryOrderStatus
-from alpaca.data.live import StockDataStream
-from alpaca.data.models import Trade, Quote, Bar
-from alpaca.data.enums import DataFeed  # Import DataFeed enum
 
-from AlpacaTrading.models import Order, OrderType, OrderSide, OrderStatus, MarketDataPoint
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -44,6 +48,7 @@ class AlpacaConfig:
         paper: Use paper trading (default: True)
         feed: Data feed (default: "iex" for paper trading)
     """
+
     api_key: str
     secret_key: str
     paper: bool = True
@@ -74,11 +79,7 @@ class AlpacaConfig:
                 "Set ALPACA_API_KEY and ALPACA_SECRET_KEY in .env file"
             )
 
-        return cls(
-            api_key=api_key,
-            secret_key=secret_key,
-            paper=paper
-        )
+        return cls(api_key=api_key, secret_key=secret_key, paper=paper)
 
 
 class AlpacaTrader:
@@ -116,18 +117,14 @@ class AlpacaTrader:
         """
         self.config = config
 
-        # Initialize trading client
+        logger.debug("Initializing trading client")
         self.trading_client = TradingClient(
-            api_key=config.api_key,
-            secret_key=config.secret_key,
-            paper=config.paper
+            api_key=config.api_key, secret_key=config.secret_key, paper=config.paper
         )
 
-        # Initialize data stream
+        logger.debug("Initialize data stream")
         self.data_stream = StockDataStream(
-            api_key=config.api_key,
-            secret_key=config.secret_key,
-            feed=config.feed
+            api_key=config.api_key, secret_key=config.secret_key, feed=config.feed
         )
 
         # Track streaming state
@@ -135,7 +132,7 @@ class AlpacaTrader:
         self.subscribed_symbols: set[str] = set()
         self.data_callback: Callable[[MarketDataPoint], None] | None = None
 
-    def get_account(self) -> dict:
+    def get_account(self) -> dict[str, Any]:
         """
         Get account information.
 
@@ -152,7 +149,7 @@ class AlpacaTrader:
             "initial_margin": float(account.initial_margin),
             "maintenance_margin": float(account.maintenance_margin),
             "daytrade_count": account.daytrade_count,
-            "pattern_day_trader": account.pattern_day_trader
+            "pattern_day_trader": account.pattern_day_trader,
         }
 
     def get_positions(self) -> list[dict]:
@@ -172,7 +169,7 @@ class AlpacaTrader:
                 "market_value": float(pos.market_value),
                 "unrealized_pl": float(pos.unrealized_pl),
                 "unrealized_plpc": float(pos.unrealized_plpc),
-                "side": "long" if float(pos.qty) > 0 else "short"
+                "side": "long" if float(pos.qty) > 0 else "short",
             }
             for pos in positions
         ]
@@ -192,9 +189,7 @@ class AlpacaTrader:
         """
         # Convert OrderSide to AlpacaOrderSide
         side = (
-            AlpacaOrderSide.BUY
-            if order.side == OrderSide.BUY
-            else AlpacaOrderSide.SELL
+            AlpacaOrderSide.BUY if order.side == OrderSide.BUY else AlpacaOrderSide.SELL
         )
 
         # Create order request based on type
@@ -203,7 +198,7 @@ class AlpacaTrader:
                 symbol=order.symbol,
                 qty=order.quantity,
                 side=side,
-                time_in_force=TimeInForce.DAY
+                time_in_force=TimeInForce.DAY,
             )
         elif order.order_type == OrderType.LIMIT:
             if order.price is None:
@@ -214,7 +209,7 @@ class AlpacaTrader:
                 qty=order.quantity,
                 side=side,
                 time_in_force=TimeInForce.DAY,
-                limit_price=order.price
+                limit_price=order.price,
             )
         else:
             raise ValueError(f"Unsupported order type: {order.order_type}")
@@ -234,8 +229,10 @@ class AlpacaTrader:
             "filled_qty": float(alpaca_order.filled_qty or 0),
             "side": alpaca_order.side.value,
             "order_type": alpaca_order.order_type.value,
-            "limit_price": float(alpaca_order.limit_price) if alpaca_order.limit_price else None,
-            "submitted_at": alpaca_order.submitted_at
+            "limit_price": float(alpaca_order.limit_price)
+            if alpaca_order.limit_price
+            else None,
+            "submitted_at": alpaca_order.submitted_at,
         }
 
     def get_order(self, order_id: str) -> dict:
@@ -256,11 +253,13 @@ class AlpacaTrader:
             "symbol": alpaca_order.symbol,
             "qty": float(alpaca_order.qty),
             "filled_qty": float(alpaca_order.filled_qty or 0),
-            "filled_avg_price": float(alpaca_order.filled_avg_price) if alpaca_order.filled_avg_price else None,
+            "filled_avg_price": float(alpaca_order.filled_avg_price)
+            if alpaca_order.filled_avg_price
+            else None,
             "side": alpaca_order.side.value,
             "order_type": alpaca_order.order_type.value,
             "submitted_at": alpaca_order.submitted_at,
-            "filled_at": alpaca_order.filled_at
+            "filled_at": alpaca_order.filled_at,
         }
 
     def cancel_order(self, order_id: str) -> None:
@@ -280,13 +279,7 @@ class AlpacaTrader:
             List of cancellation responses
         """
         responses = self.trading_client.cancel_orders()
-        return [
-            {
-                "id": resp.id,
-                "status": resp.status
-            }
-            for resp in responses
-        ]
+        return [{"id": resp.id, "status": resp.status} for resp in responses]
 
     def get_open_orders(self, symbol: str | None = None) -> list[dict]:
         """
@@ -299,8 +292,7 @@ class AlpacaTrader:
             List of order dictionaries
         """
         filter_params = GetOrdersRequest(
-            status=QueryOrderStatus.OPEN,
-            symbols=[symbol] if symbol else None
+            status=QueryOrderStatus.OPEN, symbols=[symbol] if symbol else None
         )
 
         orders = self.trading_client.get_orders(filter=filter_params)
@@ -315,7 +307,7 @@ class AlpacaTrader:
                 "order_type": order.order_type.value,
                 "limit_price": float(order.limit_price) if order.limit_price else None,
                 "status": order.status.value,
-                "submitted_at": order.submitted_at
+                "submitted_at": order.submitted_at,
             }
             for order in orders
         ]
@@ -335,7 +327,7 @@ class AlpacaTrader:
             timestamp=trade.timestamp,
             symbol=trade.symbol,
             price=float(trade.price),
-            volume=float(trade.size)
+            volume=float(trade.size),
         )
 
         # Call user callback
@@ -358,7 +350,7 @@ class AlpacaTrader:
             timestamp=quote.timestamp,
             symbol=quote.symbol,
             price=mid_price,
-            volume=0  # Quotes don't have volume
+            volume=0,  # Quotes don't have volume
         )
 
         self.data_callback(tick)
@@ -378,7 +370,7 @@ class AlpacaTrader:
             timestamp=bar.timestamp,
             symbol=bar.symbol,
             price=float(bar.close),
-            volume=float(bar.volume)
+            volume=float(bar.volume),
         )
 
         self.data_callback(tick)
@@ -387,7 +379,7 @@ class AlpacaTrader:
         self,
         symbols: list[str],
         callback: Callable[[MarketDataPoint], None],
-        data_type: str = "trades"
+        data_type: str = "trades",
     ) -> None:
         """
         Start streaming market data for symbols.
@@ -433,13 +425,7 @@ class AlpacaTrader:
             List of close position responses
         """
         responses = self.trading_client.close_all_positions(cancel_orders=cancel_orders)
-        return [
-            {
-                "symbol": resp.symbol,
-                "status": resp.status
-            }
-            for resp in responses
-        ]
+        return [{"symbol": resp.symbol, "status": resp.status} for resp in responses]
 
     def __repr__(self) -> str:
         mode = "PAPER" if self.config.paper else "LIVE"

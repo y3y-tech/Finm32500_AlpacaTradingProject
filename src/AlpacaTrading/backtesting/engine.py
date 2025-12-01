@@ -12,10 +12,9 @@ Integrates all components:
 
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 import pandas as pd
 
-from AlpacaTrading.models import MarketDataPoint, Order, Trade, OrderType, OrderSide
+from AlpacaTrading.models import MarketDataPoint, Order, Trade, OrderType
 from AlpacaTrading.gateway.data_gateway import DataGateway
 from AlpacaTrading.gateway.order_gateway import OrderGateway
 from AlpacaTrading.trading.order_manager import OrderManager, RiskConfig

@@ -1,6 +1,5 @@
 import requests
 import pandas as pd
-from datetime import datetime
 
 def get_crypto_data(symbol: str, interval='1d', limit=200):
     """

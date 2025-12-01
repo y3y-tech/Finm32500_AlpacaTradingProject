@@ -1,6 +1,5 @@
 import yfinance as yf
 import pandas as pd
-import numpy as np
 from pathlib import Path
 from typing import Union
 
@@ -14,7 +13,7 @@ def load_equities(ticker: str, period: str = "7d", interval: str = "1m") -> tupl
     data = yf.download(tickers=ticker, period=period, interval=interval)
     data = data.stack(level=1).reset_index()
 
-    data_name = f"tickers_raw.csv"
+    data_name = "tickers_raw.csv"
 
     # Build a path relative to this script (equities_data/)
     base_dir = Path(__file__).resolve().parent
@@ -42,7 +41,7 @@ def clean_equities(ticker: str, raw_data_file_path: Union[str, Path]):
 
     equities_df.rename(columns={'Ticker': 'symbol'}, inplace=True)
 
-    data_name = f"tickers_cleaned.csv"
+    data_name = "tickers_cleaned.csv"
 
     # Clean out starting rows that are NaN from rolling average and return calculations
     equities_df.dropna(inplace=True)

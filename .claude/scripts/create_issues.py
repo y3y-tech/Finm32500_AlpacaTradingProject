@@ -3,7 +3,6 @@
 
 import re
 import subprocess
-import sys
 
 def parse_todo_file(filepath):
     """Parse TODO.md and extract tasks."""

@@ -12,12 +12,15 @@ Steps:
 6. Visualize performance
 """
 
+from pathlib import Path
 from AlpacaTrading.gateway.data_gateway import DataGateway
 from AlpacaTrading.trading.order_manager import RiskConfig
 from AlpacaTrading.trading.matching_engine import MatchingEngine
 from AlpacaTrading.backtesting.engine import BacktestEngine
 from AlpacaTrading.strategies.momentum import MomentumStrategy
 from AlpacaTrading.strategies.mean_reversion import MovingAverageCrossoverStrategy
+
+BASE_DIR = Path(__file__).parent.parent
 
 
 def run_momentum_backtest():
@@ -27,7 +30,9 @@ def run_momentum_backtest():
     print("=" * 80)
 
     # 1. Load market data
-    data_gateway = DataGateway(BASE_DIR / "equities_data" / "cleaned_data" / "tickers_cleaned.csv")
+    data_gateway = DataGateway(
+        BASE_DIR / "equities_data" / "cleaned_data" / "tickers_cleaned.csv"
+    )
 
     print(f"Data source: {data_gateway.data_source}")
     print(f"Date range: {data_gateway.get_date_range()}")
@@ -38,7 +43,7 @@ def run_momentum_backtest():
         lookback_period=20,
         momentum_threshold=0.015,  # 1.5% momentum threshold
         position_size=5000,  # $5k per position
-        max_position=50  # Max 50 shares per symbol
+        max_position=50,  # Max 50 shares per symbol
     )
 
     # 3. Configure risk parameters
@@ -48,7 +53,7 @@ def run_momentum_backtest():
         max_total_exposure=200_000,
         max_orders_per_minute=50,
         max_orders_per_symbol_per_minute=10,
-        min_cash_buffer=5000
+        min_cash_buffer=5000,
     )
 
     # 4. Configure execution simulator
@@ -56,7 +61,7 @@ def run_momentum_backtest():
         fill_probability=0.90,
         partial_fill_probability=0.08,
         cancel_probability=0.02,
-        market_impact=0.0001  # 0.01% slippage
+        market_impact=0.0001,  # 0.01% slippage
     )
 
     # 5. Create backtest engine
@@ -67,7 +72,7 @@ def run_momentum_backtest():
         risk_config=risk_config,
         matching_engine=matching_engine,
         order_log_file=BASE_DIR / "logs" / "momentum_backtest_orders.csv",
-        record_equity_frequency=100
+        record_equity_frequency=100,
     )
 
     # 6. Run backtest
@@ -83,14 +88,13 @@ def run_ma_crossover_backtest():
     print("=" * 80)
 
     # Load data
-    data_gateway = DataGateway(BASE_DIR / "equities_data" / "cleaned_data" / "tickers_cleaned.csv")
+    data_gateway = DataGateway(
+        BASE_DIR / "equities_data" / "cleaned_data" / "tickers_cleaned.csv"
+    )
 
     # Configure MA crossover strategy
     strategy = MovingAverageCrossoverStrategy(
-        short_window=10,
-        long_window=30,
-        position_size=8000,
-        max_position=75
+        short_window=10, long_window=30, position_size=8000, max_position=75
     )
 
     # Risk config
@@ -98,7 +102,7 @@ def run_ma_crossover_backtest():
         max_position_size=100,
         max_position_value=50_000,
         max_total_exposure=200_000,
-        max_orders_per_minute=30
+        max_orders_per_minute=30,
     )
 
     # Create engine
@@ -107,7 +111,7 @@ def run_ma_crossover_backtest():
         strategy=strategy,
         initial_cash=100_000,
         risk_config=risk_config,
-        order_log_file=BASE_DIR / "logs" / "ma_crossover_orders.csv"
+        order_log_file=BASE_DIR / "logs" / "ma_crossover_orders.csv",
     )
 
     # Run
@@ -135,42 +139,40 @@ def compare_strategies():
     print("COMPARISON SUMMARY")
     print("=" * 80)
 
-    print("\n{:<25} {:>20} {:>20}".format(
-        "Metric", "Momentum", "MA Crossover"
-    ))
+    print("\n{:<25} {:>20} {:>20}".format("Metric", "Momentum", "MA Crossover"))
     print("-" * 70)
 
     metrics_to_compare = [
-        ('total_return', '%'),
-        ('total_pnl', '$'),
-        ('num_trades', ''),
-        ('win_rate', '%'),
-        ('max_drawdown', '%'),
-        ('sharpe_ratio', '')
+        ("total_return", "%"),
+        ("total_pnl", "$"),
+        ("num_trades", ""),
+        ("win_rate", "%"),
+        ("max_drawdown", "%"),
+        ("sharpe_ratio", ""),
     ]
 
     for metric, unit in metrics_to_compare:
         mom_val = momentum_result.performance_metrics.get(metric, 0)
         ma_val = ma_result.performance_metrics.get(metric, 0)
 
-        if unit == '%':
-            print("{:<25} {:>19.2f}% {:>19.2f}%".format(
-                metric.replace('_', ' ').title(),
-                mom_val,
-                ma_val
-            ))
-        elif unit == '$':
-            print("{:<25} {:>18,.2f}{} {:>18,.2f}{}".format(
-                metric.replace('_', ' ').title(),
-                mom_val, unit,
-                ma_val, unit
-            ))
+        if unit == "%":
+            print(
+                "{:<25} {:>19.2f}% {:>19.2f}%".format(
+                    metric.replace("_", " ").title(), mom_val, ma_val
+                )
+            )
+        elif unit == "$":
+            print(
+                "{:<25} {:>18,.2f}{} {:>18,.2f}{}".format(
+                    metric.replace("_", " ").title(), mom_val, unit, ma_val, unit
+                )
+            )
         else:
-            print("{:<25} {:>20.2f} {:>20.2f}".format(
-                metric.replace('_', ' ').title(),
-                mom_val,
-                ma_val
-            ))
+            print(
+                "{:<25} {:>20.2f} {:>20.2f}".format(
+                    metric.replace("_", " ").title(), mom_val, ma_val
+                )
+            )
 
     print("=" * 80)
 
@@ -192,13 +194,9 @@ if __name__ == "__main__":
         "--strategy",
         choices=["momentum", "ma_crossover", "compare"],
         default="momentum",
-        help="Strategy to backtest"
+        help="Strategy to backtest",
     )
-    parser.add_argument(
-        "--save",
-        action="store_true",
-        help="Save equity curve to CSV"
-    )
+    parser.add_argument("--save", action="store_true", help="Save equity curve to CSV")
 
     args = parser.parse_args()
 
@@ -221,7 +219,7 @@ if __name__ == "__main__":
         compare_strategies()
 
     print("\n✅ Backtest complete!")
-    print(f"\nNext steps:")
+    print("\nNext steps:")
     print(f"1. Review order logs in {BASE_DIR / 'logs'} directory")
     print("2. Analyze equity curves")
     print("3. Tune strategy parameters")

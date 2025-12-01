@@ -96,7 +96,9 @@ class TradingPortfolio:
             if symbol in current_prices:
                 position.update_unrealized_pnl(current_prices[symbol])
 
-    def record_equity(self, timestamp: datetime, current_prices: dict[str, float]) -> None:
+    def record_equity(
+        self, timestamp: datetime, current_prices: dict[str, float]
+    ) -> None:
         """
         Record current portfolio value to equity curve.
 
@@ -164,6 +166,10 @@ class TradingPortfolio:
         """
         return sum(pos.unrealized_pnl for pos in self.positions.values())
 
+    # TODO: write ts
+    def log_metrics(self) -> None:
+        pass
+
     def get_performance_metrics(self) -> dict:
         """
         Calculate comprehensive performance metrics.
@@ -208,7 +214,11 @@ class TradingPortfolio:
                 losing_trades += 1
                 total_loss += position.realized_pnl
 
-        win_rate = (winning_trades / (winning_trades + losing_trades) * 100) if (winning_trades + losing_trades) > 0 else 0
+        win_rate = (
+            (winning_trades / (winning_trades + losing_trades) * 100)
+            if (winning_trades + losing_trades) > 0
+            else 0
+        )
         avg_win = total_win / winning_trades if winning_trades > 0 else 0
         avg_loss = total_loss / losing_trades if losing_trades > 0 else 0
 
@@ -217,18 +227,18 @@ class TradingPortfolio:
         current_dd = (self.high_water_mark - total_value) / self.high_water_mark * 100
 
         return {
-            'total_return': total_return,
-            'total_pnl': self.get_total_pnl(),
-            'realized_pnl': self.get_realized_pnl(),
-            'unrealized_pnl': self.get_unrealized_pnl(),
-            'num_trades': len(self.trades),
-            'winning_trades': winning_trades,
-            'losing_trades': losing_trades,
-            'win_rate': win_rate,
-            'avg_win': avg_win,
-            'avg_loss': avg_loss,
-            'max_drawdown': max_dd,
-            'current_drawdown': current_dd
+            "total_return": total_return,
+            "total_pnl": self.get_total_pnl(),
+            "realized_pnl": self.get_realized_pnl(),
+            "unrealized_pnl": self.get_unrealized_pnl(),
+            "num_trades": len(self.trades),
+            "winning_trades": winning_trades,
+            "losing_trades": losing_trades,
+            "win_rate": win_rate,
+            "avg_win": avg_win,
+            "avg_loss": avg_loss,
+            "max_drawdown": max_dd,
+            "current_drawdown": current_dd,
         }
 
     def _calculate_max_drawdown(self) -> float:
@@ -268,18 +278,18 @@ class TradingPortfolio:
             return 0.0
 
         # Convert to pandas series for easier calculation
-        df = pd.DataFrame(self.equity_curve, columns=['timestamp', 'value'])
-        df['returns'] = df['value'].pct_change()
+        df = pd.DataFrame(self.equity_curve, columns=["timestamp", "value"])
+        df["returns"] = df["value"].pct_change()
 
         # Calculate Sharpe
-        mean_return = df['returns'].mean()
-        std_return = df['returns'].std()
+        mean_return = df["returns"].mean()
+        std_return = df["returns"].std()
 
         if std_return == 0:
             return 0.0
 
         # Annualize (assuming daily data)
-        sharpe = (mean_return - risk_free_rate / 252) / std_return * (252 ** 0.5)
+        sharpe = (mean_return - risk_free_rate / 252) / std_return * (252**0.5)
         return sharpe
 
     def get_equity_curve_dataframe(self) -> pd.DataFrame:
@@ -289,7 +299,7 @@ class TradingPortfolio:
         Returns:
             DataFrame with columns: timestamp, value
         """
-        return pd.DataFrame(self.equity_curve, columns=['timestamp', 'value'])
+        return pd.DataFrame(self.equity_curve, columns=["timestamp", "value"])
 
     def reset(self) -> None:
         """Reset portfolio to initial state."""

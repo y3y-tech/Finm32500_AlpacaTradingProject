@@ -8,7 +8,7 @@ Shows how to:
 """
 
 from AlpacaTrading.trading import MatchingEngine, RiskManager, StopLossConfig, TradingPortfolio
-from AlpacaTrading.models import Order, OrderSide, OrderType, MarketDataPoint
+from AlpacaTrading.models import Order, OrderSide, OrderType
 from datetime import datetime
 
 
@@ -92,7 +92,7 @@ def example_transaction_costs():
         print(f"  Actual cost: ${actual_cost:,.2f}")
         print(f"  Total transaction costs: ${total_costs:.2f}")
         print(f"  Cost as % of trade: {(total_costs/theoretical_cost)*100:.3f}%")
-        print(f"  Note: Higher cost due to liquidity impact on larger order")
+        print("  Note: Higher cost due to liquidity impact on larger order")
 
     # Example 3: Market sell order (includes SEC fees)
     print("\n" + "-" * 60)
@@ -222,7 +222,7 @@ def example_stop_loss():
     risk_manager2.add_position_stop("TSLA", entry_price, quantity)
 
     print(f"\n  Entered long position: {quantity} shares @ ${entry_price}")
-    print(f"  Trailing stop: 3% below highest price")
+    print("  Trailing stop: 3% below highest price")
     print(f"  Initial stop: ${entry_price * 0.97:.2f}")
 
     position2 = Position(symbol="TSLA")
@@ -268,7 +268,7 @@ def example_stop_loss():
         {"TSLA": position2}
     )
     if exit_orders:
-        print(f"    TRAILING STOP TRIGGERED!")
+        print("    TRAILING STOP TRIGGERED!")
         print(f"    Locked in profit: ${(105 - entry_price) * quantity:.2f}")
 
     # Scenario 3: Circuit breaker
@@ -278,7 +278,7 @@ def example_stop_loss():
 
     portfolio_value = 95_000  # 5% loss from initial $100k
     print(f"\n  Portfolio value drops to ${portfolio_value:,} (-5.0%)")
-    print(f"  Circuit breaker threshold: 5%")
+    print("  Circuit breaker threshold: 5%")
 
     risk_manager3 = RiskManager(stop_config, initial_portfolio_value=100_000)
     exit_orders = risk_manager3.check_stops(
@@ -289,7 +289,7 @@ def example_stop_loss():
 
     print(f"  Circuit breaker: {'TRIGGERED!' if risk_manager3.circuit_breaker_triggered else 'Not triggered'}")
     if risk_manager3.circuit_breaker_triggered:
-        print(f"  All trading halted to prevent further losses")
+        print("  All trading halted to prevent further losses")
 
 
 def main():

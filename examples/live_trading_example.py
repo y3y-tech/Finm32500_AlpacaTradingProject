@@ -11,6 +11,7 @@ This example shows how to:
 IMPORTANT: This uses PAPER TRADING by default. Ensure your .env is configured correctly.
 """
 
+import logging
 import sys
 from pathlib import Path
 
@@ -18,8 +19,13 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
-
-from AlpacaTrading.live import AlpacaConfig, AlpacaTrader, LiveTradingEngine, LiveEngineConfig
+from AlpacaTrading import setup_logging
+from AlpacaTrading.live import (
+    AlpacaConfig,
+    AlpacaTrader,
+    LiveTradingEngine,
+    LiveEngineConfig,
+)
 from AlpacaTrading.strategies.momentum import MomentumStrategy
 from AlpacaTrading.trading import RiskConfig, StopLossConfig
 
@@ -49,10 +55,14 @@ def example_alpaca_connection():
         if positions:
             print(f"\n📦 Current Positions ({len(positions)}):")
             for pos in positions:
-                pnl = pos['unrealized_pl']
-                pnl_pct = pos['unrealized_plpc'] * 100
-                print(f"  {pos['symbol']}: {pos['quantity']} @ ${pos['avg_entry_price']:.2f}")
-                print(f"    Current: ${pos['current_price']:.2f} | P&L: ${pnl:+,.2f} ({pnl_pct:+.2f}%)")
+                pnl = pos["unrealized_pl"]
+                pnl_pct = pos["unrealized_plpc"] * 100
+                print(
+                    f"  {pos['symbol']}: {pos['quantity']} @ ${pos['avg_entry_price']:.2f}"
+                )
+                print(
+                    f"    Current: ${pos['current_price']:.2f} | P&L: ${pnl:+,.2f} ({pnl_pct:+.2f}%)"
+                )
         else:
             print("\n📦 No open positions")
 
@@ -61,7 +71,9 @@ def example_alpaca_connection():
         if orders:
             print(f"\n📋 Open Orders ({len(orders)}):")
             for order in orders:
-                print(f"  {order['side']} {order['qty']} {order['symbol']} @ {order['order_type']}")
+                print(
+                    f"  {order['side']} {order['qty']} {order['symbol']} @ {order['order_type']}"
+                )
         else:
             print("\n📋 No open orders")
 
@@ -97,7 +109,7 @@ def example_live_trading_dry_run():
             max_total_exposure=50_000,  # Max $50k total
             max_orders_per_minute=10,  # Max 10 orders/minute
             max_orders_per_symbol_per_minute=2,  # Max 2 orders/symbol/minute
-            min_cash_buffer=1000  # Keep $1k cash buffer
+            min_cash_buffer=1000,  # Keep $1k cash buffer
         )
 
         # Configure stop-loss
@@ -107,7 +119,7 @@ def example_live_trading_dry_run():
             portfolio_stop_pct=5.0,  # 5% portfolio circuit breaker
             max_drawdown_pct=10.0,  # 10% max drawdown
             use_trailing_stops=False,  # Use fixed stops for now
-            enable_circuit_breaker=True
+            enable_circuit_breaker=True,
         )
 
         # Create engine config
@@ -118,14 +130,14 @@ def example_live_trading_dry_run():
             enable_trading=False,  # DRY RUN - no actual orders
             enable_stop_loss=True,
             log_orders=True,
-            order_log_path="dry_run_orders.csv"
+            order_log_path="dry_run_orders.csv",
         )
 
         # Create strategy
         strategy = MomentumStrategy(
             lookback_period=20,
             momentum_threshold=0.02,  # 2% velocity threshold
-            max_position=3
+            max_position=3,
         )
 
         # Create engine
@@ -133,8 +145,8 @@ def example_live_trading_dry_run():
 
         # Run (blocking call - press Ctrl+C to stop)
         engine.run(
-            symbols=["AAPL", "MSFT", "GOOGL"],
-            data_type="trades"  # Use real-time trades
+            symbols=["BTC/USD"],
+            data_type="trades",  # Use real-time trades
         )
 
     except KeyboardInterrupt:
@@ -142,6 +154,7 @@ def example_live_trading_dry_run():
     except Exception as e:
         print(f"\n\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
 
 
@@ -176,7 +189,7 @@ def example_live_trading_paper():
             max_total_exposure=25_000,  # Max $25k total
             max_orders_per_minute=5,  # Max 5 orders/minute
             max_orders_per_symbol_per_minute=1,  # Max 1 order/symbol/minute
-            min_cash_buffer=5000  # Keep $5k buffer
+            min_cash_buffer=5000,  # Keep $5k buffer
         )
 
         # Configure stop-loss
@@ -186,7 +199,7 @@ def example_live_trading_paper():
             portfolio_stop_pct=3.0,  # 3% portfolio circuit breaker (conservative)
             max_drawdown_pct=5.0,  # 5% max drawdown (conservative)
             use_trailing_stops=False,
-            enable_circuit_breaker=True
+            enable_circuit_breaker=True,
         )
 
         # Create engine config
@@ -197,14 +210,14 @@ def example_live_trading_paper():
             enable_trading=True,  # REAL TRADING ENABLED
             enable_stop_loss=True,
             log_orders=True,
-            order_log_path="paper_trading_orders.csv"
+            order_log_path="paper_trading_orders.csv",
         )
 
         # Create strategy (conservative settings)
         strategy = MomentumStrategy(
             lookback_period=30,
             momentum_threshold=0.03,  # Higher threshold = fewer trades
-            max_positions=2  # Limit to 2 positions
+            max_position=2,  # Limit to 2 positions
         )
 
         # Create engine
@@ -213,7 +226,7 @@ def example_live_trading_paper():
         # Run (blocking call - press Ctrl+C to stop)
         engine.run(
             symbols=["AAPL", "MSFT"],  # Start with just 2 liquid stocks
-            data_type="trades"
+            data_type="trades",
         )
 
     except KeyboardInterrupt:
@@ -221,6 +234,7 @@ def example_live_trading_paper():
     except Exception as e:
         print(f"\n\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
 
 
@@ -264,6 +278,7 @@ Choose an example to run:
 if __name__ == "__main__":
     # Check if .env exists
     import os
+
     if not os.path.exists(".env"):
         print("❌ ERROR: .env file not found!")
         print("\nPlease create a .env file with your Alpaca credentials:")
@@ -271,5 +286,8 @@ if __name__ == "__main__":
         print("  # Then edit .env with your actual API keys")
         print("\nSee SETUP_CREDENTIALS.md for details.")
         exit(1)
+
+    # Configure logging (use DEBUG for verbose output)
+    setup_logging(level=logging.INFO)
 
     main()

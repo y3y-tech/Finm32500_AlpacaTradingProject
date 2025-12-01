@@ -67,13 +67,13 @@ def print_stats(stats, priority_open, ai_ready):
     print("="*60)
 
     # Overall stats
-    print(f"\n📊 Overall Status:")
+    print("\n📊 Overall Status:")
     print(f"  Total Issues: {stats['total']}")
     print(f"  ✓ Closed: {stats['closed']} ({stats['closed']/stats['total']*100:.1f}%)")
     print(f"  ○ Open: {stats['open']} ({stats['open']/stats['total']*100:.1f}%)")
 
     # Priority breakdown
-    print(f"\n🎯 By Priority:")
+    print("\n🎯 By Priority:")
     for priority in ['P0-critical', 'P1-high', 'P2-medium', 'P3-low', 'P4-reach']:
         total = stats['priority'][priority]
         open_count = len(priority_open.get(priority, []))
@@ -84,13 +84,13 @@ def print_stats(stats, priority_open, ai_ready):
             print(f"  {priority:15} {bar} {closed:2}/{total:2} ({completion:5.1f}%)")
 
     # Ownership breakdown
-    print(f"\n👥 By Ownership:")
+    print("\n👥 By Ownership:")
     for ownership, count in sorted(stats['ownership'].items()):
         emoji = '🤖' if 'ai' in ownership else '👤' if 'human' in ownership else '🤝'
         print(f"  {emoji} {ownership:20} {count:2}")
 
     # Theme breakdown
-    print(f"\n🏷️  By Theme:")
+    print("\n🏷️  By Theme:")
     for theme, count in sorted(stats['theme'].items(), key=lambda x: x[1], reverse=True):
         if count > 0:
             print(f"  {theme:20} {count:2}")
