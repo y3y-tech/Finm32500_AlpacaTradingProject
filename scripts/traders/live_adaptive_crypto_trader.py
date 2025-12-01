@@ -324,6 +324,13 @@ class LiveAdaptiveCryptoTrader:
                             f"Warmup: {min_bars}/{self.min_warmup_bars} bars "
                             f"(Total: {self.total_bars_received})"
                         )
+
+                        # Show per-symbol counts
+                        symbol_counts = ", ".join(
+                            f"{s.split('/')[0]}:{self.bar_count.get(s, 0)}"
+                            for s in LIQUID_CRYPTOS
+                        )
+                        logger.info(f"  Per-symbol: {symbol_counts}")
                 return
 
             # Trading is active - run strategy
