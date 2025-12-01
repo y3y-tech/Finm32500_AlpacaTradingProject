@@ -247,7 +247,7 @@ Examples:
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
 
     print(f"\n{'=' * 80}")
-    print(f"ADAPTIVE SECTOR ETF TRADER")
+    print("ADAPTIVE SECTOR ETF TRADER")
     print(f"{'=' * 80}")
     print(f"Initial capital:     ${args.initial_cash:,.2f}")
     print(f"Data file:           {args.data}")
@@ -296,11 +296,11 @@ Examples:
 
     # Print results
     print(f"\n{'=' * 80}")
-    print(f"FINAL RESULTS")
+    print("FINAL RESULTS")
     print(f"{'=' * 80}")
     print(f"Period:              {result.start_time} to {result.end_time}")
     print(f"Total ticks:         {result.total_ticks:,}")
-    print(f"\nPERFORMANCE:")
+    print("\nPERFORMANCE:")
     print(f"  Initial cash:      ${args.initial_cash:,.2f}")
     print(f"  Final equity:      ${result.portfolio.get_total_equity():,.2f}")
     print(f"  Total return:      {result.performance_metrics['total_return']:.2f}%")
@@ -309,7 +309,7 @@ Examples:
     print(f"  Sharpe ratio:      {result.performance_metrics['sharpe_ratio']:.2f}")
     print(f"  Win rate:          {result.performance_metrics['win_rate']:.2f}%")
     print(f"  Total trades:      {result.performance_metrics['total_trades']}")
-    print(f"\nOUTPUT FILES:")
+    print("\nOUTPUT FILES:")
     print(f"  Orders:            {args.output_dir}/orders.csv")
     print(f"  Equity curve:      {args.output_dir}/equity_curve.csv")
     print(f"  Trades:            {args.output_dir}/trades.csv")

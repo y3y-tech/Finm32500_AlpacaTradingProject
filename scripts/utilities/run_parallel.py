@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
-import logging
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -34,10 +33,14 @@ def run_single_backtest(args_tuple):
     Returns:
         Tuple of (config_name, result_summary)
     """
-    config_name, data_file, initial_cash, max_ticks, output_dir, asset_class = args_tuple
+    config_name, data_file, initial_cash, max_ticks, output_dir, asset_class = (
+        args_tuple
+    )
 
     try:
-        print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Starting backtest: {config_name}")
+        print(
+            f"\n[{datetime.now().strftime('%H:%M:%S')}] Starting backtest: {config_name}"
+        )
 
         # Run backtest
         result = run_backtest(
@@ -46,22 +49,24 @@ def run_single_backtest(args_tuple):
             initial_cash=initial_cash,
             max_ticks=max_ticks,
             output_dir=f"{output_dir}/{config_name}",
-            asset_class=asset_class
+            asset_class=asset_class,
         )
 
         # Extract summary
         summary = {
-            'config': config_name,
-            'total_return': result.performance_metrics['total_return'],
-            'total_pnl': result.performance_metrics['total_pnl'],
-            'sharpe_ratio': result.performance_metrics['sharpe_ratio'],
-            'max_drawdown': result.performance_metrics['max_drawdown'],
-            'win_rate': result.performance_metrics['win_rate'],
-            'total_trades': result.performance_metrics['total_trades'],
-            'final_equity': result.portfolio.get_total_equity()
+            "config": config_name,
+            "total_return": result.performance_metrics["total_return"],
+            "total_pnl": result.performance_metrics["total_pnl"],
+            "sharpe_ratio": result.performance_metrics["sharpe_ratio"],
+            "max_drawdown": result.performance_metrics["max_drawdown"],
+            "win_rate": result.performance_metrics["win_rate"],
+            "total_trades": result.performance_metrics["total_trades"],
+            "final_equity": result.portfolio.get_total_equity(),
         }
 
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Completed: {config_name} - Return: {summary['total_return']:.2f}%")
+        print(
+            f"[{datetime.now().strftime('%H:%M:%S')}] Completed: {config_name} - Return: {summary['total_return']:.2f}%"
+        )
 
         return config_name, summary, None
 
@@ -76,8 +81,8 @@ def run_parallel_backtests(
     initial_cash: float = 100_000,
     max_ticks: int | None = None,
     output_dir: str = "logs/parallel",
-    asset_class: str = 'equities',
-    max_workers: int | None = None
+    asset_class: str = "equities",
+    max_workers: int | None = None,
 ):
     """
     Run multiple backtests in parallel.
@@ -94,16 +99,16 @@ def run_parallel_backtests(
     Returns:
         Dictionary of {config_name: summary_dict}
     """
-    print(f"\n{'='*80}")
-    print(f"PARALLEL BACKTEST EXECUTION")
-    print(f"{'='*80}")
+    print(f"\n{'=' * 80}")
+    print("PARALLEL BACKTEST EXECUTION")
+    print(f"{'=' * 80}")
     print(f"Strategies: {', '.join(config_names)}")
     print(f"Data file: {data_file}")
     print(f"Initial cash: ${initial_cash:,.2f}")
     print(f"Max ticks: {max_ticks if max_ticks else 'All'}")
     print(f"Max workers: {max_workers if max_workers else 'Auto (CPU count)'}")
     print(f"Output dir: {output_dir}")
-    print(f"{'='*80}\n")
+    print(f"{'=' * 80}\n")
 
     # Prepare arguments for each backtest
     backtest_args = [
@@ -140,20 +145,20 @@ def run_parallel_backtests(
 
 def print_comparison(results: dict):
     """Print comparison table of results."""
-    print(f"\n{'='*80}")
-    print(f"STRATEGY COMPARISON")
-    print(f"{'='*80}\n")
+    print(f"\n{'=' * 80}")
+    print("STRATEGY COMPARISON")
+    print(f"{'=' * 80}\n")
 
     # Sort by total return
     sorted_results = sorted(
-        results.items(),
-        key=lambda x: x[1]['total_return'],
-        reverse=True
+        results.items(), key=lambda x: x[1]["total_return"], reverse=True
     )
 
     # Print table header
-    print(f"{'Strategy':<25} {'Return':>10} {'P&L':>12} {'Sharpe':>8} {'MaxDD':>8} {'Win%':>7} {'Trades':>8}")
-    print(f"{'-'*25} {'-'*10} {'-'*12} {'-'*8} {'-'*8} {'-'*7} {'-'*8}")
+    print(
+        f"{'Strategy':<25} {'Return':>10} {'P&L':>12} {'Sharpe':>8} {'MaxDD':>8} {'Win%':>7} {'Trades':>8}"
+    )
+    print(f"{'-' * 25} {'-' * 10} {'-' * 12} {'-' * 8} {'-' * 8} {'-' * 7} {'-' * 8}")
 
     # Print each strategy
     for config_name, summary in sorted_results:
@@ -167,23 +172,26 @@ def print_comparison(results: dict):
             f"{summary['total_trades']:>8}"
         )
 
-    print(f"\n{'='*80}\n")
+    print(f"\n{'=' * 80}\n")
 
     # Save to CSV
     import pandas as pd
-    df = pd.DataFrame([
-        {
-            'Strategy': name,
-            'Total Return (%)': s['total_return'],
-            'Total P&L ($)': s['total_pnl'],
-            'Sharpe Ratio': s['sharpe_ratio'],
-            'Max Drawdown (%)': s['max_drawdown'],
-            'Win Rate (%)': s['win_rate'],
-            'Total Trades': s['total_trades'],
-            'Final Equity ($)': s['final_equity']
-        }
-        for name, s in sorted_results
-    ])
+
+    df = pd.DataFrame(
+        [
+            {
+                "Strategy": name,
+                "Total Return (%)": s["total_return"],
+                "Total P&L ($)": s["total_pnl"],
+                "Sharpe Ratio": s["sharpe_ratio"],
+                "Max Drawdown (%)": s["max_drawdown"],
+                "Win Rate (%)": s["win_rate"],
+                "Total Trades": s["total_trades"],
+                "Final Equity ($)": s["final_equity"],
+            }
+            for name, s in sorted_results
+        ]
+    )
 
     csv_path = "logs/parallel/strategy_comparison.csv"
     df.to_csv(csv_path, index=False)
@@ -192,7 +200,7 @@ def print_comparison(results: dict):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Run multiple strategy backtests in parallel',
+        description="Run multiple strategy backtests in parallel",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -207,30 +215,49 @@ Examples:
 
   # Limit parallel workers
   python scripts/run_parallel.py --data data/equities/5min_bars.csv --all-equities --max-workers 4
-        """
+        """,
     )
 
-    parser.add_argument('--data', type=str, required=True, help='Path to market data CSV file')
-    parser.add_argument('--configs', nargs='+', help='Specific strategy configurations to run')
-    parser.add_argument('--all-equities', action='store_true', help='Run all equity strategies')
-    parser.add_argument('--all-crypto', action='store_true', help='Run all crypto strategies')
-    parser.add_argument('--initial-cash', type=float, default=100_000, help='Initial capital (default: 100,000)')
-    parser.add_argument('--max-ticks', type=int, help='Maximum ticks to process (optional)')
-    parser.add_argument('--output-dir', type=str, default='logs/parallel', help='Output directory')
-    parser.add_argument('--max-workers', type=int, help='Maximum parallel workers (default: CPU count)')
+    parser.add_argument(
+        "--data", type=str, required=True, help="Path to market data CSV file"
+    )
+    parser.add_argument(
+        "--configs", nargs="+", help="Specific strategy configurations to run"
+    )
+    parser.add_argument(
+        "--all-equities", action="store_true", help="Run all equity strategies"
+    )
+    parser.add_argument(
+        "--all-crypto", action="store_true", help="Run all crypto strategies"
+    )
+    parser.add_argument(
+        "--initial-cash",
+        type=float,
+        default=100_000,
+        help="Initial capital (default: 100,000)",
+    )
+    parser.add_argument(
+        "--max-ticks", type=int, help="Maximum ticks to process (optional)"
+    )
+    parser.add_argument(
+        "--output-dir", type=str, default="logs/parallel", help="Output directory"
+    )
+    parser.add_argument(
+        "--max-workers", type=int, help="Maximum parallel workers (default: CPU count)"
+    )
 
     args = parser.parse_args()
 
     # Determine which configs to run
     if args.all_equities:
         config_names = list(STRATEGY_CONFIGS.keys())
-        asset_class = 'equities'
+        asset_class = "equities"
     elif args.all_crypto:
         config_names = list(CRYPTO_CONFIGS.keys())
-        asset_class = 'crypto'
+        asset_class = "crypto"
     elif args.configs:
         config_names = args.configs
-        asset_class = 'equities'  # Default, will be detected from config
+        asset_class = "equities"  # Default, will be detected from config
     else:
         parser.error("Must specify --configs, --all-equities, or --all-crypto")
 
@@ -248,7 +275,7 @@ Examples:
             max_ticks=args.max_ticks,
             output_dir=args.output_dir,
             asset_class=asset_class,
-            max_workers=args.max_workers
+            max_workers=args.max_workers,
         )
 
         # Print comparison
@@ -268,6 +295,7 @@ Examples:
     except Exception as e:
         print(f"\nError: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

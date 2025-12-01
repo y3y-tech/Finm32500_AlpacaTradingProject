@@ -31,8 +31,8 @@ def setup_logging(log_file: str | None = None):
 
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=handlers
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=handlers,
     )
 
 
@@ -42,7 +42,7 @@ def run_backtest(
     initial_cash: float = 100_000,
     max_ticks: int | None = None,
     output_dir: str = "logs",
-    asset_class: str = 'equities'
+    asset_class: str = "equities",
 ):
     """
     Run backtest with specified configuration.
@@ -61,9 +61,9 @@ def run_backtest(
     # Get configuration
     config = get_config(config_name, asset_class)
 
-    print(f"\n{'='*80}")
-    print(f"BACKTEST CONFIGURATION")
-    print(f"{'='*80}")
+    print(f"\n{'=' * 80}")
+    print("BACKTEST CONFIGURATION")
+    print(f"{'=' * 80}")
     print(f"Strategy: {config_name}")
     print(f"Description: {config['description']}")
     print(f"Strategy params: {config['strategy']}")
@@ -71,7 +71,7 @@ def run_backtest(
     print(f"Initial cash: ${initial_cash:,.2f}")
     print(f"Data file: {data_file}")
     print(f"Max ticks: {max_ticks if max_ticks else 'All'}")
-    print(f"{'='*80}\n")
+    print(f"{'=' * 80}\n")
 
     # Setup data gateway
     data_gateway = DataGateway(data_file)
@@ -83,11 +83,11 @@ def run_backtest(
     # Create backtest engine
     engine = BacktestEngine(
         data_gateway=data_gateway,
-        strategy=config['strategy'],
+        strategy=config["strategy"],
         initial_cash=initial_cash,
-        risk_config=config['risk_config'],
+        risk_config=config["risk_config"],
         order_log_file=order_log_file,
-        record_equity_frequency=100
+        record_equity_frequency=100,
     )
 
     # Run backtest
@@ -95,41 +95,49 @@ def run_backtest(
     result = engine.run(max_ticks=max_ticks)
 
     # Print results
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"BACKTEST RESULTS - {config_name}")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
     print(f"Period: {result.start_time} to {result.end_time}")
     print(f"Total ticks processed: {result.total_ticks:,}")
-    print(f"\nFINANCIAL METRICS:")
+    print("\nFINANCIAL METRICS:")
     print(f"  Initial cash:        ${initial_cash:,.2f}")
     print(f"  Final equity:        ${result.portfolio.get_total_equity():,.2f}")
     print(f"  Total return:        {result.performance_metrics['total_return']:.2f}%")
     print(f"  Total P&L:           ${result.performance_metrics['total_pnl']:,.2f}")
     print(f"  Max drawdown:        {result.performance_metrics['max_drawdown']:.2f}%")
     print(f"  Sharpe ratio:        {result.performance_metrics['sharpe_ratio']:.2f}")
-    print(f"\nTRADING METRICS:")
+    print("\nTRADING METRICS:")
     print(f"  Total trades:        {result.performance_metrics['total_trades']}")
     print(f"  Win rate:            {result.performance_metrics['win_rate']:.2f}%")
-    print(f"  Avg trade P&L:       ${result.performance_metrics.get('avg_trade_pnl', 0):,.2f}")
+    print(
+        f"  Avg trade P&L:       ${result.performance_metrics.get('avg_trade_pnl', 0):,.2f}"
+    )
 
-    print(f"\nOUTPUT FILES:")
+    print("\nOUTPUT FILES:")
     print(f"  Order log:           {result.order_log_path}")
     print(f"  Equity curve:        {output_dir}/{config_name}_equity.csv")
-    print(f"  Trades:              {output_dir}/{config_name}_trades.csv}")
-    print(f"{'='*80}\n")
+    print(f"  Trades:              {output_dir}/{config_name}_trades.csv")
+    print(f"{'=' * 80}\n")
 
     # Save results
     result.equity_curve.to_csv(f"{output_dir}/{config_name}_equity.csv", index=False)
 
     import pandas as pd
-    trades_df = pd.DataFrame([{
-        'timestamp': t.timestamp,
-        'symbol': t.symbol,
-        'side': t.side.value,
-        'quantity': t.quantity,
-        'price': t.price,
-        'value': t.value
-    } for t in result.trades])
+
+    trades_df = pd.DataFrame(
+        [
+            {
+                "timestamp": t.timestamp,
+                "symbol": t.symbol,
+                "side": t.side.value,
+                "quantity": t.quantity,
+                "price": t.price,
+                "value": t.value,
+            }
+            for t in result.trades
+        ]
+    )
     trades_df.to_csv(f"{output_dir}/{config_name}_trades.csv", index=False)
 
     return result
@@ -137,7 +145,7 @@ def run_backtest(
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Run trading strategy backtest',
+        description="Run trading strategy backtest",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -155,17 +163,37 @@ Examples:
 
   # Run crypto strategy
   python scripts/run_strategy.py --config btc_momentum --data data/crypto/1min_bars.csv --asset-class crypto
-        """
+        """,
     )
 
-    parser.add_argument('--config', type=str, help='Strategy configuration name')
-    parser.add_argument('--data', type=str, help='Path to market data CSV file')
-    parser.add_argument('--initial-cash', type=float, default=100_000, help='Initial capital (default: 100,000)')
-    parser.add_argument('--max-ticks', type=int, help='Maximum ticks to process (optional)')
-    parser.add_argument('--output-dir', type=str, default='logs', help='Output directory (default: logs)')
-    parser.add_argument('--log-file', type=str, help='Log file path (optional)')
-    parser.add_argument('--asset-class', type=str, default='equities', choices=['equities', 'crypto'], help='Asset class')
-    parser.add_argument('--list', action='store_true', help='List available configurations')
+    parser.add_argument("--config", type=str, help="Strategy configuration name")
+    parser.add_argument("--data", type=str, help="Path to market data CSV file")
+    parser.add_argument(
+        "--initial-cash",
+        type=float,
+        default=100_000,
+        help="Initial capital (default: 100,000)",
+    )
+    parser.add_argument(
+        "--max-ticks", type=int, help="Maximum ticks to process (optional)"
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="logs",
+        help="Output directory (default: logs)",
+    )
+    parser.add_argument("--log-file", type=str, help="Log file path (optional)")
+    parser.add_argument(
+        "--asset-class",
+        type=str,
+        default="equities",
+        choices=["equities", "crypto"],
+        help="Asset class",
+    )
+    parser.add_argument(
+        "--list", action="store_true", help="List available configurations"
+    )
 
     args = parser.parse_args()
 
@@ -175,9 +203,9 @@ Examples:
     # List configs if requested
     if args.list:
         print("\nEQUITIES STRATEGIES:")
-        list_configs('equities')
+        list_configs("equities")
         print("\nCRYPTO STRATEGIES:")
-        list_configs('crypto')
+        list_configs("crypto")
         return
 
     # Validate required arguments
@@ -200,11 +228,12 @@ Examples:
             initial_cash=args.initial_cash,
             max_ticks=args.max_ticks,
             output_dir=args.output_dir,
-            asset_class=args.asset_class
+            asset_class=args.asset_class,
         )
     except Exception as e:
         print(f"\nError running backtest: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 
