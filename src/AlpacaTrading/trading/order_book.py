@@ -10,9 +10,12 @@ Implements a realistic order book with:
 
 import heapq
 from datetime import datetime
+import logging
 import uuid
 
 from AlpacaTrading.models import Order, Trade, OrderSide, OrderStatus, OrderType
+
+logger = logging.getLogger(__name__)
 
 
 class OrderBook:

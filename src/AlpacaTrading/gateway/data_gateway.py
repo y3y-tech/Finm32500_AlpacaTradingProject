@@ -6,11 +6,14 @@ Supports CSV files with configurable replay speed and multi-symbol streaming.
 
 import csv
 from datetime import datetime
+import logging
 from pathlib import Path
 from typing import Iterator
 import pandas as pd
 
 from AlpacaTrading.models import MarketDataPoint
+
+logger = logging.getLogger(__name__)
 
 
 class DataGateway:

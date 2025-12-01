@@ -1,8 +1,11 @@
 from dataclasses import dataclass, field
 import datetime
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 import uuid
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================

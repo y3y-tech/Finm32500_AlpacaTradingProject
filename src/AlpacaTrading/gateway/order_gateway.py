@@ -6,9 +6,12 @@ Tracks order submission, modifications, fills, and cancellations.
 
 import csv
 from datetime import datetime
+import logging
 from pathlib import Path
 
 from AlpacaTrading.models import Order, Trade
+
+logger = logging.getLogger(__name__)
 
 
 class OrderGateway:

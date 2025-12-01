@@ -10,8 +10,11 @@ Provides multiple types of stop-loss protection:
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+import logging
 
 from AlpacaTrading.models import Order, OrderSide, OrderType, Position
+
+logger = logging.getLogger(__name__)
 
 
 class StopType(Enum):

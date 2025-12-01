@@ -5,9 +5,12 @@ Maintains complete state of portfolio with P&L calculation and equity curve trac
 """
 
 from datetime import datetime
+import logging
 import pandas as pd
 
 from AlpacaTrading.models import Trade, Position, OrderSide
+
+logger = logging.getLogger(__name__)
 
 
 class TradingPortfolio:

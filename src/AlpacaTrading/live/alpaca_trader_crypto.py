@@ -17,6 +17,7 @@ import os
 import asyncio
 from dataclasses import dataclass
 from datetime import datetime
+import logging
 from typing import Callable
 from dotenv import load_dotenv
 
@@ -32,6 +33,8 @@ from alpaca.data.models import Trade, Quote, Bar
 from alpaca.data.enums import CryptoFeed
 
 from AlpacaTrading.models import Order, OrderType, OrderSide, OrderStatus, MarketDataPoint
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass

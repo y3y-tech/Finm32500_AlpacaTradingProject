@@ -10,8 +10,11 @@ Checks:
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from collections import deque
+import logging
 
 from AlpacaTrading.models import Order, OrderSide, Position
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass

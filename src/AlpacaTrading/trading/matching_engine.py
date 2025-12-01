@@ -8,11 +8,14 @@ Implements probabilistic fill simulation with:
 - Market impact/slippage
 """
 
+import logging
 import random
 import uuid
 from datetime import datetime
 
 from AlpacaTrading.models import Order, Trade, OrderSide, OrderType, OrderStatus
+
+logger = logging.getLogger(__name__)
 
 
 class MatchingEngine:

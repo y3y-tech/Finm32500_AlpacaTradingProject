@@ -6,6 +6,7 @@ Provides centralized logging setup for consistent log formatting across all modu
 
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
 
 
@@ -14,17 +15,20 @@ def setup_logging(
     log_file: str | Path | None = None,
     format_string: str | None = None,
     datefmt: str = "%Y-%m-%d %H:%M:%S",
+    console_output: bool = True,
 ) -> logging.Logger:
     """
     Configure logging for the AlpacaTrading package.
 
     Call this once at application startup to enable logging output.
+    By default, logs are written to both console and timestamped files in logs/ directory.
 
     Args:
         level: Logging level (e.g., logging.DEBUG, logging.INFO, "DEBUG", "INFO")
-        log_file: Optional path to write logs to file (in addition to console)
+        log_file: Optional path to write logs to file. If None, creates timestamped file in logs/
         format_string: Custom format string (uses sensible default if None)
         datefmt: Date format for timestamps
+        console_output: Whether to also output logs to console (default: True)
 
     Returns:
         The root logger for the AlpacaTrading package
@@ -32,14 +36,14 @@ def setup_logging(
     Example:
         from AlpacaTrading import setup_logging
 
-        # Basic setup - INFO level to console
+        # Basic setup - INFO level to console and timestamped file
         setup_logging()
 
-        # Debug level with file output
-        setup_logging(level=logging.DEBUG, log_file="trading.log")
+        # Debug level with custom file name
+        setup_logging(level=logging.DEBUG, log_file="logs/my_custom_log.log")
 
-        # Custom format
-        setup_logging(format_string="%(levelname)s: %(message)s")
+        # File only (no console output)
+        setup_logging(console_output=False)
     """
     # Convert string level to int if needed
     if isinstance(level, str):
@@ -59,23 +63,36 @@ def setup_logging(
     # Create formatter
     formatter = logging.Formatter(format_string, datefmt=datefmt)
 
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(level)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    # Console handler (optional)
+    if console_output:
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(level)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
 
-    # File handler (optional)
-    if log_file is not None:
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setLevel(level)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+    # File handler - always enabled with timestamped filename
+    if log_file is None:
+        # Create logs directory if it doesn't exist
+        log_dir = Path("logs")
+        log_dir.mkdir(exist_ok=True)
+
+        # Generate timestamped filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_file = log_dir / f"alpaca_trading_{timestamp}.log"
+    else:
+        log_file = Path(log_file)
+        # Ensure parent directory exists
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+
+    file_handler = logging.FileHandler(log_file, mode='a')  # Append mode
+    file_handler.setLevel(level)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
     # Prevent propagation to root logger (avoid duplicate logs)
     logger.propagate = False
 
-    logger.debug(f"Logging configured: level={logging.getLevelName(level)}, file={log_file}")
+    logger.info(f"Logging configured: level={logging.getLevelName(level)}, file={log_file}")
 
     return logger
 
