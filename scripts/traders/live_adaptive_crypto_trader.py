@@ -61,16 +61,31 @@ from AlpacaTrading.trading.portfolio import TradingPortfolio
 # Top 10 most liquid cryptocurrencies on Alpaca
 # Using USD pairs for simplicity
 LIQUID_CRYPTOS = [
-    "BTC/USD",  # Bitcoin
-    "ETH/USD",  # Ethereum
-    "SOL/USD",  # Solana
-    "XRP/USD",  # Ripple
-    "ADA/USD",  # Cardano
-    "AVAX/USD",  # Avalanche
-    "DOGE/USD",  # Dogecoin
-    "MATIC/USD",  # Polygon
-    "DOT/USD",  # Polkadot
-    "LTC/USD",  # Litecoin
+    "AAVE/USD",
+    "AVAX/USD",
+    "BAT/USD",
+    "BCH/USD",
+    "BTC/USD",
+    "CRV/USD",
+    "DOGE/USD",
+    "DOT/USD",
+    "ETH/USD",
+    "GRT/USD",
+    "LINK/USD",
+    "LTC/USD",
+    "PEPE/USD",
+    "SHIB/USD",
+    "SKY/USD",
+    "SOL/USD",
+    "SUSHI/USD",
+    "TRUMP/USD",
+    "UNI/USD",
+    "USDC/USD",
+    "USDG/USD",
+    "USDT/USD",
+    "XRP/USD",
+    "XTZ/USD",
+    "YFI/USD",
 ]
 
 logger = logging.getLogger(__name__)
@@ -317,9 +332,7 @@ class LiveAdaptiveCryptoTrader:
                 else:
                     # Log warmup progress every 10 bars
                     if self.total_bars_received % 10 == 0:
-                        min_bars = min(
-                            self.bar_count.get(s, 0) for s in LIQUID_CRYPTOS
-                        )
+                        min_bars = min(self.bar_count.get(s, 0) for s in LIQUID_CRYPTOS)
                         logger.info(
                             f"Warmup: {min_bars}/{self.min_warmup_bars} bars "
                             f"(Total: {self.total_bars_received})"
