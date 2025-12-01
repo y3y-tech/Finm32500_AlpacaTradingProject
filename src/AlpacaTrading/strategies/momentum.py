@@ -5,10 +5,13 @@ Buys when price momentum is positive and strong, sells when negative.
 """
 
 from collections import deque
+import logging
 
 from AlpacaTrading.models import MarketDataPoint, Order, OrderSide, OrderType
 from AlpacaTrading.trading.portfolio import TradingPortfolio
 from .base import TradingStrategy
+
+logger = logging.getLogger(__name__)
 
 
 class MomentumStrategy(TradingStrategy):
@@ -36,6 +39,17 @@ class MomentumStrategy(TradingStrategy):
         max_position: int = 100
     ):
         super().__init__("MomentumStrategy")
+
+        # Parameter validation
+        if lookback_period <= 0:
+            raise ValueError(f"lookback_period must be positive, got {lookback_period}")
+        if momentum_threshold < 0:
+            raise ValueError(f"momentum_threshold must be non-negative, got {momentum_threshold}")
+        if position_size <= 0:
+            raise ValueError(f"position_size must be positive, got {position_size}")
+        if max_position <= 0:
+            raise ValueError(f"max_position must be positive, got {max_position}")
+
         self.lookback_period = lookback_period
         self.momentum_threshold = momentum_threshold
         self.position_size = position_size
@@ -55,9 +69,15 @@ class MomentumStrategy(TradingStrategy):
         Returns:
             List of orders (buy/sell based on momentum)
         """
+        # Validate tick price
+        if tick.price <= 0:
+            logger.warning(f"Invalid price {tick.price} for {tick.symbol}, skipping tick")
+            return []
+
         # Initialize price history for new symbol
         if tick.symbol not in self.price_history:
             self.price_history[tick.symbol] = deque(maxlen=self.lookback_period)
+            logger.info(f"Initialized momentum tracking for {tick.symbol}")
 
         # Update price history
         self.price_history[tick.symbol].append(tick.price)
@@ -67,8 +87,17 @@ class MomentumStrategy(TradingStrategy):
             return []
 
         # Calculate momentum (percentage change over lookback period)
-        prices = list(self.price_history[tick.symbol])
-        momentum = (prices[-1] - prices[0]) / prices[0]
+        # Use direct deque access for performance (avoid list conversion)
+        price_deque = self.price_history[tick.symbol]
+        first_price = price_deque[0]
+        last_price = price_deque[-1]
+
+        # Protect against division by zero
+        if first_price == 0:
+            logger.warning(f"First price is zero for {tick.symbol}, cannot calculate momentum")
+            return []
+
+        momentum = (last_price - first_price) / first_price
 
         # Get current position
         position = portfolio.get_position(tick.symbol)
@@ -80,14 +109,21 @@ class MomentumStrategy(TradingStrategy):
         if momentum > self.momentum_threshold:
             # Only buy if not already long or below max position
             if current_qty < self.max_position:
-                # Calculate quantity based on position size
-                target_value = self.position_size
+                # Calculate incremental position size (fix: account for existing position)
+                current_value = current_qty * tick.price
+                remaining_value = max(0, self.position_size - current_value)
+
+                # Calculate shares to buy
                 quantity = min(
-                    int(target_value / tick.price),
+                    int(remaining_value / tick.price),
                     self.max_position - current_qty
                 )
 
                 if quantity > 0:
+                    logger.info(
+                        f"BUY signal for {tick.symbol}: momentum={momentum:.4f}, "
+                        f"quantity={quantity}, current_qty={current_qty}"
+                    )
                     orders.append(Order(
                         symbol=tick.symbol,
                         side=OrderSide.BUY,
@@ -99,6 +135,10 @@ class MomentumStrategy(TradingStrategy):
         elif momentum < -self.momentum_threshold:
             # Only sell if we have a position
             if current_qty > 0:
+                logger.info(
+                    f"SELL signal for {tick.symbol}: momentum={momentum:.4f}, "
+                    f"quantity={current_qty}"
+                )
                 # Sell entire position
                 orders.append(Order(
                     symbol=tick.symbol,

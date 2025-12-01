@@ -12,6 +12,7 @@ Integrates all components:
 
 from dataclasses import dataclass
 from datetime import datetime
+import logging
 import pandas as pd
 
 from AlpacaTrading.models import MarketDataPoint, Order, Trade, OrderType
@@ -20,6 +21,8 @@ from AlpacaTrading.gateway.order_gateway import OrderGateway
 from AlpacaTrading.trading.order_manager import OrderManager, RiskConfig
 from AlpacaTrading.trading.matching_engine import MatchingEngine
 from AlpacaTrading.trading.portfolio import TradingPortfolio
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -139,9 +142,9 @@ class BacktestEngine:
             BacktestResult with complete performance data
         """
         start_time = datetime.now()
-        print(f"Starting backtest at {start_time}")
-        print(f"Initial capital: ${self.initial_cash:,.2f}")
-        print("-" * 60)
+        logger.info(f"Starting backtest at {start_time}")
+        logger.info(f"Initial capital: ${self.initial_cash:,.2f}")
+        logger.info("-" * 60)
 
         # Main simulation loop
         for tick in self.data_gateway.stream():
@@ -151,8 +154,8 @@ class BacktestEngine:
             self.portfolio.update_prices(self.current_prices)
             self.tick_count += 1
 
-            # Strategy generates orders
-            orders = self.strategy.on_market_data(tick, self.portfolio)
+            # Strategy generates orders (with error handling wrapper)
+            orders = self.strategy.process_market_data(tick, self.portfolio)
 
             # Process each order
             for order in orders:
@@ -168,7 +171,7 @@ class BacktestEngine:
 
             # Check max ticks limit
             if max_ticks and self.tick_count >= max_ticks:
-                print(f"\nReached max_ticks limit: {max_ticks}")
+                logger.info(f"Reached max_ticks limit: {max_ticks}")
                 break
 
         # Final equity recording
@@ -179,13 +182,13 @@ class BacktestEngine:
         duration = (end_time - start_time).total_seconds()
 
         # Generate results
-        print("\n" + "=" * 60)
-        print("Backtest Complete!")
-        print(f"Duration: {duration:.2f}s")
-        print(f"Ticks processed: {self.tick_count:,}")
-        print(f"Orders submitted: {self.orders_submitted}")
-        print(f"Orders rejected: {self.orders_rejected}")
-        print("=" * 60)
+        logger.info("=" * 60)
+        logger.info("Backtest Complete!")
+        logger.info(f"Duration: {duration:.2f}s")
+        logger.info(f"Ticks processed: {self.tick_count:,}")
+        logger.info(f"Orders submitted: {self.orders_submitted}")
+        logger.info(f"Orders rejected: {self.orders_rejected}")
+        logger.info("=" * 60)
 
         result = self._generate_result(start_time, end_time)
         self._print_summary(result)
@@ -249,12 +252,12 @@ class BacktestEngine:
             self.order_gateway.log_order_cancelled(order, "Simulation cancelled")
 
     def _print_progress(self) -> None:
-        """Print progress update."""
+        """Log progress update."""
         total_value = self.portfolio.get_total_value()
         pnl = total_value - self.initial_cash
         pnl_pct = (pnl / self.initial_cash) * 100
 
-        print(
+        logger.info(
             f"Tick {self.tick_count:,} | "
             f"Value: ${total_value:,.2f} | "
             f"P&L: ${pnl:,.2f} ({pnl_pct:+.2f}%) | "
@@ -284,29 +287,29 @@ class BacktestEngine:
         )
 
     def _print_summary(self, result: BacktestResult) -> None:
-        """Print performance summary."""
+        """Log performance summary."""
         metrics = result.performance_metrics
 
-        print("\n" + "=" * 60)
-        print("PERFORMANCE SUMMARY")
-        print("=" * 60)
-        print(f"Initial Capital:    ${self.initial_cash:,.2f}")
-        print(f"Final Value:        ${self.portfolio.get_total_value():,.2f}")
-        print(f"Total Return:       {metrics['total_return']:+.2f}%")
-        print(f"Total P&L:          ${metrics['total_pnl']:+,.2f}")
-        print(f"  Realized:         ${metrics['realized_pnl']:+,.2f}")
-        print(f"  Unrealized:       ${metrics['unrealized_pnl']:+,.2f}")
-        print()
-        print(f"Total Trades:       {metrics['num_trades']}")
-        print(f"Winning Trades:     {metrics['winning_trades']}")
-        print(f"Losing Trades:      {metrics['losing_trades']}")
-        print(f"Win Rate:           {metrics['win_rate']:.2f}%")
+        logger.info("=" * 60)
+        logger.info("PERFORMANCE SUMMARY")
+        logger.info("=" * 60)
+        logger.info(f"Initial Capital:    ${self.initial_cash:,.2f}")
+        logger.info(f"Final Value:        ${self.portfolio.get_total_value():,.2f}")
+        logger.info(f"Total Return:       {metrics['total_return']:+.2f}%")
+        logger.info(f"Total P&L:          ${metrics['total_pnl']:+,.2f}")
+        logger.info(f"  Realized:         ${metrics['realized_pnl']:+,.2f}")
+        logger.info(f"  Unrealized:       ${metrics['unrealized_pnl']:+,.2f}")
+        logger.info("")
+        logger.info(f"Total Trades:       {metrics['num_trades']}")
+        logger.info(f"Winning Trades:     {metrics['winning_trades']}")
+        logger.info(f"Losing Trades:      {metrics['losing_trades']}")
+        logger.info(f"Win Rate:           {metrics['win_rate']:.2f}%")
         if metrics['avg_win'] > 0:
-            print(f"Avg Win:            ${metrics['avg_win']:,.2f}")
+            logger.info(f"Avg Win:            ${metrics['avg_win']:,.2f}")
         if metrics['avg_loss'] != 0:
-            print(f"Avg Loss:           ${metrics['avg_loss']:,.2f}")
-        print()
-        print(f"Max Drawdown:       {metrics['max_drawdown']:.2f}%")
-        print(f"Sharpe Ratio:       {metrics['sharpe_ratio']:.2f}")
-        print("=" * 60)
-        print(f"\nOrder log saved to: {result.order_log_path}")
+            logger.info(f"Avg Loss:           ${metrics['avg_loss']:,.2f}")
+        logger.info("")
+        logger.info(f"Max Drawdown:       {metrics['max_drawdown']:.2f}%")
+        logger.info(f"Sharpe Ratio:       {metrics['sharpe_ratio']:.2f}")
+        logger.info("=" * 60)
+        logger.info(f"Order log saved to: {result.order_log_path}")

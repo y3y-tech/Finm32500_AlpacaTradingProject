@@ -159,8 +159,8 @@ class LiveTradingEngine:
                     logger.info("\n🛑 CIRCUIT BREAKER ACTIVE - Trading halted")
                 return
 
-            # Pass to strategy for signal generation
-            orders = self.strategy.on_market_data(tick, self.portfolio)
+            # Pass to strategy for signal generation (with error handling wrapper)
+            orders = self.strategy.process_market_data(tick, self.portfolio)
 
             if not orders:
                 return

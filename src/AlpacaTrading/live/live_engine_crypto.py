@@ -5,6 +5,7 @@ Integrates strategy execution, risk management, and order execution for live tra
 Supports both US Equities and Cryptocurrencies.
 """
 
+import logging
 import time
 import signal
 from datetime import datetime
@@ -22,6 +23,8 @@ from AlpacaTrading.trading import (
 from AlpacaTrading.gateway.order_gateway import OrderGateway
 # UPDATED: Import from alpaca_trader_crypto to support both asset classes
 from AlpacaTrading.live.alpaca_trader_crypto import AlpacaTrader, AlpacaConfig
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -133,7 +136,7 @@ class LiveTradingEngine:
 
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals gracefully."""
-        print(f"\n\nReceived signal {signum}. Shutting down gracefully...")
+        logger.warning(f"Received signal {signum}. Shutting down gracefully...")
         self.stop()
 
     def _on_market_data(self, tick: MarketDataPoint) -> None:
@@ -144,7 +147,7 @@ class LiveTradingEngine:
             tick: Market data point from Alpaca
         """
         # --- ADD THIS LINE FOR DEBUGGING ---
-        print(f"TICK RECEIVED: {tick.symbol} @ {tick.price}") 
+        logger.debug(f"TICK RECEIVED: {tick.symbol} @ {tick.price}") 
         # -----------------------------------
         try:
             # Update current prices
@@ -163,17 +166,17 @@ class LiveTradingEngine:
 
                 # Execute stop-loss orders immediately
                 for order in stop_orders:
-                    print(f"\n⚠️  STOP-LOSS TRIGGERED for {order.symbol}")
+                    logger.warning(f"STOP-LOSS TRIGGERED for {order.symbol}")
                     self._execute_order(order, tick.timestamp, is_stop=True)
 
             # If circuit breaker triggered, don't generate new signals
             if self.risk_manager.circuit_breaker_triggered:
                 if self.tick_count % 100 == 0:  # Print reminder periodically
-                    print("\n🛑 CIRCUIT BREAKER ACTIVE - Trading halted")
+                    logger.critical("CIRCUIT BREAKER ACTIVE - Trading halted")
                 return
 
-            # Pass to strategy for signal generation
-            orders = self.strategy.on_market_data(tick, self.portfolio)
+            # Pass to strategy for signal generation (with error handling wrapper)
+            orders = self.strategy.process_market_data(tick, self.portfolio)
 
             if not orders:
                 return
@@ -189,9 +192,7 @@ class LiveTradingEngine:
                 self._print_status()
 
         except Exception as e:
-            print(f"\n❌ Error processing market data: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.exception(f"Error processing market data: {e}")
 
     def _execute_order(
         self,
@@ -218,7 +219,7 @@ class LiveTradingEngine:
                 )
 
                 if not is_valid:
-                    print(f"\n⛔ Order REJECTED: {reason}")
+                    logger.warning(f"Order REJECTED: {reason}")
                     if self.order_gateway:
                         self.order_gateway.log_order_rejected(order, reason)
                     return
@@ -231,8 +232,8 @@ class LiveTradingEngine:
             if self.config.enable_trading:
                 try:
                     alpaca_order = self.trader.submit_order(order)
-                    print(f"\n✅ Order SUBMITTED: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}")
-                    print(f"   Alpaca Order ID: {alpaca_order['id']}")
+                    logger.info(f"Order SUBMITTED: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}")
+                    logger.info(f"   Alpaca Order ID: {alpaca_order['id']}")
 
                     # Record order for rate limiting (skip for stops)
                     if not is_stop:
@@ -242,19 +243,17 @@ class LiveTradingEngine:
                     self._wait_for_fill(alpaca_order['id'], order)
 
                 except Exception as e:
-                    print(f"\n❌ Order FAILED: {e}")
+                    logger.exception(f"Order FAILED: {e}")
                     if self.order_gateway:
                         self.order_gateway.log_order_rejected(order, str(e))
 
             else:
                 # Dry run mode - simulate fill
-                print(f"\n🔍 DRY RUN: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}")
+                logger.info(f"DRY RUN: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}")
                 self._simulate_fill(order, timestamp)
 
         except Exception as e:
-            print(f"\n❌ Error executing order: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.exception(f"Error executing order: {e}")
 
     def _wait_for_fill(self, order_id: str, order: Order, timeout: int = 10) -> None:
         """
@@ -300,22 +299,22 @@ class LiveTradingEngine:
                 if self.order_gateway:
                     self.order_gateway.log_order_filled(order, trade)
 
-                print(f"   FILLED: {trade.quantity} @ ${trade.price:.2f}")
+                logger.info(f"   FILLED: {trade.quantity} @ ${trade.price:.2f}")
                 return
 
             elif status == 'partially_filled':
                 filled_qty = alpaca_order['filled_qty']
-                print(f"   PARTIAL FILL: {filled_qty} / {order.quantity}")
+                logger.info(f"   PARTIAL FILL: {filled_qty} / {order.quantity}")
 
             elif status in ('canceled', 'expired', 'rejected'):
-                print(f"   Order {status.upper()}")
+                logger.info(f"   Order {status.upper()}")
                 if self.order_gateway:
                     self.order_gateway.log_order_cancelled(order)
                 return
 
             time.sleep(0.5)  # Poll every 500ms
 
-        print(f"   ⏱️  Timeout waiting for fill (status: {status})")
+        logger.warning(f"   Timeout waiting for fill (status: {status})")
 
     def _simulate_fill(self, order: Order, timestamp: datetime) -> None:
         """
@@ -349,15 +348,15 @@ class LiveTradingEngine:
         pnl = self.portfolio.get_total_pnl()
         pnl_pct = (pnl / self.portfolio.initial_cash) * 100
 
-        print(f"\n📊 Status (Tick #{self.tick_count}):")
-        print(f"   Portfolio Value: ${total_value:,.2f}")
-        print(f"   Cash: ${self.portfolio.cash:,.2f}")
-        print(f"   P&L: ${pnl:,.2f} ({pnl_pct:+.2f}%)")
-        print(f"   Positions: {len(self.portfolio.positions)}")
-        print(f"   Trades: {len(self.portfolio.trades)}")
+        logger.info(f"Status (Tick #{self.tick_count}):")
+        logger.info(f"   Portfolio Value: ${total_value:,.2f}")
+        logger.info(f"   Cash: ${self.portfolio.cash:,.2f}")
+        logger.info(f"   P&L: ${pnl:,.2f} ({pnl_pct:+.2f}%)")
+        logger.info(f"   Positions: {len(self.portfolio.positions)}")
+        logger.info(f"   Trades: {len(self.portfolio.trades)}")
 
         if self.risk_manager.circuit_breaker_triggered:
-            print(f"   ⚠️  Circuit Breaker: TRIGGERED")
+            logger.warning(f"   Circuit Breaker: TRIGGERED")
 
     def run(
         self,
@@ -373,15 +372,15 @@ class LiveTradingEngine:
 
         Note: This is a blocking call. Press Ctrl+C to stop.
         """
-        print("=" * 60)
-        print("LIVE TRADING ENGINE")
-        print("=" * 60)
-        print(f"Mode: {'PAPER' if self.config.alpaca_config.paper else 'LIVE'}")
-        print(f"Trading: {'ENABLED' if self.config.enable_trading else 'DRY RUN'}")
-        print(f"Strategy: {self.strategy.__class__.__name__}")
-        print(f"Symbols: {', '.join(symbols)}")
-        print(f"Data Type: {data_type}")
-        print("=" * 60)
+        logger.info("=" * 60)
+        logger.info("LIVE TRADING ENGINE")
+        logger.info("=" * 60)
+        logger.info(f"Mode: {'PAPER' if self.config.alpaca_config.paper else 'LIVE'}")
+        logger.info(f"Trading: {'ENABLED' if self.config.enable_trading else 'DRY RUN'}")
+        logger.info(f"Strategy: {self.strategy.__class__.__name__}")
+        logger.info(f"Symbols: {', '.join(symbols)}")
+        logger.info(f"Data Type: {data_type}")
+        logger.info("=" * 60)
 
         # Call strategy initialization
         self.strategy.on_start(self.portfolio)
@@ -389,8 +388,8 @@ class LiveTradingEngine:
         # Sync positions from Alpaca
         self._sync_positions()
 
-        print("\n🚀 Starting market data stream...")
-        print("Press Ctrl+C to stop\n")
+        logger.info("Starting market data stream...")
+        logger.info("Press Ctrl+C to stop")
 
         self.running = True
 
@@ -402,12 +401,10 @@ class LiveTradingEngine:
                 data_type=data_type
             )
         except KeyboardInterrupt:
-            print("\n\n⏹️  Keyboard interrupt received")
+            logger.info("Keyboard interrupt received")
             self.stop()
         except Exception as e:
-            print(f"\n\n❌ Fatal error: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.critical(f"Fatal error: {e}", exc_info=True)
             self.stop()
 
     def _sync_positions(self) -> None:
@@ -415,9 +412,9 @@ class LiveTradingEngine:
         positions = self.trader.get_positions()
 
         if positions:
-            print(f"\n📦 Syncing {len(positions)} existing positions from Alpaca...")
+            logger.info(f"Syncing {len(positions)} existing positions from Alpaca...")
             for pos in positions:
-                print(f"   {pos['symbol']}: {pos['quantity']} @ ${pos['avg_entry_price']:.2f}")
+                logger.info(f"   {pos['symbol']}: {pos['quantity']} @ ${pos['avg_entry_price']:.2f}")
 
                 # Create synthetic trade to populate portfolio
                 # Note: This is a simplification - in production, track position history properly
@@ -445,39 +442,39 @@ class LiveTradingEngine:
         if not self.running:
             return
 
-        print("\n" + "=" * 60)
-        print("SHUTTING DOWN")
-        print("=" * 60)
+        logger.info("=" * 60)
+        logger.info("SHUTTING DOWN")
+        logger.info("=" * 60)
 
         self.running = False
 
         # Stop streaming
-        print("Stopping market data stream...")
+        logger.info("Stopping market data stream...")
         self.trader.stop_streaming()
 
         # Call strategy cleanup
         self.strategy.on_end(self.portfolio)
 
-        # Print final performance
-        print("\n📈 FINAL PERFORMANCE:")
+        # Log final performance
+        logger.info("FINAL PERFORMANCE:")
         metrics = self.portfolio.get_performance_metrics()
-        print(f"   Total Return: {metrics['total_return']:+.2f}%")
-        print(f"   Total P&L: ${metrics['total_pnl']:,.2f}")
-        print(f"   Realized P&L: ${metrics['realized_pnl']:,.2f}")
-        print(f"   Unrealized P&L: ${metrics['unrealized_pnl']:,.2f}")
-        print(f"   Total Trades: {metrics['num_trades']}")
-        print(f"   Win Rate: {metrics['win_rate']:.1f}%")
-        print(f"   Max Drawdown: {metrics['max_drawdown']:.2f}%")
+        logger.info(f"   Total Return: {metrics['total_return']:+.2f}%")
+        logger.info(f"   Total P&L: ${metrics['total_pnl']:,.2f}")
+        logger.info(f"   Realized P&L: ${metrics['realized_pnl']:,.2f}")
+        logger.info(f"   Unrealized P&L: ${metrics['unrealized_pnl']:,.2f}")
+        logger.info(f"   Total Trades: {metrics['num_trades']}")
+        logger.info(f"   Win Rate: {metrics['win_rate']:.1f}%")
+        logger.info(f"   Max Drawdown: {metrics['max_drawdown']:.2f}%")
 
-        # Print positions
+        # Log positions
         if self.portfolio.positions:
-            print("\n📦 OPEN POSITIONS:")
+            logger.info("OPEN POSITIONS:")
             for symbol, pos in self.portfolio.positions.items():
                 if pos.quantity != 0:
-                    print(f"   {symbol}: {pos.quantity} @ ${pos.average_cost:.2f} (P&L: ${pos.total_pnl:+,.2f})")
+                    logger.info(f"   {symbol}: {pos.quantity} @ ${pos.average_cost:.2f} (P&L: ${pos.total_pnl:+,.2f})")
 
-        print("\n✅ Shutdown complete")
-        print("=" * 60 + "\n")
+        logger.info("Shutdown complete")
+        logger.info("=" * 60)
 
     def __repr__(self) -> str:
         status = "RUNNING" if self.running else "STOPPED"
