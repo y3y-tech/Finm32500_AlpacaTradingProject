@@ -24,7 +24,7 @@ load_dotenv()
 
 def has_alpaca_credentials() -> bool:
     """Check if Alpaca credentials are configured."""
-    return bool(os.getenv("ALPACA_API_KEY") and os.getenv("ALPACA_SECRET_KEY"))
+    return bool(os.getenv("APCA_API_KEY_ID") and os.getenv("APCA_API_SECRET_KEY"))
 
 
 pytestmark = pytest.mark.skipif(

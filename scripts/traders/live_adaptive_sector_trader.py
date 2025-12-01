@@ -502,12 +502,12 @@ Examples:
   python scripts/live_adaptive_sector_trader.py --live --initial-cash 10000
 
 Environment Variables Required:
-  ALPACA_API_KEY: Your Alpaca API key
-  ALPACA_SECRET_KEY: Your Alpaca API secret
+  APCA_API_KEY_ID: Your Alpaca API key
+  APCA_API_SECRET_KEY: Your Alpaca API secret
 
   Set these in .env file or export them:
-    export ALPACA_API_KEY="your_key"
-    export ALPACA_SECRET_KEY="your_secret"
+    export APCA_API_KEY_ID="your_key"
+    export APCA_API_SECRET_KEY="your_secret"
         """,
     )
 
@@ -571,12 +571,12 @@ Environment Variables Required:
     # Load environment variables
     load_dotenv()
 
-    api_key = os.getenv("ALPACA_API_KEY")
-    api_secret = os.getenv("ALPACA_SECRET_KEY")
+    api_key = os.getenv("APCA_API_KEY_ID")
+    api_secret = os.getenv("APCA_API_SECRET_KEY")
 
     if not api_key or not api_secret:
         print("ERROR: Alpaca API credentials not found!")
-        print("Set ALPACA_API_KEY and ALPACA_SECRET_KEY environment variables")
+        print("Set APCA_API_KEY_ID and APCA_API_SECRET_KEY environment variables")
         print("Either in .env file or export them in your shell")
         sys.exit(1)
 

@@ -59,7 +59,7 @@ def example_alpaca_connection():
     except Exception as e:
         print(f"\n❌ Error: {e}")
         print("\nMake sure:")
-        print("  1. You have a .env file with ALPACA_API_KEY and ALPACA_SECRET_KEY")
+        print("  1. You have a .env file with APCA_API_KEY_ID and APCA_API_SECRET_KEY")
         print("  2. Your API keys are valid")
 
 
@@ -255,8 +255,8 @@ if __name__ == "__main__":
     if not os.path.exists(".env"):
         print("❌ ERROR: .env file not found!")
         print("\nPlease create a .env file with your Alpaca credentials:")
-        print("  ALPACA_API_KEY=...")
-        print("  ALPACA_SECRET_KEY=...")
+        print("  APCA_API_KEY_ID=...")
+        print("  APCA_API_SECRET_KEY=...")
         print("  ALPACA_PAPER=true")
         print("  ALPACA_CRYPTO=true")
         exit(1)

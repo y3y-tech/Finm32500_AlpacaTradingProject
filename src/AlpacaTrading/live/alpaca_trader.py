@@ -60,8 +60,8 @@ class AlpacaConfig:
         Load configuration from environment variables.
 
         Expects .env file with:
-        - ALPACA_API_KEY
-        - ALPACA_SECRET_KEY
+        - APCA_API_KEY_ID
+        - APCA_API_SECRET_KEY
         - ALPACA_PAPER (optional, default: true)
 
         Returns:
@@ -69,14 +69,14 @@ class AlpacaConfig:
         """
         load_dotenv()
 
-        api_key = os.getenv("ALPACA_API_KEY")
-        secret_key = os.getenv("ALPACA_SECRET_KEY")
+        api_key = os.getenv("APCA_API_KEY_ID")
+        secret_key = os.getenv("APCA_API_SECRET_KEY")
         paper = os.getenv("ALPACA_PAPER", "true").lower() == "true"
 
         if not api_key or not secret_key:
             raise ValueError(
                 "Missing Alpaca credentials. "
-                "Set ALPACA_API_KEY and ALPACA_SECRET_KEY in .env file"
+                "Set APCA_API_KEY_ID and APCA_API_SECRET_KEY in .env file"
             )
 
         return cls(api_key=api_key, secret_key=secret_key, paper=paper)

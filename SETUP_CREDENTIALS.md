@@ -15,7 +15,7 @@
 3. **Fill in your `.env` file:**
    ```
    ALPACA_API_KEY=your_actual_key_here
-   ALPACA_SECRET_KEY=your_actual_secret_here
+   APCA-API-SECRET-KEY=your_actual_secret_here
    ALPACA_PAPER=true
    ```
 
@@ -53,7 +53,7 @@
    # Initialize Alpaca API (using new alpaca-py SDK)
    trading_client = TradingClient(
        api_key=os.getenv('ALPACA_API_KEY'),
-       secret_key=os.getenv('ALPACA_SECRET_KEY'),
+       secret_key=os.getenv('APCA-API-SECRET-KEY'),
        paper=True  # Use paper trading
    )
 
