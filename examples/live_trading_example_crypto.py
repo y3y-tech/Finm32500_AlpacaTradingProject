@@ -27,7 +27,7 @@ def example_alpaca_connection():
         # Load credentials from .env
         config = AlpacaConfig.from_env()
         config.crypto = True  # IMPORTANT: Enable crypto mode
-        
+
         trader = AlpacaTrader(config)
 
         # Get account info
@@ -43,10 +43,14 @@ def example_alpaca_connection():
         if positions:
             print(f"\n📦 Current Positions ({len(positions)}):")
             for pos in positions:
-                pnl = pos['unrealized_pl']
-                pnl_pct = pos['unrealized_plpc'] * 100
-                print(f"  {pos['symbol']}: {pos['quantity']} @ ${pos['avg_entry_price']:.2f}")
-                print(f"    Current: ${pos['current_price']:.2f} | P&L: ${pnl:+,.2f} ({pnl_pct:+.2f}%)")
+                pnl = pos["unrealized_pl"]
+                pnl_pct = pos["unrealized_plpc"] * 100
+                print(
+                    f"  {pos['symbol']}: {pos['quantity']} @ ${pos['avg_entry_price']:.2f}"
+                )
+                print(
+                    f"    Current: ${pos['current_price']:.2f} | P&L: ${pnl:+,.2f} ({pnl_pct:+.2f}%)"
+                )
         else:
             print("\n📦 No open positions")
 
@@ -77,22 +81,22 @@ def example_live_trading_dry_run():
 
         # Configure risk management (adjusted for Crypto)
         risk_config = RiskConfig(
-            max_position_size=1.0,      # Max 1.0 BTC (adjusted for high price)
+            max_position_size=1.0,  # Max 1.0 BTC (adjusted for high price)
             max_position_value=50_000,  # Max $50k per position
-            max_total_exposure=100_000, # Max $100k total
-            max_orders_per_minute=10,   
+            max_total_exposure=100_000,  # Max $100k total
+            max_orders_per_minute=10,
             max_orders_per_symbol_per_minute=5,
-            min_cash_buffer=1000
+            min_cash_buffer=1000,
         )
 
         # Configure stop-loss
         stop_config = StopLossConfig(
-            position_stop_pct=2.0,  
-            trailing_stop_pct=3.0, 
-            portfolio_stop_pct=5.0,  
-            max_drawdown_pct=10.0, 
+            position_stop_pct=2.0,
+            trailing_stop_pct=3.0,
+            portfolio_stop_pct=5.0,
+            max_drawdown_pct=10.0,
             use_trailing_stops=False,
-            enable_circuit_breaker=True
+            enable_circuit_breaker=True,
         )
 
         # Create engine config
@@ -103,15 +107,15 @@ def example_live_trading_dry_run():
             enable_trading=False,  # DRY RUN - no actual orders
             enable_stop_loss=True,
             log_orders=True,
-            order_log_path="dry_run_crypto_orders.csv"
+            order_log_path="dry_run_crypto_orders.csv",
         )
 
         # Create strategy
         strategy = MomentumStrategy(
             lookback_period=20,
             momentum_threshold=0.005,  # 0.5% velocity threshold (crypto is volatile)
-            position_size=5000,        # $5k position size
-            max_position=1             # Max 1 unit (will be limited by value anyway)
+            position_size=5000,  # $5k position size
+            max_position=1,  # Max 1 unit (will be limited by value anyway)
         )
 
         # Create engine
@@ -120,7 +124,7 @@ def example_live_trading_dry_run():
         # Run (blocking call - press Ctrl+C to stop)
         engine.run(
             symbols=["BTC/USD"],
-            data_type="trades"  # Use real-time trades
+            data_type="trades",  # Use real-time trades
         )
 
     except KeyboardInterrupt:
@@ -128,6 +132,7 @@ def example_live_trading_dry_run():
     except Exception as e:
         print(f"\n\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
 
 
@@ -158,22 +163,22 @@ def example_live_trading_paper():
 
         # Configure risk management (conservative for high-volatility crypto)
         risk_config = RiskConfig(
-            max_position_size=0.5,      # Max 0.5 BTC
+            max_position_size=0.5,  # Max 0.5 BTC
             max_position_value=25_000,  # Max $25k per position
             max_total_exposure=50_000,  # Max $50k total
             max_orders_per_minute=5,
             max_orders_per_symbol_per_minute=2,
-            min_cash_buffer=5000
+            min_cash_buffer=5000,
         )
 
         # Configure stop-loss
         stop_config = StopLossConfig(
             position_stop_pct=3.0,  # Wider stop for crypto volatility
             trailing_stop_pct=5.0,  # Wider trailing stop
-            portfolio_stop_pct=5.0, 
+            portfolio_stop_pct=5.0,
             max_drawdown_pct=10.0,
-            use_trailing_stops=True, # Use trailing stops to lock in crypto gains
-            enable_circuit_breaker=True
+            use_trailing_stops=True,  # Use trailing stops to lock in crypto gains
+            enable_circuit_breaker=True,
         )
 
         # Create engine config
@@ -184,15 +189,15 @@ def example_live_trading_paper():
             enable_trading=True,  # REAL TRADING ENABLED
             enable_stop_loss=True,
             log_orders=True,
-            order_log_path="paper_crypto_orders.csv"
+            order_log_path="paper_crypto_orders.csv",
         )
 
         # Create strategy
         strategy = MomentumStrategy(
             lookback_period=30,
-            momentum_threshold=0.01,   # 1% threshold
-            position_size=1000,        # $1000 per trade
-            max_position=1             # Max 1 position count per symbol
+            momentum_threshold=0.01,  # 1% threshold
+            position_size=1000,  # $1000 per trade
+            max_position=1,  # Max 1 position count per symbol
         )
 
         # Create engine
@@ -200,16 +205,14 @@ def example_live_trading_paper():
 
         # Run (blocking call - press Ctrl+C to stop)
         print("Starting engine for BTC/USD...")
-        engine.run(
-            symbols=["BTC/USD"],
-            data_type="trades"
-        )
+        engine.run(symbols=["BTC/USD"], data_type="trades")
 
     except KeyboardInterrupt:
         print("\n\nPaper trading stopped by user")
     except Exception as e:
         print(f"\n\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
 
 
@@ -248,6 +251,7 @@ Choose an example to run:
 if __name__ == "__main__":
     # Check if .env exists
     import os
+
     if not os.path.exists(".env"):
         print("❌ ERROR: .env file not found!")
         print("\nPlease create a .env file with your Alpaca credentials:")

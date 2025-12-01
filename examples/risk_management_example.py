@@ -7,7 +7,12 @@ Shows how to:
 3. Integrate risk management into trading workflow
 """
 
-from AlpacaTrading.trading import MatchingEngine, RiskManager, StopLossConfig, TradingPortfolio
+from AlpacaTrading.trading import (
+    MatchingEngine,
+    RiskManager,
+    StopLossConfig,
+    TradingPortfolio,
+)
 from AlpacaTrading.models import Order, OrderSide, OrderType
 from datetime import datetime
 
@@ -27,7 +32,7 @@ def example_transaction_costs():
         sec_fee_rate=0.0000278,  # SEC fee on sales
         liquidity_impact_factor=0.0001,  # 0.01% per $100k
         market_impact=0.0002,  # Base slippage of 0.02%
-        random_seed=42  # For reproducibility
+        random_seed=42,  # For reproducibility
     )
 
     print("\nEngine Configuration:")
@@ -48,7 +53,7 @@ def example_transaction_costs():
         side=OrderSide.BUY,
         quantity=100,
         order_type=OrderType.MARKET,
-        price=None
+        price=None,
     )
 
     market_price = 150.0
@@ -64,7 +69,7 @@ def example_transaction_costs():
         print(f"  Actual fill price: ${trade.price:.4f}")
         print(f"  Actual cost: ${actual_cost:,.2f}")
         print(f"  Total transaction costs: ${total_costs:.2f}")
-        print(f"  Cost as % of trade: {(total_costs/theoretical_cost)*100:.3f}%")
+        print(f"  Cost as % of trade: {(total_costs / theoretical_cost) * 100:.3f}%")
 
     # Example 2: Large market buy order (liquidity impact)
     print("\n" + "-" * 60)
@@ -76,7 +81,7 @@ def example_transaction_costs():
         side=OrderSide.BUY,
         quantity=1000,
         order_type=OrderType.MARKET,
-        price=None
+        price=None,
     )
 
     trades = engine.execute_order(large_order, market_price)
@@ -91,7 +96,7 @@ def example_transaction_costs():
         print(f"  Actual fill price: ${trade.price:.4f}")
         print(f"  Actual cost: ${actual_cost:,.2f}")
         print(f"  Total transaction costs: ${total_costs:.2f}")
-        print(f"  Cost as % of trade: {(total_costs/theoretical_cost)*100:.3f}%")
+        print(f"  Cost as % of trade: {(total_costs / theoretical_cost) * 100:.3f}%")
         print("  Note: Higher cost due to liquidity impact on larger order")
 
     # Example 3: Market sell order (includes SEC fees)
@@ -104,7 +109,7 @@ def example_transaction_costs():
         side=OrderSide.SELL,
         quantity=500,
         order_type=OrderType.MARKET,
-        price=None
+        price=None,
     )
 
     trades = engine.execute_order(sell_order, market_price)
@@ -122,7 +127,9 @@ def example_transaction_costs():
         print(f"  Total transaction costs: ${total_costs:.2f}")
         print(f"    - SEC fee: ${sec_fee:.2f}")
         print(f"    - Slippage/spread: ${total_costs - sec_fee:.2f}")
-        print(f"  Cost as % of trade: {(total_costs/theoretical_proceeds)*100:.3f}%")
+        print(
+            f"  Cost as % of trade: {(total_costs / theoretical_proceeds) * 100:.3f}%"
+        )
 
 
 def example_stop_loss():
@@ -141,7 +148,7 @@ def example_stop_loss():
         portfolio_stop_pct=5.0,  # 5% portfolio loss triggers circuit breaker
         max_drawdown_pct=10.0,  # 10% max drawdown
         use_trailing_stops=False,  # Start with fixed stops
-        enable_circuit_breaker=True
+        enable_circuit_breaker=True,
     )
 
     risk_manager = RiskManager(stop_config, initial_portfolio_value=100_000)
@@ -152,7 +159,9 @@ def example_stop_loss():
     print(f"  Trailing stop: {status['config']['trailing_stop_pct']}%")
     print(f"  Portfolio stop: {status['config']['portfolio_stop_pct']}%")
     print(f"  Max drawdown: {status['config']['max_drawdown_pct']}%")
-    print(f"  Circuit breaker: {'Enabled' if status['config']['enable_circuit_breaker'] else 'Disabled'}")
+    print(
+        f"  Circuit breaker: {'Enabled' if status['config']['enable_circuit_breaker'] else 'Disabled'}"
+    )
 
     # Simulate buying a position
     print("\n" + "-" * 60)
@@ -169,6 +178,7 @@ def example_stop_loss():
 
     # Create a mock position
     from src.models import Position, Trade
+
     position = Position(symbol="AAPL")
     trade = Trade(
         trade_id="1",
@@ -177,7 +187,7 @@ def example_stop_loss():
         symbol="AAPL",
         side=OrderSide.BUY,
         quantity=quantity,
-        price=entry_price
+        price=entry_price,
     )
     position.update_from_trade(trade)
     portfolio.process_trade(trade)
@@ -187,9 +197,7 @@ def example_stop_loss():
     current_prices = {"AAPL": 148.0}
     portfolio.update_prices(current_prices)
     exit_orders = risk_manager.check_stops(
-        current_prices,
-        portfolio.get_total_value(),
-        {"AAPL": position}
+        current_prices, portfolio.get_total_value(), {"AAPL": position}
     )
     print(f"{'STOP TRIGGERED!' if exit_orders else 'No stop triggered'}")
 
@@ -198,13 +206,13 @@ def example_stop_loss():
     current_prices = {"AAPL": 146.0}
     portfolio.update_prices(current_prices)
     exit_orders = risk_manager.check_stops(
-        current_prices,
-        portfolio.get_total_value(),
-        {"AAPL": position}
+        current_prices, portfolio.get_total_value(), {"AAPL": position}
     )
     if exit_orders:
         print("STOP TRIGGERED!")
-        print(f"    Exit order generated: SELL {exit_orders[0].quantity} shares @ market")
+        print(
+            f"    Exit order generated: SELL {exit_orders[0].quantity} shares @ market"
+        )
     else:
         print("No stop triggered")
 
@@ -233,7 +241,7 @@ def example_stop_loss():
         symbol="TSLA",
         side=OrderSide.BUY,
         quantity=quantity,
-        price=entry_price
+        price=entry_price,
     )
     position2.update_from_trade(trade2)
 
@@ -241,9 +249,7 @@ def example_stop_loss():
     print("\n  Price rises to $110.00 (+10%)...")
     current_prices = {"TSLA": 110.0}
     exit_orders = risk_manager2.check_stops(
-        current_prices,
-        100_000,
-        {"TSLA": position2}
+        current_prices, 100_000, {"TSLA": position2}
     )
     tsla_stop = risk_manager2.position_stops["TSLA"]
     print(f"    Trailing stop moved to: ${tsla_stop.stop_price:.2f}")
@@ -253,19 +259,17 @@ def example_stop_loss():
     print("\n  Price drops to $106.00...")
     current_prices = {"TSLA": 106.0}
     exit_orders = risk_manager2.check_stops(
-        current_prices,
-        100_000,
-        {"TSLA": position2}
+        current_prices, 100_000, {"TSLA": position2}
     )
-    print(f"    Status: {'STOP TRIGGERED!' if exit_orders else 'No stop triggered (within 3% of peak)'}")
+    print(
+        f"    Status: {'STOP TRIGGERED!' if exit_orders else 'No stop triggered (within 3% of peak)'}"
+    )
 
     # Price drops to $105 - SHOULD trigger (>3% from peak)
     print("\n  Price drops to $105.00...")
     current_prices = {"TSLA": 105.0}
     exit_orders = risk_manager2.check_stops(
-        current_prices,
-        100_000,
-        {"TSLA": position2}
+        current_prices, 100_000, {"TSLA": position2}
     )
     if exit_orders:
         print("    TRAILING STOP TRIGGERED!")
@@ -281,13 +285,11 @@ def example_stop_loss():
     print("  Circuit breaker threshold: 5%")
 
     risk_manager3 = RiskManager(stop_config, initial_portfolio_value=100_000)
-    exit_orders = risk_manager3.check_stops(
-        {},
-        portfolio_value,
-        {}
-    )
+    exit_orders = risk_manager3.check_stops({}, portfolio_value, {})
 
-    print(f"  Circuit breaker: {'TRIGGERED!' if risk_manager3.circuit_breaker_triggered else 'Not triggered'}")
+    print(
+        f"  Circuit breaker: {'TRIGGERED!' if risk_manager3.circuit_breaker_triggered else 'Not triggered'}"
+    )
     if risk_manager3.circuit_breaker_triggered:
         print("  All trading halted to prevent further losses")
 

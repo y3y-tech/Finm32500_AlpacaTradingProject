@@ -42,13 +42,15 @@ class VWAPStrategy(TradingStrategy):
         position_size: float = 10000,
         max_position: int = 100,
         reset_period: int = 0,
-        min_samples: int = 10
+        min_samples: int = 10,
     ):
         super().__init__("VWAP_MeanReversion")
 
         # Parameter validation
         if deviation_threshold < 0:
-            raise ValueError(f"deviation_threshold must be non-negative, got {deviation_threshold}")
+            raise ValueError(
+                f"deviation_threshold must be non-negative, got {deviation_threshold}"
+            )
         if position_size <= 0:
             raise ValueError(f"position_size must be positive, got {position_size}")
         if max_position <= 0:
@@ -115,9 +117,7 @@ class VWAPStrategy(TradingStrategy):
         return vwap
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Generate trading signals based on price deviation from VWAP.
@@ -127,11 +127,15 @@ class VWAPStrategy(TradingStrategy):
         """
         # Validate tick
         if tick.price <= 0:
-            logger.warning(f"Invalid price {tick.price} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid price {tick.price} for {tick.symbol}, skipping tick"
+            )
             return []
 
         if tick.volume < 0:
-            logger.warning(f"Invalid volume {tick.volume} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid volume {tick.volume} for {tick.symbol}, skipping tick"
+            )
             return []
 
         # Update VWAP
@@ -154,7 +158,7 @@ class VWAPStrategy(TradingStrategy):
             if current_qty < self.max_position:
                 quantity = min(
                     int(self.position_size / tick.price),
-                    self.max_position - current_qty
+                    self.max_position - current_qty,
                 )
 
                 if quantity > 0:
@@ -163,12 +167,14 @@ class VWAPStrategy(TradingStrategy):
                         f"price={tick.price:.2f}, vwap={vwap:.2f}, "
                         f"deviation={deviation_pct:.2f}%, quantity={quantity}"
                     )
-                    orders.append(Order(
-                        symbol=tick.symbol,
-                        side=OrderSide.BUY,
-                        order_type=OrderType.MARKET,
-                        quantity=quantity
-                    ))
+                    orders.append(
+                        Order(
+                            symbol=tick.symbol,
+                            side=OrderSide.BUY,
+                            order_type=OrderType.MARKET,
+                            quantity=quantity,
+                        )
+                    )
 
         # Price significantly above VWAP -> SELL (expensive)
         elif deviation > self.deviation_threshold:
@@ -178,12 +184,14 @@ class VWAPStrategy(TradingStrategy):
                     f"price={tick.price:.2f}, vwap={vwap:.2f}, "
                     f"deviation={deviation_pct:.2f}%, quantity={current_qty}"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
 
         # Price close to VWAP -> Neutral (no action)
         # This creates a "dead zone" around VWAP to avoid overtrading
@@ -194,9 +202,9 @@ class VWAPStrategy(TradingStrategy):
         """Log strategy start."""
         super().on_start(portfolio)
         logger.info(
-            f"VWAP Strategy configured: deviation_threshold={self.deviation_threshold*100:.2f}%, "
+            f"VWAP Strategy configured: deviation_threshold={self.deviation_threshold * 100:.2f}%, "
             f"reset_period={self.reset_period if self.reset_period > 0 else 'never'}"
         )
 
     def __repr__(self) -> str:
-        return f"VWAPStrategy(deviation={self.deviation_threshold*100:.2f}%)"
+        return f"VWAPStrategy(deviation={self.deviation_threshold * 100:.2f}%)"

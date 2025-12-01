@@ -55,7 +55,7 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
         enable_shorting: bool = False,
         position_size: float = 10000,
         max_position_per_stock: int = 100,
-        min_stocks: int = 3
+        min_stocks: int = 3,
     ):
         super().__init__("CrossSectionalMomentum")
 
@@ -63,15 +63,23 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
         if lookback_period <= 1:
             raise ValueError(f"lookback_period must be > 1, got {lookback_period}")
         if rebalance_period <= 0:
-            raise ValueError(f"rebalance_period must be positive, got {rebalance_period}")
+            raise ValueError(
+                f"rebalance_period must be positive, got {rebalance_period}"
+            )
         if not (0 < long_percentile <= 1.0):
-            raise ValueError(f"long_percentile must be between 0 and 1, got {long_percentile}")
+            raise ValueError(
+                f"long_percentile must be between 0 and 1, got {long_percentile}"
+            )
         if not (0 < short_percentile <= 1.0):
-            raise ValueError(f"short_percentile must be between 0 and 1, got {short_percentile}")
+            raise ValueError(
+                f"short_percentile must be between 0 and 1, got {short_percentile}"
+            )
         if position_size <= 0:
             raise ValueError(f"position_size must be positive, got {position_size}")
         if max_position_per_stock <= 0:
-            raise ValueError(f"max_position_per_stock must be positive, got {max_position_per_stock}")
+            raise ValueError(
+                f"max_position_per_stock must be positive, got {max_position_per_stock}"
+            )
         if min_stocks <= 0:
             raise ValueError(f"min_stocks must be positive, got {min_stocks}")
 
@@ -143,12 +151,16 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
             return [], []
 
         # Sort by momentum (descending)
-        sorted_symbols = sorted(valid_symbols, key=lambda s: self.momentum_scores[s], reverse=True)
+        sorted_symbols = sorted(
+            valid_symbols, key=lambda s: self.momentum_scores[s], reverse=True
+        )
 
         # Select top and bottom percentiles
         n_stocks = len(sorted_symbols)
         n_long = max(1, int(n_stocks * self.long_percentile))
-        n_short = max(1, int(n_stocks * self.short_percentile)) if self.enable_shorting else 0
+        n_short = (
+            max(1, int(n_stocks * self.short_percentile)) if self.enable_shorting else 0
+        )
 
         long_list = sorted_symbols[:n_long]
         short_list = sorted_symbols[-n_short:] if n_short > 0 else []
@@ -156,10 +168,7 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
         return long_list, short_list
 
     def _generate_rebalance_orders(
-        self,
-        portfolio: TradingPortfolio,
-        long_list: list[str],
-        short_list: list[str]
+        self, portfolio: TradingPortfolio, long_list: list[str], short_list: list[str]
     ) -> list[Order]:
         """
         Generate orders to rebalance portfolio to target positions.
@@ -188,14 +197,12 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
             if symbol in self.target_longs:
                 # Should be long
                 target_qty = min(
-                    int(self.position_size / current_price),
-                    self.max_position_per_stock
+                    int(self.position_size / current_price), self.max_position_per_stock
                 )
             elif symbol in self.target_shorts:
                 # Should be short
                 target_qty = -min(
-                    int(self.position_size / current_price),
-                    self.max_position_per_stock
+                    int(self.position_size / current_price), self.max_position_per_stock
                 )
             else:
                 # Should be flat
@@ -210,27 +217,29 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
             # Generate order
             if qty_diff > 0:
                 # Need to buy
-                orders.append(Order(
-                    symbol=symbol,
-                    side=OrderSide.BUY,
-                    order_type=OrderType.MARKET,
-                    quantity=qty_diff
-                ))
+                orders.append(
+                    Order(
+                        symbol=symbol,
+                        side=OrderSide.BUY,
+                        order_type=OrderType.MARKET,
+                        quantity=qty_diff,
+                    )
+                )
             else:
                 # Need to sell
-                orders.append(Order(
-                    symbol=symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=-qty_diff
-                ))
+                orders.append(
+                    Order(
+                        symbol=symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=-qty_diff,
+                    )
+                )
 
         return orders
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Process market data and generate rebalancing orders when needed.
@@ -240,7 +249,9 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
         """
         # Validate tick
         if tick.price <= 0:
-            logger.warning(f"Invalid price {tick.price} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid price {tick.price} for {tick.symbol}, skipping tick"
+            )
             return []
 
         # Initialize price history for new symbol
@@ -262,9 +273,9 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
             return []  # Not time to rebalance yet
 
         # Time to rebalance!
-        logger.info(f"\n{'='*80}")
+        logger.info(f"\n{'=' * 80}")
         logger.info(f"REBALANCING at tick {self.global_tick_count}")
-        logger.info(f"{'='*80}")
+        logger.info(f"{'=' * 80}")
 
         # Rank stocks
         long_list, short_list = self._rank_stocks()
@@ -274,16 +285,16 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
             return []
 
         # Log rankings
-        logger.info(f"\nTop performers (LONG):")
+        logger.info("\nTop performers (LONG):")
         for symbol in long_list:
             momentum = self.momentum_scores.get(symbol, 0)
-            logger.info(f"  {symbol}: momentum={momentum*100:.2f}%")
+            logger.info(f"  {symbol}: momentum={momentum * 100:.2f}%")
 
         if short_list:
-            logger.info(f"\nBottom performers (SHORT):")
+            logger.info("\nBottom performers (SHORT):")
             for symbol in short_list:
                 momentum = self.momentum_scores.get(symbol, 0)
-                logger.info(f"  {symbol}: momentum={momentum*100:.2f}%")
+                logger.info(f"  {symbol}: momentum={momentum * 100:.2f}%")
 
         # Generate rebalance orders
         orders = self._generate_rebalance_orders(portfolio, long_list, short_list)
@@ -305,8 +316,8 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
             f"Cross-Sectional Momentum configured:\n"
             f"  Lookback: {self.lookback_period} ticks\n"
             f"  Rebalance: every {self.rebalance_period} ticks\n"
-            f"  Long: top {self.long_percentile*100:.0f}%\n"
-            f"  Short: bottom {self.short_percentile*100:.0f}% "
+            f"  Long: top {self.long_percentile * 100:.0f}%\n"
+            f"  Short: bottom {self.short_percentile * 100:.0f}% "
             f"({'ENABLED' if self.enable_shorting else 'DISABLED'})\n"
             f"  Position size: ${self.position_size:,.0f} per stock"
         )
@@ -315,5 +326,5 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
         mode = "long-short" if self.enable_shorting else "long-only"
         return (
             f"CrossSectionalMomentumStrategy({mode}, "
-            f"long={self.long_percentile*100:.0f}%, short={self.short_percentile*100:.0f}%)"
+            f"long={self.long_percentile * 100:.0f}%, short={self.short_percentile * 100:.0f}%)"
         )

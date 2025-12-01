@@ -51,7 +51,7 @@ class DataGateway:
             raise FileNotFoundError(f"Data file not found: {self.data_source}")
 
         # Read first row to check columns
-        with self.data_source.open('r') as f:
+        with self.data_source.open("r") as f:
             reader = csv.DictReader(f)
             headers = reader.fieldnames
             if headers is None:
@@ -61,7 +61,7 @@ class DataGateway:
             headers_lower = [h.lower() for h in headers]
 
             # Timestamp column (accept various names)
-            timestamp_names = ['timestamp', 'datetime', 'date', 'time']
+            timestamp_names = ["timestamp", "datetime", "date", "time"]
             if not any(ts in headers_lower for ts in timestamp_names):
                 raise ValueError(
                     f"CSV must have a timestamp column. Found: {headers}. "
@@ -69,11 +69,11 @@ class DataGateway:
                 )
 
             # Symbol column
-            if 'symbol' not in headers_lower:
+            if "symbol" not in headers_lower:
                 raise ValueError(f"CSV must have 'symbol' column. Found: {headers}")
 
             # Price column (or Close)
-            if 'price' not in headers_lower and 'close' not in headers_lower:
+            if "price" not in headers_lower and "close" not in headers_lower:
                 raise ValueError(
                     f"CSV must have 'price' or 'close' column. Found: {headers}"
                 )
@@ -89,13 +89,13 @@ class DataGateway:
             for tick in gateway.stream():
                 print(f"{tick.timestamp}: {tick.symbol} @ {tick.price}")
         """
-        with self.data_source.open('r') as f:
+        with self.data_source.open("r") as f:
             reader = csv.DictReader(f)
 
             for row in reader:
                 # Handle various timestamp column names
                 timestamp_str = None
-                for ts_name in ['timestamp', 'Datetime', 'datetime', 'Date', 'Time']:
+                for ts_name in ["timestamp", "Datetime", "datetime", "Date", "Time"]:
                     if ts_name in row:
                         timestamp_str = row[ts_name]
                         break
@@ -111,26 +111,23 @@ class DataGateway:
                     timestamp = pd.to_datetime(timestamp_str).to_pydatetime()
 
                 # Get symbol
-                symbol = row.get('symbol') or row.get('Symbol')
+                symbol = row.get("symbol") or row.get("Symbol")
                 if symbol is None:
                     raise ValueError(f"Could not find symbol in row: {row}")
 
                 # Get price (try 'price' first, then 'Close', then 'close')
-                price_str = row.get('price') or row.get('Close') or row.get('close')
+                price_str = row.get("price") or row.get("Close") or row.get("close")
                 if price_str is None:
                     raise ValueError(f"Could not find price in row: {row}")
                 price = float(price_str)
 
                 # Get volume if available
-                volume_str = row.get('volume') or row.get('Volume') or '0'
+                volume_str = row.get("volume") or row.get("Volume") or "0"
                 volume = float(volume_str)
 
                 # Create and yield market data point
                 tick = MarketDataPoint(
-                    timestamp=timestamp,
-                    symbol=symbol,
-                    price=price,
-                    volume=volume
+                    timestamp=timestamp, symbol=symbol, price=price, volume=volume
                 )
 
                 # Update current price cache
@@ -170,10 +167,10 @@ class DataGateway:
             Set of symbol strings
         """
         symbols = set()
-        with self.data_source.open('r') as f:
+        with self.data_source.open("r") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                symbol = row.get('symbol') or row.get('Symbol')
+                symbol = row.get("symbol") or row.get("Symbol")
                 if symbol:
                     symbols.add(symbol)
         return symbols
@@ -186,11 +183,11 @@ class DataGateway:
             Tuple of (start_date, end_date)
         """
         timestamps = []
-        with self.data_source.open('r') as f:
+        with self.data_source.open("r") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 timestamp_str = None
-                for ts_name in ['timestamp', 'Datetime', 'datetime', 'Date']:
+                for ts_name in ["timestamp", "Datetime", "datetime", "Date"]:
                     if ts_name in row:
                         timestamp_str = row[ts_name]
                         break
@@ -206,4 +203,6 @@ class DataGateway:
         return min(timestamps), max(timestamps)
 
     def __repr__(self) -> str:
-        return f"DataGateway(source={self.data_source}, symbols={len(self.get_symbols())})"
+        return (
+            f"DataGateway(source={self.data_source}, symbols={len(self.get_symbols())})"
+        )

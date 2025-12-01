@@ -40,6 +40,7 @@ class BacktestResult:
         end_time: Backtest end timestamp
         total_ticks: Number of market data points processed
     """
+
     portfolio: TradingPortfolio
     trades: list[Trade]
     performance_metrics: dict
@@ -83,12 +84,12 @@ class BacktestEngine:
     def __init__(
         self,
         data_gateway: DataGateway,
-        strategy: 'TradingStrategy',  # Forward reference
+        strategy: "TradingStrategy",  # Forward reference
         initial_cash: float,
         risk_config: RiskConfig | None = None,
         matching_engine: MatchingEngine | None = None,
         order_log_file: str = "logs/orders.csv",
-        record_equity_frequency: int = 100  # Record equity every N ticks
+        record_equity_frequency: int = 100,  # Record equity every N ticks
     ):
         """
         Initialize backtest engine.
@@ -176,7 +177,9 @@ class BacktestEngine:
 
         # Final equity recording
         if self.current_tick:
-            self.portfolio.record_equity(self.current_tick.timestamp, self.current_prices)
+            self.portfolio.record_equity(
+                self.current_tick.timestamp, self.current_prices
+            )
 
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
@@ -208,10 +211,7 @@ class BacktestEngine:
 
         # Validate order
         is_valid, error_msg = self.order_manager.validate_order(
-            order,
-            self.portfolio.cash,
-            self.portfolio.positions,
-            self.current_prices
+            order, self.portfolio.cash, self.portfolio.positions, self.current_prices
         )
 
         if not is_valid:
@@ -244,9 +244,7 @@ class BacktestEngine:
             self.order_gateway.log_order_filled(order)
         elif order.status.value == "PARTIAL":
             self.order_gateway.log_order_partial_fill(
-                order,
-                order.filled_quantity,
-                order.average_fill_price
+                order, order.filled_quantity, order.average_fill_price
             )
         elif order.status.value == "CANCELLED":
             self.order_gateway.log_order_cancelled(order, "Simulation cancelled")
@@ -264,13 +262,15 @@ class BacktestEngine:
             f"Trades: {len(self.portfolio.trades)}"
         )
 
-    def _generate_result(self, start_time: datetime, end_time: datetime) -> BacktestResult:
+    def _generate_result(
+        self, start_time: datetime, end_time: datetime
+    ) -> BacktestResult:
         """Generate backtest result object."""
         # Calculate final metrics
         metrics = self.portfolio.get_performance_metrics()
 
         # Add Sharpe ratio
-        metrics['sharpe_ratio'] = self.portfolio.get_sharpe_ratio()
+        metrics["sharpe_ratio"] = self.portfolio.get_sharpe_ratio()
 
         # Get equity curve
         equity_curve = self.portfolio.get_equity_curve_dataframe()
@@ -283,7 +283,7 @@ class BacktestEngine:
             order_log_path=str(self.order_gateway.log_file),
             start_time=start_time,
             end_time=end_time,
-            total_ticks=self.tick_count
+            total_ticks=self.tick_count,
         )
 
     def _print_summary(self, result: BacktestResult) -> None:
@@ -304,9 +304,9 @@ class BacktestEngine:
         logger.info(f"Winning Trades:     {metrics['winning_trades']}")
         logger.info(f"Losing Trades:      {metrics['losing_trades']}")
         logger.info(f"Win Rate:           {metrics['win_rate']:.2f}%")
-        if metrics['avg_win'] > 0:
+        if metrics["avg_win"] > 0:
             logger.info(f"Avg Win:            ${metrics['avg_win']:,.2f}")
-        if metrics['avg_loss'] != 0:
+        if metrics["avg_loss"] != 0:
             logger.info(f"Avg Loss:           ${metrics['avg_loss']:,.2f}")
         logger.info("")
         logger.info(f"Max Drawdown:       {metrics['max_drawdown']:.2f}%")

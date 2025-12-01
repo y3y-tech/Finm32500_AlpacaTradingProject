@@ -47,7 +47,7 @@ class VolumeBreakoutStrategy(TradingStrategy):
         min_price_change: float = 0.01,
         position_size: float = 10000,
         max_position: int = 100,
-        hold_periods: int = 50
+        hold_periods: int = 50,
     ):
         super().__init__("VolumeBreakout")
 
@@ -55,11 +55,17 @@ class VolumeBreakoutStrategy(TradingStrategy):
         if volume_period <= 1:
             raise ValueError(f"volume_period must be > 1, got {volume_period}")
         if volume_multiplier <= 1.0:
-            raise ValueError(f"volume_multiplier must be > 1.0, got {volume_multiplier}")
+            raise ValueError(
+                f"volume_multiplier must be > 1.0, got {volume_multiplier}"
+            )
         if price_momentum_period <= 0:
-            raise ValueError(f"price_momentum_period must be positive, got {price_momentum_period}")
+            raise ValueError(
+                f"price_momentum_period must be positive, got {price_momentum_period}"
+            )
         if min_price_change < 0:
-            raise ValueError(f"min_price_change must be non-negative, got {min_price_change}")
+            raise ValueError(
+                f"min_price_change must be non-negative, got {min_price_change}"
+            )
         if position_size <= 0:
             raise ValueError(f"position_size must be positive, got {position_size}")
         if max_position <= 0:
@@ -87,7 +93,7 @@ class VolumeBreakoutStrategy(TradingStrategy):
         volumes = list(self.volume_history[symbol])
         if len(volumes) < self.volume_period:
             return None
-        return sum(volumes[-self.volume_period:]) / self.volume_period
+        return sum(volumes[-self.volume_period :]) / self.volume_period
 
     def _check_price_momentum(self, symbol: str, current_price: float) -> bool:
         """Check if price has positive momentum."""
@@ -96,7 +102,7 @@ class VolumeBreakoutStrategy(TradingStrategy):
             return False
 
         # Check if current price is higher than recent average
-        recent_prices = prices[-self.price_momentum_period:]
+        recent_prices = prices[-self.price_momentum_period :]
         avg_recent_price = sum(recent_prices) / len(recent_prices)
 
         price_change_pct = (current_price - avg_recent_price) / avg_recent_price
@@ -104,9 +110,7 @@ class VolumeBreakoutStrategy(TradingStrategy):
         return price_change_pct >= self.min_price_change
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Generate trading signals based on volume breakouts with price confirmation.
@@ -116,17 +120,23 @@ class VolumeBreakoutStrategy(TradingStrategy):
         """
         # Validate tick
         if tick.price <= 0:
-            logger.warning(f"Invalid price {tick.price} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid price {tick.price} for {tick.symbol}, skipping tick"
+            )
             return []
 
         if tick.volume < 0:
-            logger.warning(f"Invalid volume {tick.volume} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid volume {tick.volume} for {tick.symbol}, skipping tick"
+            )
             return []
 
         # Initialize for new symbol
         if tick.symbol not in self.volume_history:
             self.volume_history[tick.symbol] = deque(maxlen=self.volume_period + 10)
-            self.price_history[tick.symbol] = deque(maxlen=max(self.price_momentum_period, 20))
+            self.price_history[tick.symbol] = deque(
+                maxlen=max(self.price_momentum_period, 20)
+            )
             self.current_tick[tick.symbol] = 0
             logger.info(f"Initialized volume breakout tracking for {tick.symbol}")
 
@@ -157,12 +167,14 @@ class VolumeBreakoutStrategy(TradingStrategy):
                 logger.info(
                     f"SELL signal (TIME EXIT) for {tick.symbol}: held for {ticks_held} ticks"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
                 del self.entry_tick[tick.symbol]
                 return orders
 
@@ -172,12 +184,14 @@ class VolumeBreakoutStrategy(TradingStrategy):
                     f"SELL signal (VOLUME FADE) for {tick.symbol}: volume={tick.volume:.0f}, "
                     f"avg_volume={avg_vol:.0f}"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
                 del self.entry_tick[tick.symbol]
                 return orders
 
@@ -191,25 +205,31 @@ class VolumeBreakoutStrategy(TradingStrategy):
             if has_momentum and current_qty < self.max_position:
                 quantity = min(
                     int(self.position_size / tick.price),
-                    self.max_position - current_qty
+                    self.max_position - current_qty,
                 )
 
                 if quantity > 0:
                     volume_ratio = tick.volume / avg_vol
                     prices = list(self.price_history[tick.symbol])
-                    price_change = (tick.price - prices[-self.price_momentum_period]) / prices[-self.price_momentum_period] * 100
+                    price_change = (
+                        (tick.price - prices[-self.price_momentum_period])
+                        / prices[-self.price_momentum_period]
+                        * 100
+                    )
 
                     logger.info(
                         f"BUY signal (VOLUME BREAKOUT) for {tick.symbol}: "
                         f"volume={tick.volume:.0f} ({volume_ratio:.1f}x avg), "
                         f"price_change={price_change:.2f}%, quantity={quantity}"
                     )
-                    orders.append(Order(
-                        symbol=tick.symbol,
-                        side=OrderSide.BUY,
-                        order_type=OrderType.MARKET,
-                        quantity=quantity
-                    ))
+                    orders.append(
+                        Order(
+                            symbol=tick.symbol,
+                            side=OrderSide.BUY,
+                            order_type=OrderType.MARKET,
+                            quantity=quantity,
+                        )
+                    )
                     # Track entry tick
                     self.entry_tick[tick.symbol] = self.current_tick[tick.symbol]
 

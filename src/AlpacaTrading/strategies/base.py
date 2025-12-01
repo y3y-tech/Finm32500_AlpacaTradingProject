@@ -45,9 +45,7 @@ class TradingStrategy(ABC):
 
     @abstractmethod
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Process new market data and generate trading signals.
@@ -78,9 +76,7 @@ class TradingStrategy(ABC):
         pass
 
     def process_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Wrapper for on_market_data with error handling.
@@ -115,7 +111,7 @@ class TradingStrategy(ABC):
             self._error_count += 1
             logger.error(
                 f"{self.name} error processing {tick.symbol} at {tick.timestamp}: {e}",
-                exc_info=True
+                exc_info=True,
             )
 
             # Warn if too many consecutive errors

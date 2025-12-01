@@ -25,7 +25,7 @@ STRATEGY_CONFIGS = {
             lookback_period=10,
             momentum_threshold=0.015,  # 1.5% momentum required
             position_size=15000,
-            max_position=150
+            max_position=150,
         ),
         "risk_config": RiskConfig(
             max_position_size=150,
@@ -33,19 +33,18 @@ STRATEGY_CONFIGS = {
             max_total_exposure=300_000,
             max_orders_per_minute=50,
             max_orders_per_symbol_per_minute=10,
-            min_cash_buffer=10000
+            min_cash_buffer=10000,
         ),
         "symbols": ["AAPL", "MSFT", "GOOGL", "TSLA", "NVDA"],
-        "description": "Aggressive momentum trader for strong trends"
+        "description": "Aggressive momentum trader for strong trends",
     },
-
     # Conservative momentum for stable markets
     "momentum_conservative": {
         "strategy": MomentumStrategy(
             lookback_period=20,
             momentum_threshold=0.01,  # 1% momentum
             position_size=8000,
-            max_position=80
+            max_position=80,
         ),
         "risk_config": RiskConfig(
             max_position_size=80,
@@ -53,12 +52,11 @@ STRATEGY_CONFIGS = {
             max_total_exposure=150_000,
             max_orders_per_minute=30,
             max_orders_per_symbol_per_minute=5,
-            min_cash_buffer=20000
+            min_cash_buffer=20000,
         ),
         "symbols": ["SPY", "QQQ", "DIA", "IWM"],
-        "description": "Conservative momentum with tight risk controls"
+        "description": "Conservative momentum with tight risk controls",
     },
-
     # RSI mean reversion with profit targets
     "rsi_scalper": {
         "strategy": RSIStrategy(
@@ -68,7 +66,7 @@ STRATEGY_CONFIGS = {
             position_size=10000,
             max_position=100,
             profit_target=2.0,  # 2% profit target
-            stop_loss=1.0  # 1% stop loss
+            stop_loss=1.0,  # 1% stop loss
         ),
         "risk_config": RiskConfig(
             max_position_size=100,
@@ -76,12 +74,11 @@ STRATEGY_CONFIGS = {
             max_total_exposure=200_000,
             max_orders_per_minute=40,
             max_orders_per_symbol_per_minute=8,
-            min_cash_buffer=15000
+            min_cash_buffer=15000,
         ),
         "symbols": ["AAPL", "MSFT", "AMZN", "META", "NFLX"],
-        "description": "RSI scalper with tight profit/loss targets"
+        "description": "RSI scalper with tight profit/loss targets",
     },
-
     # RSI swing trader
     "rsi_swing": {
         "strategy": RSIStrategy(
@@ -91,7 +88,7 @@ STRATEGY_CONFIGS = {
             position_size=12000,
             max_position=120,
             profit_target=5.0,  # 5% profit target
-            stop_loss=2.5  # 2.5% stop loss
+            stop_loss=2.5,  # 2.5% stop loss
         ),
         "risk_config": RiskConfig(
             max_position_size=120,
@@ -99,21 +96,20 @@ STRATEGY_CONFIGS = {
             max_total_exposure=250_000,
             max_orders_per_minute=30,
             max_orders_per_symbol_per_minute=6,
-            min_cash_buffer=10000
+            min_cash_buffer=10000,
         ),
         "symbols": ["AAPL", "TSLA", "AMD", "COIN", "SQ"],
-        "description": "RSI swing trader for multi-day holds"
+        "description": "RSI swing trader for multi-day holds",
     },
-
     # Bollinger Bands breakout
     "bb_breakout": {
         "strategy": BollingerBandsStrategy(
             period=20,
             num_std_dev=2.0,
-            mode='breakout',
+            mode="breakout",
             position_size=12000,
             max_position=120,
-            band_threshold=0.002  # 0.2% beyond band
+            band_threshold=0.002,  # 0.2% beyond band
         ),
         "risk_config": RiskConfig(
             max_position_size=120,
@@ -121,21 +117,20 @@ STRATEGY_CONFIGS = {
             max_total_exposure=240_000,
             max_orders_per_minute=40,
             max_orders_per_symbol_per_minute=8,
-            min_cash_buffer=12000
+            min_cash_buffer=12000,
         ),
         "symbols": ["NVDA", "TSLA", "AMD", "SMCI", "MSTR"],
-        "description": "Bollinger Bands breakout for volatile stocks"
+        "description": "Bollinger Bands breakout for volatile stocks",
     },
-
     # Bollinger Bands mean reversion
     "bb_reversion": {
         "strategy": BollingerBandsStrategy(
             period=20,
             num_std_dev=2.5,  # Wider bands
-            mode='reversion',
+            mode="reversion",
             position_size=10000,
             max_position=100,
-            band_threshold=0.001
+            band_threshold=0.001,
         ),
         "risk_config": RiskConfig(
             max_position_size=100,
@@ -143,12 +138,11 @@ STRATEGY_CONFIGS = {
             max_total_exposure=200_000,
             max_orders_per_minute=35,
             max_orders_per_symbol_per_minute=7,
-            min_cash_buffer=15000
+            min_cash_buffer=15000,
         ),
         "symbols": ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL"],
-        "description": "Bollinger mean reversion for range-bound markets"
+        "description": "Bollinger mean reversion for range-bound markets",
     },
-
     # Volume breakout trader
     "volume_breakout": {
         "strategy": VolumeBreakoutStrategy(
@@ -158,7 +152,7 @@ STRATEGY_CONFIGS = {
             min_price_change=0.012,  # 1.2% price move
             position_size=15000,
             max_position=150,
-            hold_periods=30  # Hold for max 30 ticks
+            hold_periods=30,  # Hold for max 30 ticks
         ),
         "risk_config": RiskConfig(
             max_position_size=150,
@@ -166,12 +160,11 @@ STRATEGY_CONFIGS = {
             max_total_exposure=300_000,
             max_orders_per_minute=50,
             max_orders_per_symbol_per_minute=10,
-            min_cash_buffer=10000
+            min_cash_buffer=10000,
         ),
         "symbols": ["TSLA", "NVDA", "AMD", "COIN", "MSTR", "SMCI"],
-        "description": "Volume breakout for news-driven moves"
+        "description": "Volume breakout for news-driven moves",
     },
-
     # VWAP mean reversion
     "vwap_intraday": {
         "strategy": VWAPStrategy(
@@ -179,7 +172,7 @@ STRATEGY_CONFIGS = {
             position_size=10000,
             max_position=100,
             reset_period=390,  # Reset daily (390 minutes in trading day)
-            min_samples=20
+            min_samples=20,
         ),
         "risk_config": RiskConfig(
             max_position_size=100,
@@ -187,19 +180,15 @@ STRATEGY_CONFIGS = {
             max_total_exposure=200_000,
             max_orders_per_minute=40,
             max_orders_per_symbol_per_minute=8,
-            min_cash_buffer=15000
+            min_cash_buffer=15000,
         ),
         "symbols": ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL"],
-        "description": "VWAP mean reversion for liquid stocks"
+        "description": "VWAP mean reversion for liquid stocks",
     },
-
     # MA Crossover trend follower
     "ma_crossover": {
         "strategy": MovingAverageCrossoverStrategy(
-            short_window=10,
-            long_window=30,
-            position_size=12000,
-            max_position=120
+            short_window=10, long_window=30, position_size=12000, max_position=120
         ),
         "risk_config": RiskConfig(
             max_position_size=120,
@@ -207,12 +196,11 @@ STRATEGY_CONFIGS = {
             max_total_exposure=250_000,
             max_orders_per_minute=30,
             max_orders_per_symbol_per_minute=6,
-            min_cash_buffer=15000
+            min_cash_buffer=15000,
         ),
         "symbols": ["SPY", "QQQ", "AAPL", "MSFT", "AMZN"],
-        "description": "Classic MA crossover trend follower"
+        "description": "Classic MA crossover trend follower",
     },
-
     # Multi-strategy portfolio (for comparison)
     "balanced_portfolio": {
         # This would use a portfolio of strategies (future enhancement)
@@ -221,7 +209,7 @@ STRATEGY_CONFIGS = {
             oversold_threshold=30,
             overbought_threshold=70,
             position_size=10000,
-            max_position=100
+            max_position=100,
         ),
         "risk_config": RiskConfig(
             max_position_size=100,
@@ -229,11 +217,11 @@ STRATEGY_CONFIGS = {
             max_total_exposure=200_000,
             max_orders_per_minute=40,
             max_orders_per_symbol_per_minute=8,
-            min_cash_buffer=15000
+            min_cash_buffer=15000,
         ),
         "symbols": ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "TSLA", "NVDA"],
-        "description": "Balanced multi-asset portfolio"
-    }
+        "description": "Balanced multi-asset portfolio",
+    },
 }
 
 
@@ -247,7 +235,7 @@ CRYPTO_CONFIGS = {
             lookback_period=15,
             momentum_threshold=0.02,  # 2% for crypto volatility
             position_size=5000,
-            max_position=0.5  # BTC fractions
+            max_position=0.5,  # BTC fractions
         ),
         "risk_config": RiskConfig(
             max_position_size=1.0,
@@ -255,12 +243,11 @@ CRYPTO_CONFIGS = {
             max_total_exposure=100_000,
             max_orders_per_minute=30,
             max_orders_per_symbol_per_minute=5,
-            min_cash_buffer=5000
+            min_cash_buffer=5000,
         ),
         "symbols": ["BTC/USD", "ETH/USD"],
-        "description": "Bitcoin momentum trader"
+        "description": "Bitcoin momentum trader",
     },
-
     "crypto_rsi": {
         "strategy": RSIStrategy(
             rsi_period=14,
@@ -269,7 +256,7 @@ CRYPTO_CONFIGS = {
             position_size=3000,
             max_position=0.3,
             profit_target=3.0,
-            stop_loss=2.0
+            stop_loss=2.0,
         ),
         "risk_config": RiskConfig(
             max_position_size=1.0,
@@ -277,19 +264,18 @@ CRYPTO_CONFIGS = {
             max_total_exposure=80_000,
             max_orders_per_minute=40,
             max_orders_per_symbol_per_minute=8,
-            min_cash_buffer=10000
+            min_cash_buffer=10000,
         ),
         "symbols": ["BTC/USD", "ETH/USD", "SOL/USD"],
-        "description": "Crypto RSI with wide thresholds for volatility"
+        "description": "Crypto RSI with wide thresholds for volatility",
     },
-
     "crypto_vwap": {
         "strategy": VWAPStrategy(
             deviation_threshold=0.015,  # 1.5% for crypto
             position_size=4000,
             max_position=0.4,
             reset_period=0,  # Never reset (24/7 trading)
-            min_samples=30
+            min_samples=30,
         ),
         "risk_config": RiskConfig(
             max_position_size=1.0,
@@ -297,11 +283,11 @@ CRYPTO_CONFIGS = {
             max_total_exposure=90_000,
             max_orders_per_minute=35,
             max_orders_per_symbol_per_minute=7,
-            min_cash_buffer=8000
+            min_cash_buffer=8000,
         ),
         "symbols": ["BTC/USD", "ETH/USD"],
-        "description": "VWAP mean reversion for crypto 24/7"
-    }
+        "description": "VWAP mean reversion for crypto 24/7",
+    },
 }
 
 
@@ -322,7 +308,8 @@ DATA_FILES = {
 # HELPER FUNCTIONS
 # ============================================================================
 
-def get_config(config_name: str, asset_class: str = 'equities'):
+
+def get_config(config_name: str, asset_class: str = "equities"):
     """
     Get a strategy configuration by name.
 
@@ -338,23 +325,23 @@ def get_config(config_name: str, asset_class: str = 'equities'):
         strategy = config['strategy']
         risk_config = config['risk_config']
     """
-    configs = CRYPTO_CONFIGS if asset_class == 'crypto' else STRATEGY_CONFIGS
+    configs = CRYPTO_CONFIGS if asset_class == "crypto" else STRATEGY_CONFIGS
 
     if config_name not in configs:
-        available = ', '.join(configs.keys())
+        available = ", ".join(configs.keys())
         raise ValueError(f"Unknown config '{config_name}'. Available: {available}")
 
     return configs[config_name]
 
 
-def list_configs(asset_class: str = 'equities'):
+def list_configs(asset_class: str = "equities"):
     """
     List all available configurations with descriptions.
 
     Args:
         asset_class: 'equities' or 'crypto'
     """
-    configs = CRYPTO_CONFIGS if asset_class == 'crypto' else STRATEGY_CONFIGS
+    configs = CRYPTO_CONFIGS if asset_class == "crypto" else STRATEGY_CONFIGS
 
     print(f"\nAvailable {asset_class.upper()} Configurations:")
     print("=" * 80)

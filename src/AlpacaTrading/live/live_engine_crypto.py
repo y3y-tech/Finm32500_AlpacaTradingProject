@@ -18,9 +18,10 @@ from AlpacaTrading.trading import (
     OrderManager,
     RiskConfig,
     RiskManager,
-    StopLossConfig
+    StopLossConfig,
 )
 from AlpacaTrading.gateway.order_gateway import OrderGateway
+
 # UPDATED: Import from alpaca_trader_crypto to support both asset classes
 from AlpacaTrading.live.alpaca_trader_crypto import AlpacaTrader, AlpacaConfig
 
@@ -41,6 +42,7 @@ class LiveEngineConfig:
         log_orders: Enable order logging to CSV (default: True)
         order_log_path: Path for order log CSV (default: "live_orders.csv")
     """
+
     alpaca_config: AlpacaConfig
     risk_config: RiskConfig
     stop_loss_config: StopLossConfig
@@ -113,8 +115,7 @@ class LiveTradingEngine:
 
         # Initialize risk manager (stop-loss)
         self.risk_manager = RiskManager(
-            config.stop_loss_config,
-            initial_portfolio_value=account["portfolio_value"]
+            config.stop_loss_config, initial_portfolio_value=account["portfolio_value"]
         )
 
         # Initialize order gateway for logging
@@ -147,7 +148,7 @@ class LiveTradingEngine:
             tick: Market data point from Alpaca
         """
         # --- ADD THIS LINE FOR DEBUGGING ---
-        logger.debug(f"TICK RECEIVED: {tick.symbol} @ {tick.price}") 
+        logger.debug(f"TICK RECEIVED: {tick.symbol} @ {tick.price}")
         # -----------------------------------
         try:
             # Update current prices
@@ -161,7 +162,7 @@ class LiveTradingEngine:
                 stop_orders = self.risk_manager.check_stops(
                     self.current_prices,
                     self.portfolio.get_total_value(),
-                    self.portfolio.positions
+                    self.portfolio.positions,
                 )
 
                 # Execute stop-loss orders immediately
@@ -195,10 +196,7 @@ class LiveTradingEngine:
             logger.exception(f"Error processing market data: {e}")
 
     def _execute_order(
-        self,
-        order: Order,
-        timestamp: datetime,
-        is_stop: bool = False
+        self, order: Order, timestamp: datetime, is_stop: bool = False
     ) -> None:
         """
         Execute order with validation and logging.
@@ -215,7 +213,7 @@ class LiveTradingEngine:
                     order,
                     self.portfolio.cash,
                     self.portfolio.positions,
-                    self.current_prices
+                    self.current_prices,
                 )
 
                 if not is_valid:
@@ -232,7 +230,9 @@ class LiveTradingEngine:
             if self.config.enable_trading:
                 try:
                     alpaca_order = self.trader.submit_order(order)
-                    logger.info(f"Order SUBMITTED: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}")
+                    logger.info(
+                        f"Order SUBMITTED: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}"
+                    )
                     logger.info(f"   Alpaca Order ID: {alpaca_order['id']}")
 
                     # Record order for rate limiting (skip for stops)
@@ -240,7 +240,7 @@ class LiveTradingEngine:
                         self.order_manager.record_order(order)
 
                     # Poll for fill (simplified - in production use WebSocket trade_updates)
-                    self._wait_for_fill(alpaca_order['id'], order)
+                    self._wait_for_fill(alpaca_order["id"], order)
 
                 except Exception as e:
                     logger.exception(f"Order FAILED: {e}")
@@ -249,7 +249,9 @@ class LiveTradingEngine:
 
             else:
                 # Dry run mode - simulate fill
-                logger.info(f"DRY RUN: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}")
+                logger.info(
+                    f"DRY RUN: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}"
+                )
                 self._simulate_fill(order, timestamp)
 
         except Exception as e:
@@ -270,18 +272,18 @@ class LiveTradingEngine:
 
         while time.time() - start_time < timeout:
             alpaca_order = self.trader.get_order(order_id)
-            status = alpaca_order['status']
+            status = alpaca_order["status"]
 
-            if status == 'filled':
+            if status == "filled":
                 # Create trade from fill
                 trade = Trade(
                     trade_id=order_id,
                     order_id=order_id,
-                    timestamp=alpaca_order['filled_at'],
+                    timestamp=alpaca_order["filled_at"],
                     symbol=order.symbol,
                     side=order.side,
-                    quantity=alpaca_order['filled_qty'],
-                    price=alpaca_order['filled_avg_price']
+                    quantity=alpaca_order["filled_qty"],
+                    price=alpaca_order["filled_avg_price"],
                 )
 
                 # Update portfolio
@@ -292,7 +294,7 @@ class LiveTradingEngine:
                     self.risk_manager.add_position_stop(
                         symbol=order.symbol,
                         entry_price=trade.price,
-                        quantity=trade.quantity
+                        quantity=trade.quantity,
                     )
 
                 # Log fill
@@ -302,11 +304,11 @@ class LiveTradingEngine:
                 logger.info(f"   FILLED: {trade.quantity} @ ${trade.price:.2f}")
                 return
 
-            elif status == 'partially_filled':
-                filled_qty = alpaca_order['filled_qty']
+            elif status == "partially_filled":
+                filled_qty = alpaca_order["filled_qty"]
                 logger.info(f"   PARTIAL FILL: {filled_qty} / {order.quantity}")
 
-            elif status in ('canceled', 'expired', 'rejected'):
+            elif status in ("canceled", "expired", "rejected"):
                 logger.info(f"   Order {status.upper()}")
                 if self.order_gateway:
                     self.order_gateway.log_order_cancelled(order)
@@ -334,7 +336,7 @@ class LiveTradingEngine:
             symbol=order.symbol,
             side=order.side,
             quantity=order.quantity,
-            price=price
+            price=price,
         )
 
         self.portfolio.process_trade(trade)
@@ -356,13 +358,9 @@ class LiveTradingEngine:
         logger.info(f"   Trades: {len(self.portfolio.trades)}")
 
         if self.risk_manager.circuit_breaker_triggered:
-            logger.warning(f"   Circuit Breaker: TRIGGERED")
+            logger.warning("   Circuit Breaker: TRIGGERED")
 
-    def run(
-        self,
-        symbols: list[str],
-        data_type: str = "trades"
-    ) -> None:
+    def run(self, symbols: list[str], data_type: str = "trades") -> None:
         """
         Start live trading.
 
@@ -376,7 +374,9 @@ class LiveTradingEngine:
         logger.info("LIVE TRADING ENGINE")
         logger.info("=" * 60)
         logger.info(f"Mode: {'PAPER' if self.config.alpaca_config.paper else 'LIVE'}")
-        logger.info(f"Trading: {'ENABLED' if self.config.enable_trading else 'DRY RUN'}")
+        logger.info(
+            f"Trading: {'ENABLED' if self.config.enable_trading else 'DRY RUN'}"
+        )
         logger.info(f"Strategy: {self.strategy.__class__.__name__}")
         logger.info(f"Symbols: {', '.join(symbols)}")
         logger.info(f"Data Type: {data_type}")
@@ -396,9 +396,7 @@ class LiveTradingEngine:
         try:
             # Start streaming (blocking call)
             self.trader.start_streaming(
-                symbols=symbols,
-                callback=self._on_market_data,
-                data_type=data_type
+                symbols=symbols, callback=self._on_market_data, data_type=data_type
             )
         except KeyboardInterrupt:
             logger.info("Keyboard interrupt received")
@@ -414,7 +412,9 @@ class LiveTradingEngine:
         if positions:
             logger.info(f"Syncing {len(positions)} existing positions from Alpaca...")
             for pos in positions:
-                logger.info(f"   {pos['symbol']}: {pos['quantity']} @ ${pos['avg_entry_price']:.2f}")
+                logger.info(
+                    f"   {pos['symbol']}: {pos['quantity']} @ ${pos['avg_entry_price']:.2f}"
+                )
 
                 # Create synthetic trade to populate portfolio
                 # Note: This is a simplification - in production, track position history properly
@@ -422,19 +422,19 @@ class LiveTradingEngine:
                     trade_id=f"sync_{pos['symbol']}",
                     order_id=f"sync_{pos['symbol']}",
                     timestamp=datetime.now(),
-                    symbol=pos['symbol'],
-                    side=OrderSide.BUY if pos['side'] == 'long' else OrderSide.SELL,
-                    quantity=abs(pos['quantity']),
-                    price=pos['avg_entry_price']
+                    symbol=pos["symbol"],
+                    side=OrderSide.BUY if pos["side"] == "long" else OrderSide.SELL,
+                    quantity=abs(pos["quantity"]),
+                    price=pos["avg_entry_price"],
                 )
                 self.portfolio.process_trade(trade)
 
                 # Add stop-loss for existing position
                 if self.config.enable_stop_loss:
                     self.risk_manager.add_position_stop(
-                        symbol=pos['symbol'],
-                        entry_price=pos['avg_entry_price'],
-                        quantity=pos['quantity']
+                        symbol=pos["symbol"],
+                        entry_price=pos["avg_entry_price"],
+                        quantity=pos["quantity"],
                     )
 
     def stop(self) -> None:
@@ -471,7 +471,9 @@ class LiveTradingEngine:
             logger.info("OPEN POSITIONS:")
             for symbol, pos in self.portfolio.positions.items():
                 if pos.quantity != 0:
-                    logger.info(f"   {symbol}: {pos.quantity} @ ${pos.average_cost:.2f} (P&L: ${pos.total_pnl:+,.2f})")
+                    logger.info(
+                        f"   {symbol}: {pos.quantity} @ ${pos.average_cost:.2f} (P&L: ${pos.total_pnl:+,.2f})"
+                    )
 
         logger.info("Shutdown complete")
         logger.info("=" * 60)

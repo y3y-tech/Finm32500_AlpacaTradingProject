@@ -4,7 +4,9 @@ from pathlib import Path
 from typing import Union
 
 
-def load_equities(ticker: str, period: str = "7d", interval: str = "1m") -> tuple[str, Path]:
+def load_equities(
+    ticker: str, period: str = "7d", interval: str = "1m"
+) -> tuple[str, Path]:
     """Download equity data and write a CSV into the repository's raw_data folder.
 
     Returns (ticker, output_path).
@@ -29,7 +31,6 @@ def load_equities(ticker: str, period: str = "7d", interval: str = "1m") -> tupl
 
 
 def clean_equities(ticker: str, raw_data_file_path: Union[str, Path]):
-
     raw_path = Path(raw_data_file_path)
     equities_df = pd.read_csv(raw_path, index_col=0)
 
@@ -39,7 +40,7 @@ def clean_equities(ticker: str, raw_data_file_path: Union[str, Path]):
 
     equities_df["Weekly Moving Average"] = equities_df["Close"].rolling(window=7).mean()
 
-    equities_df.rename(columns={'Ticker': 'symbol'}, inplace=True)
+    equities_df.rename(columns={"Ticker": "symbol"}, inplace=True)
 
     data_name = "tickers_cleaned.csv"
 
@@ -52,8 +53,7 @@ def clean_equities(ticker: str, raw_data_file_path: Union[str, Path]):
 
     equities_df.to_csv(cleaned_dir / data_name)
 
+
 if __name__ == "__main__":
     apple, path = load_equities(ticker=["AAPL", "MSFT"])
     clean_equities(apple, path)
-
-    

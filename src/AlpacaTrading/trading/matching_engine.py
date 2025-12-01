@@ -58,7 +58,7 @@ class MatchingEngine:
         bid_ask_spread_bps: float = 5.0,
         sec_fee_rate: float = 0.0000278,
         liquidity_impact_factor: float = 0.0001,
-        random_seed: int | None = None
+        random_seed: int | None = None,
     ):
         """
         Initialize matching engine.
@@ -84,9 +84,7 @@ class MatchingEngine:
 
         total_prob = fill_probability + partial_fill_probability + cancel_probability
         if not (0.99 <= total_prob <= 1.01):  # Allow small floating point error
-            raise ValueError(
-                f"Probabilities must sum to 1.0, got {total_prob}"
-            )
+            raise ValueError(f"Probabilities must sum to 1.0, got {total_prob}")
 
         # Execution probabilities
         self.fill_probability = fill_probability
@@ -109,7 +107,7 @@ class MatchingEngine:
         order: Order,
         market_price: float,
         best_bid: float | None = None,
-        best_ask: float | None = None
+        best_ask: float | None = None,
     ) -> list[Trade]:
         """
         Execute order with probabilistic fill simulation.
@@ -139,9 +137,7 @@ class MatchingEngine:
             fill_qty = order.quantity * fill_ratio
 
         # Determine fill price
-        fill_price = self._determine_fill_price(
-            order, market_price, best_bid, best_ask
-        )
+        fill_price = self._determine_fill_price(order, market_price, best_bid, best_ask)
 
         # Create trade
         trade = Trade(
@@ -151,7 +147,7 @@ class MatchingEngine:
             symbol=order.symbol,
             side=order.side,
             quantity=fill_qty,
-            price=fill_price
+            price=fill_price,
         )
 
         # Update order
@@ -180,7 +176,7 @@ class MatchingEngine:
         order: Order,
         market_price: float,
         best_bid: float | None,
-        best_ask: float | None
+        best_ask: float | None,
     ) -> float:
         """
         Determine realistic fill price based on order type and market conditions.
@@ -201,7 +197,9 @@ class MatchingEngine:
             # Still apply commission as effective price adjustment
             fill_price = order.price
             commission = self._calculate_commission(order.quantity, fill_price)
-            commission_per_share = commission / order.quantity if order.quantity > 0 else 0
+            commission_per_share = (
+                commission / order.quantity if order.quantity > 0 else 0
+            )
 
             if order.side == OrderSide.BUY:
                 return fill_price + commission_per_share
@@ -209,7 +207,9 @@ class MatchingEngine:
                 # For sells, also add SEC fees
                 sec_fee = self._calculate_sec_fee(order.quantity, fill_price)
                 total_costs = commission + sec_fee
-                return fill_price - (total_costs / order.quantity if order.quantity > 0 else 0)
+                return fill_price - (
+                    total_costs / order.quantity if order.quantity > 0 else 0
+                )
 
         # Market orders - incorporate all transaction costs
         # Calculate bid-ask spread if not provided
@@ -296,7 +296,7 @@ class MatchingEngine:
         self,
         fill_prob: float | None = None,
         partial_prob: float | None = None,
-        cancel_prob: float | None = None
+        cancel_prob: float | None = None,
     ) -> None:
         """
         Update execution probabilities.
@@ -316,9 +316,9 @@ class MatchingEngine:
             self.cancel_probability = cancel_prob
 
         total = (
-            self.fill_probability +
-            self.partial_fill_probability +
-            self.cancel_probability
+            self.fill_probability
+            + self.partial_fill_probability
+            + self.cancel_probability
         )
         if not (0.99 <= total <= 1.01):
             raise ValueError(f"Probabilities must sum to 1.0, got {total}")
@@ -331,15 +331,15 @@ class MatchingEngine:
             Dictionary with probability and cost settings
         """
         return {
-            'fill_probability': self.fill_probability,
-            'partial_fill_probability': self.partial_fill_probability,
-            'cancel_probability': self.cancel_probability,
-            'market_impact': self.market_impact,
-            'commission_per_share': self.commission_per_share,
-            'commission_min': self.commission_min,
-            'bid_ask_spread_bps': self.bid_ask_spread_bps,
-            'sec_fee_rate': self.sec_fee_rate,
-            'liquidity_impact_factor': self.liquidity_impact_factor
+            "fill_probability": self.fill_probability,
+            "partial_fill_probability": self.partial_fill_probability,
+            "cancel_probability": self.cancel_probability,
+            "market_impact": self.market_impact,
+            "commission_per_share": self.commission_per_share,
+            "commission_min": self.commission_min,
+            "bid_ask_spread_bps": self.bid_ask_spread_bps,
+            "sec_fee_rate": self.sec_fee_rate,
+            "liquidity_impact_factor": self.liquidity_impact_factor,
         }
 
     def __repr__(self) -> str:

@@ -25,10 +25,7 @@ class TestTradingSystemIntegration:
         """Test complete order lifecycle from creation to execution."""
         # Create order
         order = Order(
-            symbol="TEST",
-            side=OrderSide.BUY,
-            order_type=OrderType.MARKET,
-            quantity=10
+            symbol="TEST", side=OrderSide.BUY, order_type=OrderType.MARKET, quantity=10
         )
 
         assert order.status.value == "NEW"
@@ -38,7 +35,7 @@ class TestTradingSystemIntegration:
         engine = MatchingEngine(
             fill_probability=1.0,  # Always fill for test
             partial_fill_probability=0.0,
-            cancel_probability=0.0
+            cancel_probability=0.0,
         )
 
         trades = engine.execute_order(order, market_price=100.0)
@@ -59,7 +56,7 @@ class TestTradingSystemIntegration:
             symbol="TEST",
             side=OrderSide.BUY,
             quantity=10,
-            price=100.0
+            price=100.0,
         )
 
         portfolio.process_trade(buy_trade)
@@ -77,9 +74,7 @@ class TestTradingSystemIntegration:
     def test_order_validation(self):
         """Test order manager validates orders correctly."""
         config = RiskConfig(
-            max_position_size=50,
-            max_position_value=10000,
-            min_cash_buffer=1000
+            max_position_size=50, max_position_value=10000, min_cash_buffer=1000
         )
         manager = OrderManager(config)
 
@@ -89,14 +84,11 @@ class TestTradingSystemIntegration:
             side=OrderSide.BUY,
             order_type=OrderType.LIMIT,
             quantity=10,
-            price=100.0
+            price=100.0,
         )
 
         is_valid, error = manager.validate_order(
-            order1,
-            cash=5000,
-            positions={},
-            current_prices={"TEST": 100.0}
+            order1, cash=5000, positions={}, current_prices={"TEST": 100.0}
         )
         assert is_valid
 
@@ -106,14 +98,11 @@ class TestTradingSystemIntegration:
             side=OrderSide.BUY,
             order_type=OrderType.LIMIT,
             quantity=100,
-            price=100.0
+            price=100.0,
         )
 
         is_valid, error = manager.validate_order(
-            order2,
-            cash=5000,
-            positions={},
-            current_prices={"TEST": 100.0}
+            order2, cash=5000, positions={}, current_prices={"TEST": 100.0}
         )
         assert not is_valid
         assert "Insufficient capital" in error
@@ -129,7 +118,7 @@ class TestTradingSystemIntegration:
                 timestamp=datetime.now(),
                 symbol="TEST",
                 price=100.0 + i,  # Rising prices
-                volume=1000
+                volume=1000,
             )
             orders = strategy.on_market_data(tick, portfolio)
 
@@ -139,7 +128,7 @@ class TestTradingSystemIntegration:
 
     @pytest.mark.skipif(
         not Path("data/assignment3_market_data.csv").exists(),
-        reason="Market data file not found"
+        reason="Market data file not found",
     )
     def test_full_backtest(self):
         """Test complete backtest with real data."""
@@ -154,7 +143,7 @@ class TestTradingSystemIntegration:
                 data_gateway=data_gateway,
                 strategy=strategy,
                 initial_cash=100_000,
-                order_log_file=str(log_file)
+                order_log_file=str(log_file),
             )
 
             # Run with limited ticks
@@ -175,7 +164,7 @@ class TestDataGateway:
 
     @pytest.mark.skipif(
         not Path("data/assignment3_market_data.csv").exists(),
-        reason="Market data file not found"
+        reason="Market data file not found",
     )
     def test_data_streaming(self):
         """Test data gateway streams data correctly."""

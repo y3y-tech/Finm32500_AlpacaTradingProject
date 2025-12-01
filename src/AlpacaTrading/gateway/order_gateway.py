@@ -51,22 +51,24 @@ class OrderGateway:
 
     def _write_header(self) -> None:
         """Write CSV header to log file."""
-        with self.log_file.open('w', newline='') as f:
+        with self.log_file.open("w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow([
-                'timestamp',
-                'event_type',
-                'order_id',
-                'symbol',
-                'side',
-                'order_type',
-                'quantity',
-                'price',
-                'status',
-                'filled_quantity',
-                'average_fill_price',
-                'message'
-            ])
+            writer.writerow(
+                [
+                    "timestamp",
+                    "event_type",
+                    "order_id",
+                    "symbol",
+                    "side",
+                    "order_type",
+                    "quantity",
+                    "price",
+                    "status",
+                    "filled_quantity",
+                    "average_fill_price",
+                    "message",
+                ]
+            )
 
     def log_order_sent(self, order: Order, message: str = "") -> None:
         """Log order submission event."""
@@ -80,7 +82,9 @@ class OrderGateway:
         """Log order complete fill event."""
         self._log_event("FILLED", order, message)
 
-    def log_order_partial_fill(self, order: Order, fill_qty: float, fill_price: float) -> None:
+    def log_order_partial_fill(
+        self, order: Order, fill_qty: float, fill_price: float
+    ) -> None:
         """Log partial fill event."""
         message = f"Partial fill: {fill_qty} @ {fill_price}"
         self._log_event("PARTIAL_FILL", order, message)
@@ -98,12 +102,7 @@ class OrderGateway:
         message = f"Trade: {trade.trade_id}, {trade.quantity} @ {trade.price}"
         self._log_event("TRADE", order, message)
 
-    def _log_event(
-        self,
-        event_type: str,
-        order: Order,
-        message: str = ""
-    ) -> None:
+    def _log_event(self, event_type: str, order: Order, message: str = "") -> None:
         """
         Internal method to log an order event.
 
@@ -112,22 +111,24 @@ class OrderGateway:
             order: Order object
             message: Additional message or context
         """
-        with self.log_file.open('a', newline='') as f:
+        with self.log_file.open("a", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow([
-                datetime.now().isoformat(),
-                event_type,
-                order.order_id,
-                order.symbol,
-                order.side.value,
-                order.order_type.value,
-                order.quantity,
-                order.price if order.price is not None else "",
-                order.status.value,
-                order.filled_quantity,
-                order.average_fill_price,
-                message
-            ])
+            writer.writerow(
+                [
+                    datetime.now().isoformat(),
+                    event_type,
+                    order.order_id,
+                    order.symbol,
+                    order.side.value,
+                    order.order_type.value,
+                    order.quantity,
+                    order.price if order.price is not None else "",
+                    order.status.value,
+                    order.filled_quantity,
+                    order.average_fill_price,
+                    message,
+                ]
+            )
 
     def get_order_history(self, order_id: str | None = None) -> list[dict]:
         """
@@ -143,10 +144,10 @@ class OrderGateway:
             return []
 
         events = []
-        with self.log_file.open('r') as f:
+        with self.log_file.open("r") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                if order_id is None or row['order_id'] == order_id:
+                if order_id is None or row["order_id"] == order_id:
                     events.append(row)
 
         return events
@@ -166,12 +167,12 @@ class OrderGateway:
         """
         if not self.log_file.exists():
             return {
-                'total_orders': 0,
-                'filled_orders': 0,
-                'partial_fills': 0,
-                'cancelled_orders': 0,
-                'rejected_orders': 0,
-                'fill_rate': 0.0
+                "total_orders": 0,
+                "filled_orders": 0,
+                "partial_fills": 0,
+                "cancelled_orders": 0,
+                "rejected_orders": 0,
+                "fill_rate": 0.0,
             }
 
         order_ids = set()
@@ -180,33 +181,33 @@ class OrderGateway:
         cancelled = set()
         rejected = set()
 
-        with self.log_file.open('r') as f:
+        with self.log_file.open("r") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                order_id = row['order_id']
-                event = row['event_type']
+                order_id = row["order_id"]
+                event = row["event_type"]
 
-                if event == 'SENT':
+                if event == "SENT":
                     order_ids.add(order_id)
-                elif event == 'FILLED':
+                elif event == "FILLED":
                     filled.add(order_id)
-                elif event == 'PARTIAL_FILL':
+                elif event == "PARTIAL_FILL":
                     partial.add(order_id)
-                elif event == 'CANCELLED':
+                elif event == "CANCELLED":
                     cancelled.add(order_id)
-                elif event == 'REJECTED':
+                elif event == "REJECTED":
                     rejected.add(order_id)
 
         total = len(order_ids)
         fill_rate = (len(filled) / total * 100) if total > 0 else 0.0
 
         return {
-            'total_orders': total,
-            'filled_orders': len(filled),
-            'partial_fills': len(partial),
-            'cancelled_orders': len(cancelled),
-            'rejected_orders': len(rejected),
-            'fill_rate': fill_rate
+            "total_orders": total,
+            "filled_orders": len(filled),
+            "partial_fills": len(partial),
+            "cancelled_orders": len(cancelled),
+            "rejected_orders": len(rejected),
+            "fill_rate": fill_rate,
         }
 
     def clear_log(self) -> None:

@@ -47,10 +47,10 @@ class BollingerBandsStrategy(TradingStrategy):
         self,
         period: int = 20,
         num_std_dev: float = 2.0,
-        mode: str = 'breakout',
+        mode: str = "breakout",
         position_size: float = 10000,
         max_position: int = 100,
-        band_threshold: float = 0.001
+        band_threshold: float = 0.001,
     ):
         super().__init__(f"BollingerBands_{mode.capitalize()}")
 
@@ -59,14 +59,16 @@ class BollingerBandsStrategy(TradingStrategy):
             raise ValueError(f"period must be > 1, got {period}")
         if num_std_dev <= 0:
             raise ValueError(f"num_std_dev must be positive, got {num_std_dev}")
-        if mode not in ['breakout', 'reversion']:
+        if mode not in ["breakout", "reversion"]:
             raise ValueError(f"mode must be 'breakout' or 'reversion', got {mode}")
         if position_size <= 0:
             raise ValueError(f"position_size must be positive, got {position_size}")
         if max_position <= 0:
             raise ValueError(f"max_position must be positive, got {max_position}")
         if band_threshold < 0:
-            raise ValueError(f"band_threshold must be non-negative, got {band_threshold}")
+            raise ValueError(
+                f"band_threshold must be non-negative, got {band_threshold}"
+            )
 
         self.period = period
         self.num_std_dev = num_std_dev
@@ -80,7 +82,9 @@ class BollingerBandsStrategy(TradingStrategy):
         self.upper_band: dict[str, float] = {}
         self.middle_band: dict[str, float] = {}
         self.lower_band: dict[str, float] = {}
-        self.prev_price: dict[str, float] = {}  # Track previous price for crossover detection
+        self.prev_price: dict[
+            str, float
+        ] = {}  # Track previous price for crossover detection
 
     def _calculate_bands(self, symbol: str) -> tuple[float, float, float] | None:
         """
@@ -94,7 +98,7 @@ class BollingerBandsStrategy(TradingStrategy):
             return None
 
         # Calculate SMA (middle band)
-        recent_prices = prices[-self.period:]
+        recent_prices = prices[-self.period :]
         sma = sum(recent_prices) / self.period
 
         # Calculate standard deviation
@@ -108,9 +112,7 @@ class BollingerBandsStrategy(TradingStrategy):
         return upper, sma, lower
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Generate trading signals based on Bollinger Bands.
@@ -120,12 +122,16 @@ class BollingerBandsStrategy(TradingStrategy):
         """
         # Validate tick price
         if tick.price <= 0:
-            logger.warning(f"Invalid price {tick.price} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid price {tick.price} for {tick.symbol}, skipping tick"
+            )
             return []
 
         # Initialize for new symbol
         if tick.symbol not in self.price_history:
-            self.price_history[tick.symbol] = deque(maxlen=self.period + 10)  # Extra buffer
+            self.price_history[tick.symbol] = deque(
+                maxlen=self.period + 10
+            )  # Extra buffer
             logger.info(f"Initialized Bollinger Bands tracking for {tick.symbol}")
 
         # Track previous price for crossover detection
@@ -152,13 +158,13 @@ class BollingerBandsStrategy(TradingStrategy):
         orders = []
 
         # BREAKOUT MODE
-        if self.mode == 'breakout':
+        if self.mode == "breakout":
             # Buy when price breaks above upper band (strong upward momentum)
             if prev_price <= upper and tick.price > upper * (1 + self.band_threshold):
                 if current_qty < self.max_position:
                     quantity = min(
                         int(self.position_size / tick.price),
-                        self.max_position - current_qty
+                        self.max_position - current_qty,
                     )
 
                     if quantity > 0:
@@ -166,12 +172,14 @@ class BollingerBandsStrategy(TradingStrategy):
                             f"BUY signal (BREAKOUT) for {tick.symbol}: price={tick.price:.2f}, "
                             f"upper_band={upper:.2f}, middle={middle:.2f}, lower={lower:.2f}"
                         )
-                        orders.append(Order(
-                            symbol=tick.symbol,
-                            side=OrderSide.BUY,
-                            order_type=OrderType.MARKET,
-                            quantity=quantity
-                        ))
+                        orders.append(
+                            Order(
+                                symbol=tick.symbol,
+                                side=OrderSide.BUY,
+                                order_type=OrderType.MARKET,
+                                quantity=quantity,
+                            )
+                        )
 
             # Sell when price falls back below middle band (momentum fading)
             elif current_qty > 0 and tick.price < middle:
@@ -179,21 +187,23 @@ class BollingerBandsStrategy(TradingStrategy):
                     f"SELL signal (FADE) for {tick.symbol}: price={tick.price:.2f}, "
                     f"middle_band={middle:.2f}"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
 
         # MEAN REVERSION MODE
-        elif self.mode == 'reversion':
+        elif self.mode == "reversion":
             # Buy when price touches lower band (oversold, expect bounce)
             if tick.price <= lower * (1 + self.band_threshold):
                 if current_qty < self.max_position:
                     quantity = min(
                         int(self.position_size / tick.price),
-                        self.max_position - current_qty
+                        self.max_position - current_qty,
                     )
 
                     if quantity > 0:
@@ -201,12 +211,14 @@ class BollingerBandsStrategy(TradingStrategy):
                             f"BUY signal (OVERSOLD) for {tick.symbol}: price={tick.price:.2f}, "
                             f"lower_band={lower:.2f}, middle={middle:.2f}, upper={upper:.2f}"
                         )
-                        orders.append(Order(
-                            symbol=tick.symbol,
-                            side=OrderSide.BUY,
-                            order_type=OrderType.MARKET,
-                            quantity=quantity
-                        ))
+                        orders.append(
+                            Order(
+                                symbol=tick.symbol,
+                                side=OrderSide.BUY,
+                                order_type=OrderType.MARKET,
+                                quantity=quantity,
+                            )
+                        )
 
             # Sell when price reaches middle band (mean reversion complete)
             # or upper band (overbought)
@@ -215,12 +227,14 @@ class BollingerBandsStrategy(TradingStrategy):
                     f"SELL signal (REVERSION) for {tick.symbol}: price={tick.price:.2f}, "
                     f"middle_band={middle:.2f}"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
 
         return orders
 

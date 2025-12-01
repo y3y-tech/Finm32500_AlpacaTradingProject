@@ -30,6 +30,7 @@ class RiskConfig:
         max_orders_per_symbol_per_minute: Maximum orders per symbol per minute
         min_cash_buffer: Minimum cash to maintain (safety buffer)
     """
+
     max_position_size: float = 1000.0
     max_position_value: float = 100_000.0
     max_total_exposure: float = 500_000.0
@@ -80,7 +81,7 @@ class OrderManager:
         order: Order,
         cash: float,
         positions: dict[str, Position],
-        current_prices: dict[str, float]
+        current_prices: dict[str, float],
     ) -> tuple[bool, str]:
         """
         Validate order against all risk checks.
@@ -144,7 +145,10 @@ class OrderManager:
 
         # Check global rate limit
         if len(self.order_timestamps) >= self.risk_config.max_orders_per_minute:
-            return False, f"Global rate limit: {self.risk_config.max_orders_per_minute}/min"
+            return (
+                False,
+                f"Global rate limit: {self.risk_config.max_orders_per_minute}/min",
+            )
 
         # Check per-symbol rate limit
         symbol_timestamps = self.symbol_order_timestamps.get(order.symbol, deque())
@@ -185,7 +189,7 @@ class OrderManager:
         self,
         order: Order,
         positions: dict[str, Position],
-        current_prices: dict[str, float]
+        current_prices: dict[str, float],
     ) -> tuple[bool, str]:
         """Check position size and value limits."""
         current_position = positions.get(order.symbol)
@@ -220,7 +224,7 @@ class OrderManager:
         self,
         order: Order,
         positions: dict[str, Position],
-        current_prices: dict[str, float]
+        current_prices: dict[str, float],
     ) -> tuple[bool, str]:
         """Check total portfolio exposure limit."""
         # Calculate current total exposure
@@ -274,9 +278,9 @@ class OrderManager:
         limit = self.risk_config.max_orders_per_minute
 
         return {
-            'orders_last_minute': current,
-            'limit': limit,
-            'available': limit - current
+            "orders_last_minute": current,
+            "limit": limit,
+            "available": limit - current,
         }
 
     def __repr__(self) -> str:

@@ -1,13 +1,13 @@
-import numpy as np
 import pytest
 from datetime import datetime, timedelta
 
 from AlpacaTrading.trading.portfolio import TradingPortfolio
-from AlpacaTrading.models import Trade, Position, OrderSide
+from AlpacaTrading.models import Trade, OrderSide
 
 
 # Helper function to create trades with auto-generated IDs
 _trade_counter = 0
+
 
 def create_trade(symbol, side, quantity, price, timestamp=None):
     """Helper to create Trade with auto-generated IDs"""
@@ -20,7 +20,7 @@ def create_trade(symbol, side, quantity, price, timestamp=None):
         side=side,
         quantity=quantity,
         price=price,
-        timestamp=timestamp or datetime.now()
+        timestamp=timestamp or datetime.now(),
     )
 
 
@@ -275,11 +275,11 @@ class TestPerformanceMetrics:
         portfolio = TradingPortfolio(100_000)
         metrics = portfolio.get_performance_metrics()
 
-        assert metrics['total_return'] == 0.0
-        assert metrics['total_pnl'] == 0.0
-        assert metrics['num_trades'] == 0
-        assert metrics['win_rate'] == 0.0
-        assert metrics['max_drawdown'] == 0.0
+        assert metrics["total_return"] == 0.0
+        assert metrics["total_pnl"] == 0.0
+        assert metrics["num_trades"] == 0
+        assert metrics["win_rate"] == 0.0
+        assert metrics["max_drawdown"] == 0.0
 
     def test_performance_metrics_with_trades(self):
         portfolio = TradingPortfolio(100_000)
@@ -292,9 +292,11 @@ class TestPerformanceMetrics:
 
         metrics = portfolio.get_performance_metrics()
 
-        assert metrics['num_trades'] == 2
-        assert metrics['realized_pnl'] == 1000.0
-        assert abs(metrics['total_return'] - 1.0) < 0.0001  # 1% return (allow for floating point precision)
+        assert metrics["num_trades"] == 2
+        assert metrics["realized_pnl"] == 1000.0
+        assert (
+            abs(metrics["total_return"] - 1.0) < 0.0001
+        )  # 1% return (allow for floating point precision)
 
     def test_performance_metrics_win_rate(self):
         portfolio = TradingPortfolio(100_000)
@@ -314,11 +316,11 @@ class TestPerformanceMetrics:
 
         metrics = portfolio.get_performance_metrics()
 
-        assert metrics['winning_trades'] == 1
-        assert metrics['losing_trades'] == 1
-        assert metrics['win_rate'] == 50.0
-        assert metrics['avg_win'] == 1000.0
-        assert metrics['avg_loss'] == -500.0
+        assert metrics["winning_trades"] == 1
+        assert metrics["losing_trades"] == 1
+        assert metrics["win_rate"] == 50.0
+        assert metrics["avg_win"] == 1000.0
+        assert metrics["avg_loss"] == -500.0
 
 
 class TestMaxDrawdown:
@@ -360,7 +362,7 @@ class TestMaxDrawdown:
 
         # High water mark = 101k, current = 99.5k
         # Current DD = (101k - 99.5k) / 101k ≈ 1.49%
-        assert metrics['current_drawdown'] > 0
+        assert metrics["current_drawdown"] > 0
 
 
 class TestSharpeRatio:
@@ -408,7 +410,7 @@ class TestEquityCurveDataFrame:
         df = portfolio.get_equity_curve_dataframe()
 
         assert len(df) == 0
-        assert list(df.columns) == ['timestamp', 'value']
+        assert list(df.columns) == ["timestamp", "value"]
 
     def test_equity_curve_dataframe_with_data(self):
         portfolio = TradingPortfolio(100_000)
@@ -420,8 +422,8 @@ class TestEquityCurveDataFrame:
         df = portfolio.get_equity_curve_dataframe()
 
         assert len(df) == 2
-        assert df['value'].iloc[0] == 100_000
-        assert df['value'].iloc[1] == 101_000
+        assert df["value"].iloc[0] == 100_000
+        assert df["value"].iloc[1] == 101_000
 
 
 class TestReset:

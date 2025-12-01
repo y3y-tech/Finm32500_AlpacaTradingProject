@@ -46,7 +46,7 @@ class RSIStrategy(TradingStrategy):
         position_size: float = 10000,
         max_position: int = 100,
         profit_target: float | None = None,
-        stop_loss: float | None = None
+        stop_loss: float | None = None,
     ):
         super().__init__("RSI_MeanReversion")
 
@@ -54,9 +54,13 @@ class RSIStrategy(TradingStrategy):
         if rsi_period <= 1:
             raise ValueError(f"rsi_period must be > 1, got {rsi_period}")
         if not (0 < oversold_threshold < 100):
-            raise ValueError(f"oversold_threshold must be between 0 and 100, got {oversold_threshold}")
+            raise ValueError(
+                f"oversold_threshold must be between 0 and 100, got {oversold_threshold}"
+            )
         if not (0 < overbought_threshold < 100):
-            raise ValueError(f"overbought_threshold must be between 0 and 100, got {overbought_threshold}")
+            raise ValueError(
+                f"overbought_threshold must be between 0 and 100, got {overbought_threshold}"
+            )
         if oversold_threshold >= overbought_threshold:
             raise ValueError(
                 f"oversold_threshold ({oversold_threshold}) must be < overbought_threshold ({overbought_threshold})"
@@ -98,11 +102,11 @@ class RSIStrategy(TradingStrategy):
             return None
 
         # Calculate price changes
-        changes = [prices[i] - prices[i-1] for i in range(1, len(prices))]
+        changes = [prices[i] - prices[i - 1] for i in range(1, len(prices))]
 
         # Separate gains and losses
-        gains = [max(change, 0) for change in changes[-self.rsi_period:]]
-        losses = [abs(min(change, 0)) for change in changes[-self.rsi_period:]]
+        gains = [max(change, 0) for change in changes[-self.rsi_period :]]
+        losses = [abs(min(change, 0)) for change in changes[-self.rsi_period :]]
 
         # Calculate average gain and loss
         avg_gain = sum(gains) / self.rsi_period
@@ -119,9 +123,7 @@ class RSIStrategy(TradingStrategy):
         return rsi
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Generate trading signals based on RSI levels.
@@ -131,7 +133,9 @@ class RSIStrategy(TradingStrategy):
         """
         # Validate tick price
         if tick.price <= 0:
-            logger.warning(f"Invalid price {tick.price} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid price {tick.price} for {tick.symbol}, skipping tick"
+            )
             return []
 
         # Initialize price history for new symbol
@@ -167,12 +171,14 @@ class RSIStrategy(TradingStrategy):
                     f"PROFIT TARGET HIT for {tick.symbol}: entry={entry_price:.2f}, "
                     f"current={tick.price:.2f}, pnl={pnl_pct:.2f}%, target={self.profit_target:.2f}%"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
                 del self.entry_prices[tick.symbol]
                 return orders
 
@@ -182,12 +188,14 @@ class RSIStrategy(TradingStrategy):
                     f"STOP LOSS HIT for {tick.symbol}: entry={entry_price:.2f}, "
                     f"current={tick.price:.2f}, pnl={pnl_pct:.2f}%, stop={-self.stop_loss:.2f}%"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
                 del self.entry_prices[tick.symbol]
                 return orders
 
@@ -197,7 +205,7 @@ class RSIStrategy(TradingStrategy):
                 # Calculate quantity to buy
                 quantity = min(
                     int(self.position_size / tick.price),
-                    self.max_position - current_qty
+                    self.max_position - current_qty,
                 )
 
                 if quantity > 0:
@@ -205,12 +213,14 @@ class RSIStrategy(TradingStrategy):
                         f"BUY signal (OVERSOLD) for {tick.symbol}: RSI={rsi:.2f}, "
                         f"threshold={self.oversold_threshold}, quantity={quantity}"
                     )
-                    orders.append(Order(
-                        symbol=tick.symbol,
-                        side=OrderSide.BUY,
-                        order_type=OrderType.MARKET,
-                        quantity=quantity
-                    ))
+                    orders.append(
+                        Order(
+                            symbol=tick.symbol,
+                            side=OrderSide.BUY,
+                            order_type=OrderType.MARKET,
+                            quantity=quantity,
+                        )
+                    )
                     # Track entry price
                     self.entry_prices[tick.symbol] = tick.price
 
@@ -221,12 +231,14 @@ class RSIStrategy(TradingStrategy):
                     f"SELL signal (OVERBOUGHT) for {tick.symbol}: RSI={rsi:.2f}, "
                     f"threshold={self.overbought_threshold}, quantity={current_qty}"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
                 # Clear entry price
                 if tick.symbol in self.entry_prices:
                     del self.entry_prices[tick.symbol]

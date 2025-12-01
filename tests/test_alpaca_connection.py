@@ -24,15 +24,11 @@ load_dotenv()
 
 def has_alpaca_credentials() -> bool:
     """Check if Alpaca credentials are configured."""
-    return bool(
-        os.getenv("ALPACA_API_KEY") and
-        os.getenv("ALPACA_SECRET_KEY")
-    )
+    return bool(os.getenv("ALPACA_API_KEY") and os.getenv("ALPACA_SECRET_KEY"))
 
 
 pytestmark = pytest.mark.skipif(
-    not has_alpaca_credentials(),
-    reason="Alpaca API credentials not configured"
+    not has_alpaca_credentials(), reason="Alpaca API credentials not configured"
 )
 
 
@@ -82,9 +78,7 @@ class TestBTCRoundTrip:
         """Create trading client for crypto."""
         config = AlpacaConfig.from_env()
         return TradingClient(
-            api_key=config.api_key,
-            secret_key=config.secret_key,
-            paper=config.paper
+            api_key=config.api_key, secret_key=config.secret_key, paper=config.paper
         )
 
     def test_btc_round_trip(self, trading_client: TradingClient):
@@ -106,7 +100,7 @@ class TestBTCRoundTrip:
                 symbol=symbol,
                 qty=qty,
                 side=OrderSide.BUY,
-                time_in_force=TimeInForce.GTC
+                time_in_force=TimeInForce.GTC,
             )
         )
 
@@ -124,7 +118,7 @@ class TestBTCRoundTrip:
                 symbol=symbol,
                 qty=qty,
                 side=OrderSide.SELL,
-                time_in_force=TimeInForce.GTC
+                time_in_force=TimeInForce.GTC,
             )
         )
 
@@ -144,16 +138,16 @@ class TestBTCRoundTrip:
         cash_after = float(account_after.cash)
 
         # Report results
-        logger.info(f"\n{'='*50}")
+        logger.info(f"\n{'=' * 50}")
         logger.info("BTC/USD Round Trip Results")
-        logger.info(f"{'='*50}")
+        logger.info(f"{'=' * 50}")
         logger.info(f"Quantity:    {qty} BTC")
         logger.info(f"Buy Price:   ${buy_price:,.2f}")
         logger.info(f"Sell Price:  ${sell_price:,.2f}")
         logger.info(f"P&L:         ${pnl:,.4f}")
         logger.info(f"Cash Before: ${cash_before:,.2f}")
         logger.info(f"Cash After:  ${cash_after:,.2f}")
-        logger.info(f"{'='*50}")
+        logger.info(f"{'=' * 50}")
 
 
 class TestStrategyRoundTrip:
@@ -164,9 +158,7 @@ class TestStrategyRoundTrip:
         """Create trading client."""
         config = AlpacaConfig.from_env()
         return TradingClient(
-            api_key=config.api_key,
-            secret_key=config.secret_key,
-            paper=config.paper
+            api_key=config.api_key, secret_key=config.secret_key, paper=config.paper
         )
 
     @pytest.fixture
@@ -204,7 +196,7 @@ class TestStrategyRoundTrip:
             lookback_period=5,
             momentum_threshold=0.0001,  # Very low threshold
             position_size=500,
-            max_position=10
+            max_position=10,
         )
 
         # Create portfolio tracker
@@ -217,7 +209,7 @@ class TestStrategyRoundTrip:
                 timestamp=datetime.now(),
                 symbol=symbol,
                 price=base_price * (1 + 0.001 * i),  # Rising prices
-                volume=10000
+                volume=10000,
             )
             orders = strategy.on_market_data(tick, portfolio)
 
@@ -233,7 +225,7 @@ class TestStrategyRoundTrip:
                 symbol=symbol,
                 qty=qty,
                 side=OrderSide.BUY,
-                time_in_force=TimeInForce.GTC
+                time_in_force=TimeInForce.GTC,
             )
         )
 
@@ -249,9 +241,7 @@ class TestStrategyRoundTrip:
         logger.info(f"BUY filled: {filled_qty} BTC @ ${buy_price:,.2f}")
 
         # Update portfolio with the trade
-        portfolio.positions[symbol] = type(
-            'Position', (), {'quantity': filled_qty}
-        )()
+        portfolio.positions[symbol] = type("Position", (), {"quantity": filled_qty})()
 
         # Simulate falling prices to trigger SELL signal
         for i in range(5):
@@ -259,12 +249,14 @@ class TestStrategyRoundTrip:
                 timestamp=datetime.now(),
                 symbol=symbol,
                 price=base_price * (1 - 0.001 * i),  # Falling prices
-                volume=10000
+                volume=10000,
             )
             orders = strategy.on_market_data(tick, portfolio)
 
         # Should generate sell order
-        assert len(orders) > 0, "Strategy should generate sell order on falling momentum"
+        assert len(orders) > 0, (
+            "Strategy should generate sell order on falling momentum"
+        )
         sell_order = orders[0]
         assert sell_order.side == InternalOrderSide.SELL
 
@@ -275,7 +267,7 @@ class TestStrategyRoundTrip:
                 symbol=symbol,
                 qty=qty,
                 side=OrderSide.SELL,
-                time_in_force=TimeInForce.GTC
+                time_in_force=TimeInForce.GTC,
             )
         )
 
@@ -297,9 +289,9 @@ class TestStrategyRoundTrip:
         cash_after = float(account_after.cash)
 
         # Report results
-        logger.info(f"\n{'='*50}")
+        logger.info(f"\n{'=' * 50}")
         logger.info("Strategy Round Trip Results (MomentumStrategy)")
-        logger.info(f"{'='*50}")
+        logger.info(f"{'=' * 50}")
         logger.info(f"Symbol:      {symbol}")
         logger.info(f"Quantity:    {filled_qty} BTC")
         logger.info(f"Buy Price:   ${buy_price:,.2f}")
@@ -307,4 +299,4 @@ class TestStrategyRoundTrip:
         logger.info(f"P&L:         ${pnl:,.4f}")
         logger.info(f"Cash Before: ${cash_before:,.2f}")
         logger.info(f"Cash After:  ${cash_after:,.2f}")
-        logger.info(f"{'='*50}")
+        logger.info(f"{'=' * 50}")

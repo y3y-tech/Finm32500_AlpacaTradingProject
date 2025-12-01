@@ -15,5 +15,5 @@ __all__ = [
     "RiskManager",
     "StopLossConfig",
     "StopType",
-    "PositionStop"
+    "PositionStop",
 ]

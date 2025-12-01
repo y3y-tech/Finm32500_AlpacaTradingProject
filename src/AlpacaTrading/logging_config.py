@@ -84,7 +84,7 @@ def setup_logging(
         # Ensure parent directory exists
         log_file.parent.mkdir(parents=True, exist_ok=True)
 
-    file_handler = logging.FileHandler(log_file, mode='a')  # Append mode
+    file_handler = logging.FileHandler(log_file, mode="a")  # Append mode
     file_handler.setLevel(level)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -92,7 +92,9 @@ def setup_logging(
     # Prevent propagation to root logger (avoid duplicate logs)
     logger.propagate = False
 
-    logger.info(f"Logging configured: level={logging.getLevelName(level)}, file={log_file}")
+    logger.info(
+        f"Logging configured: level={logging.getLevelName(level)}, file={log_file}"
+    )
 
     return logger
 

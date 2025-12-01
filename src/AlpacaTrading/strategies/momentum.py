@@ -36,7 +36,7 @@ class MomentumStrategy(TradingStrategy):
         lookback_period: int = 20,
         momentum_threshold: float = 0.01,
         position_size: float = 10000,
-        max_position: int = 100
+        max_position: int = 100,
     ):
         super().__init__("MomentumStrategy")
 
@@ -44,7 +44,9 @@ class MomentumStrategy(TradingStrategy):
         if lookback_period <= 0:
             raise ValueError(f"lookback_period must be positive, got {lookback_period}")
         if momentum_threshold < 0:
-            raise ValueError(f"momentum_threshold must be non-negative, got {momentum_threshold}")
+            raise ValueError(
+                f"momentum_threshold must be non-negative, got {momentum_threshold}"
+            )
         if position_size <= 0:
             raise ValueError(f"position_size must be positive, got {position_size}")
         if max_position <= 0:
@@ -59,9 +61,7 @@ class MomentumStrategy(TradingStrategy):
         self.price_history: dict[str, deque] = {}
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Generate trading signals based on momentum.
@@ -71,7 +71,9 @@ class MomentumStrategy(TradingStrategy):
         """
         # Validate tick price
         if tick.price <= 0:
-            logger.warning(f"Invalid price {tick.price} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid price {tick.price} for {tick.symbol}, skipping tick"
+            )
             return []
 
         # Initialize price history for new symbol
@@ -94,7 +96,9 @@ class MomentumStrategy(TradingStrategy):
 
         # Protect against division by zero
         if first_price == 0:
-            logger.warning(f"First price is zero for {tick.symbol}, cannot calculate momentum")
+            logger.warning(
+                f"First price is zero for {tick.symbol}, cannot calculate momentum"
+            )
             return []
 
         momentum = (last_price - first_price) / first_price
@@ -115,8 +119,7 @@ class MomentumStrategy(TradingStrategy):
 
                 # Calculate shares to buy
                 quantity = min(
-                    int(remaining_value / tick.price),
-                    self.max_position - current_qty
+                    int(remaining_value / tick.price), self.max_position - current_qty
                 )
 
                 if quantity > 0:
@@ -124,12 +127,14 @@ class MomentumStrategy(TradingStrategy):
                         f"BUY signal for {tick.symbol}: momentum={momentum:.4f}, "
                         f"quantity={quantity}, current_qty={current_qty}"
                     )
-                    orders.append(Order(
-                        symbol=tick.symbol,
-                        side=OrderSide.BUY,
-                        order_type=OrderType.MARKET,
-                        quantity=quantity
-                    ))
+                    orders.append(
+                        Order(
+                            symbol=tick.symbol,
+                            side=OrderSide.BUY,
+                            order_type=OrderType.MARKET,
+                            quantity=quantity,
+                        )
+                    )
 
         # Strong negative momentum -> SELL
         elif momentum < -self.momentum_threshold:
@@ -140,12 +145,14 @@ class MomentumStrategy(TradingStrategy):
                     f"quantity={current_qty}"
                 )
                 # Sell entire position
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
 
         return orders
 

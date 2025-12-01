@@ -119,8 +119,10 @@ class OrderBook:
             _, ask_time, ask_order = heapq.heappop(self.asks)
 
             # Skip cancelled orders
-            if bid_order.status == OrderStatus.CANCELLED or \
-               ask_order.status == OrderStatus.CANCELLED:
+            if (
+                bid_order.status == OrderStatus.CANCELLED
+                or ask_order.status == OrderStatus.CANCELLED
+            ):
                 continue
 
             # Determine fill quantity (minimum of both orders' remaining)
@@ -145,7 +147,7 @@ class OrderBook:
                 symbol=self.symbol,
                 side=OrderSide.BUY,
                 quantity=fill_qty,
-                price=fill_price
+                price=fill_price,
             )
 
             # Trade for sell order
@@ -156,7 +158,7 @@ class OrderBook:
                 symbol=self.symbol,
                 side=OrderSide.SELL,
                 quantity=fill_qty,
-                price=fill_price
+                price=fill_price,
             )
 
             trades.extend([buy_trade, sell_trade])
@@ -272,15 +274,17 @@ class OrderBook:
         """
         # Count non-cancelled orders
         bid_count = sum(
-            1 for _, _, order in self.bids
+            1
+            for _, _, order in self.bids
             if order.status not in [OrderStatus.CANCELLED, OrderStatus.FILLED]
         )
         ask_count = sum(
-            1 for _, _, order in self.asks
+            1
+            for _, _, order in self.asks
             if order.status not in [OrderStatus.CANCELLED, OrderStatus.FILLED]
         )
 
-        return {'bids': bid_count, 'asks': ask_count}
+        return {"bids": bid_count, "asks": ask_count}
 
     def clear(self) -> None:
         """Clear all orders from the book."""

@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class StopType(Enum):
     """Types of stop-loss orders."""
+
     FIXED_PERCENT = "fixed_percent"  # Stop at X% loss from entry
     TRAILING_PERCENT = "trailing_percent"  # Trailing stop that moves with profit
     ABSOLUTE_PRICE = "absolute_price"  # Stop at specific price level
@@ -39,6 +40,7 @@ class StopLossConfig:
         use_trailing_stops: Enable trailing stops (default: False)
         enable_circuit_breaker: Enable portfolio-level circuit breaker (default: True)
     """
+
     position_stop_pct: float = 2.0  # 2% position stop loss
     trailing_stop_pct: float = 3.0  # 3% trailing stop
     portfolio_stop_pct: float = 5.0  # 5% portfolio stop loss
@@ -59,6 +61,7 @@ class PositionStop:
         highest_price: Highest price seen (for trailing stops)
         stop_type: Type of stop loss
     """
+
     symbol: str
     entry_price: float
     stop_price: float
@@ -120,7 +123,7 @@ class RiskManager:
         symbol: str,
         entry_price: float,
         quantity: float,
-        stop_type: StopType | None = None
+        stop_type: StopType | None = None,
     ) -> None:
         """
         Add or update stop-loss for a position.
@@ -160,7 +163,7 @@ class RiskManager:
             entry_price=entry_price,
             stop_price=stop_price,
             highest_price=entry_price,
-            stop_type=stop_type
+            stop_type=stop_type,
         )
 
     def remove_position_stop(self, symbol: str) -> None:
@@ -177,7 +180,7 @@ class RiskManager:
         self,
         current_prices: dict[str, float],
         portfolio_value: float,
-        positions: dict[str, Position]
+        positions: dict[str, Position],
     ) -> list[Order]:
         """
         Check all stop-loss conditions and generate exit orders if triggered.
@@ -207,7 +210,7 @@ class RiskManager:
                 self.add_position_stop(
                     symbol=symbol,
                     entry_price=position.average_cost,
-                    quantity=position.quantity
+                    quantity=position.quantity,
                 )
 
             current_price = current_prices[symbol]
@@ -225,7 +228,7 @@ class RiskManager:
                     side=OrderSide.SELL if position.quantity > 0 else OrderSide.BUY,
                     quantity=abs(position.quantity),
                     order_type=OrderType.MARKET,
-                    price=None  # Market order
+                    price=None,  # Market order
                 )
                 exit_orders.append(exit_order)
 
@@ -275,10 +278,7 @@ class RiskManager:
         return False
 
     def _update_trailing_stop(
-        self,
-        stop: PositionStop,
-        current_price: float,
-        quantity: float
+        self, stop: PositionStop, current_price: float, quantity: float
     ) -> None:
         """
         Update trailing stop price if position is profitable.
@@ -302,10 +302,7 @@ class RiskManager:
                 stop.stop_price = min(stop.stop_price, new_stop)
 
     def _is_stop_triggered(
-        self,
-        stop: PositionStop,
-        current_price: float,
-        quantity: float
+        self, stop: PositionStop, current_price: float, quantity: float
     ) -> bool:
         """
         Check if stop-loss is triggered.
@@ -324,9 +321,7 @@ class RiskManager:
             return current_price >= stop.stop_price
 
     def _generate_exit_all_orders(
-        self,
-        positions: dict[str, Position],
-        current_prices: dict[str, float]
+        self, positions: dict[str, Position], current_prices: dict[str, float]
     ) -> list[Order]:
         """
         Generate market orders to exit all positions (circuit breaker).
@@ -349,7 +344,7 @@ class RiskManager:
                 side=OrderSide.SELL if position.quantity > 0 else OrderSide.BUY,
                 quantity=abs(position.quantity),
                 order_type=OrderType.MARKET,
-                price=None
+                price=None,
             )
             exit_orders.append(exit_order)
 
@@ -384,19 +379,19 @@ class RiskManager:
             Dictionary with status information
         """
         return {
-            'circuit_breaker_triggered': self.circuit_breaker_triggered,
-            'circuit_breaker_time': self.circuit_breaker_time,
-            'num_active_stops': len(self.position_stops),
-            'high_water_mark': self.high_water_mark,
-            'daily_start_value': self.daily_start_value,
-            'config': {
-                'position_stop_pct': self.config.position_stop_pct,
-                'trailing_stop_pct': self.config.trailing_stop_pct,
-                'portfolio_stop_pct': self.config.portfolio_stop_pct,
-                'max_drawdown_pct': self.config.max_drawdown_pct,
-                'use_trailing_stops': self.config.use_trailing_stops,
-                'enable_circuit_breaker': self.config.enable_circuit_breaker
-            }
+            "circuit_breaker_triggered": self.circuit_breaker_triggered,
+            "circuit_breaker_time": self.circuit_breaker_time,
+            "num_active_stops": len(self.position_stops),
+            "high_water_mark": self.high_water_mark,
+            "daily_start_value": self.daily_start_value,
+            "config": {
+                "position_stop_pct": self.config.position_stop_pct,
+                "trailing_stop_pct": self.config.trailing_stop_pct,
+                "portfolio_stop_pct": self.config.portfolio_stop_pct,
+                "max_drawdown_pct": self.config.max_drawdown_pct,
+                "use_trailing_stops": self.config.use_trailing_stops,
+                "enable_circuit_breaker": self.config.enable_circuit_breaker,
+            },
         }
 
     def __repr__(self) -> str:

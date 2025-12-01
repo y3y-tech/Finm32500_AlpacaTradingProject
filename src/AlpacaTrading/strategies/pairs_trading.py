@@ -48,13 +48,15 @@ class PairsTradingStrategy(TradingStrategy):
         exit_threshold: float = 0.5,
         position_size: float = 10000,
         max_position: int = 100,
-        hedge_ratio: float | None = None
+        hedge_ratio: float | None = None,
     ):
         super().__init__(f"PairsTrading_{symbol_pair[0]}_{symbol_pair[1]}")
 
         # Parameter validation
         if len(symbol_pair) != 2:
-            raise ValueError(f"symbol_pair must have exactly 2 symbols, got {len(symbol_pair)}")
+            raise ValueError(
+                f"symbol_pair must have exactly 2 symbols, got {len(symbol_pair)}"
+            )
         if symbol_pair[0] == symbol_pair[1]:
             raise ValueError(f"Symbols must be different, got {symbol_pair}")
         if lookback_period <= 5:
@@ -62,7 +64,9 @@ class PairsTradingStrategy(TradingStrategy):
         if entry_threshold <= 0:
             raise ValueError(f"entry_threshold must be positive, got {entry_threshold}")
         if exit_threshold < 0:
-            raise ValueError(f"exit_threshold must be non-negative, got {exit_threshold}")
+            raise ValueError(
+                f"exit_threshold must be non-negative, got {exit_threshold}"
+            )
         if exit_threshold >= entry_threshold:
             raise ValueError(
                 f"exit_threshold ({exit_threshold}) must be < entry_threshold ({entry_threshold})"
@@ -122,7 +126,7 @@ class PairsTradingStrategy(TradingStrategy):
         if len(self.spread_history) < self.lookback_period:
             return None
 
-        spreads = list(self.spread_history)[-self.lookback_period:]
+        spreads = list(self.spread_history)[-self.lookback_period :]
 
         # Calculate mean
         mean = sum(spreads) / len(spreads)
@@ -140,9 +144,7 @@ class PairsTradingStrategy(TradingStrategy):
         return (spread - mean) / std_dev
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Generate pairs trading signals based on spread divergence.
@@ -152,7 +154,9 @@ class PairsTradingStrategy(TradingStrategy):
         """
         # Validate tick
         if tick.price <= 0:
-            logger.warning(f"Invalid price {tick.price} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid price {tick.price} for {tick.symbol}, skipping tick"
+            )
             return []
 
         # Update prices
@@ -191,7 +195,7 @@ class PairsTradingStrategy(TradingStrategy):
         orders = []
 
         # Check if in position
-        self.in_position = (qty1 != 0 or qty2 != 0)
+        self.in_position = qty1 != 0 or qty2 != 0
 
         # ENTRY LOGIC
         if not self.in_position:
@@ -200,11 +204,11 @@ class PairsTradingStrategy(TradingStrategy):
                 # Calculate quantities
                 qty1_target = -min(
                     int(self.position_size / self.prices[self.symbol1]),
-                    self.max_position
+                    self.max_position,
                 )
                 qty2_target = min(
                     int(self.position_size / self.prices[self.symbol2]),
-                    self.max_position
+                    self.max_position,
                 )
 
                 if qty1_target < 0 and qty2_target > 0:
@@ -216,31 +220,33 @@ class PairsTradingStrategy(TradingStrategy):
                         f"  LONG {qty2_target} {self.symbol2} @ ${self.prices[self.symbol2]:.2f}"
                     )
 
-                    orders.extend([
-                        Order(
-                            symbol=self.symbol1,
-                            side=OrderSide.SELL,
-                            order_type=OrderType.MARKET,
-                            quantity=abs(qty1_target)
-                        ),
-                        Order(
-                            symbol=self.symbol2,
-                            side=OrderSide.BUY,
-                            order_type=OrderType.MARKET,
-                            quantity=qty2_target
-                        )
-                    ])
+                    orders.extend(
+                        [
+                            Order(
+                                symbol=self.symbol1,
+                                side=OrderSide.SELL,
+                                order_type=OrderType.MARKET,
+                                quantity=abs(qty1_target),
+                            ),
+                            Order(
+                                symbol=self.symbol2,
+                                side=OrderSide.BUY,
+                                order_type=OrderType.MARKET,
+                                quantity=qty2_target,
+                            ),
+                        ]
+                    )
                     self.entry_spread = spread
 
             # Spread too low -> long symbol1, short symbol2
             elif z_score < -self.entry_threshold:
                 qty1_target = min(
                     int(self.position_size / self.prices[self.symbol1]),
-                    self.max_position
+                    self.max_position,
                 )
                 qty2_target = -min(
                     int(self.position_size / self.prices[self.symbol2]),
-                    self.max_position
+                    self.max_position,
                 )
 
                 if qty1_target > 0 and qty2_target < 0:
@@ -252,20 +258,22 @@ class PairsTradingStrategy(TradingStrategy):
                         f"  SHORT {abs(qty2_target)} {self.symbol2} @ ${self.prices[self.symbol2]:.2f}"
                     )
 
-                    orders.extend([
-                        Order(
-                            symbol=self.symbol1,
-                            side=OrderSide.BUY,
-                            order_type=OrderType.MARKET,
-                            quantity=qty1_target
-                        ),
-                        Order(
-                            symbol=self.symbol2,
-                            side=OrderSide.SELL,
-                            order_type=OrderType.MARKET,
-                            quantity=abs(qty2_target)
-                        )
-                    ])
+                    orders.extend(
+                        [
+                            Order(
+                                symbol=self.symbol1,
+                                side=OrderSide.BUY,
+                                order_type=OrderType.MARKET,
+                                quantity=qty1_target,
+                            ),
+                            Order(
+                                symbol=self.symbol2,
+                                side=OrderSide.SELL,
+                                order_type=OrderType.MARKET,
+                                quantity=abs(qty2_target),
+                            ),
+                        ]
+                    )
                     self.entry_spread = spread
 
         # EXIT LOGIC
@@ -282,34 +290,42 @@ class PairsTradingStrategy(TradingStrategy):
 
                 # Close both positions
                 if qty1 > 0:
-                    orders.append(Order(
-                        symbol=self.symbol1,
-                        side=OrderSide.SELL,
-                        order_type=OrderType.MARKET,
-                        quantity=qty1
-                    ))
+                    orders.append(
+                        Order(
+                            symbol=self.symbol1,
+                            side=OrderSide.SELL,
+                            order_type=OrderType.MARKET,
+                            quantity=qty1,
+                        )
+                    )
                 elif qty1 < 0:
-                    orders.append(Order(
-                        symbol=self.symbol1,
-                        side=OrderSide.BUY,
-                        order_type=OrderType.MARKET,
-                        quantity=abs(qty1)
-                    ))
+                    orders.append(
+                        Order(
+                            symbol=self.symbol1,
+                            side=OrderSide.BUY,
+                            order_type=OrderType.MARKET,
+                            quantity=abs(qty1),
+                        )
+                    )
 
                 if qty2 > 0:
-                    orders.append(Order(
-                        symbol=self.symbol2,
-                        side=OrderSide.SELL,
-                        order_type=OrderType.MARKET,
-                        quantity=qty2
-                    ))
+                    orders.append(
+                        Order(
+                            symbol=self.symbol2,
+                            side=OrderSide.SELL,
+                            order_type=OrderType.MARKET,
+                            quantity=qty2,
+                        )
+                    )
                 elif qty2 < 0:
-                    orders.append(Order(
-                        symbol=self.symbol2,
-                        side=OrderSide.BUY,
-                        order_type=OrderType.MARKET,
-                        quantity=abs(qty2)
-                    ))
+                    orders.append(
+                        Order(
+                            symbol=self.symbol2,
+                            side=OrderSide.BUY,
+                            order_type=OrderType.MARKET,
+                            quantity=abs(qty2),
+                        )
+                    )
 
                 self.entry_spread = None
 

@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class OrderStatus(Enum):
     """Order lifecycle states"""
+
     NEW = "NEW"
     PENDING = "PENDING"
     PARTIAL = "PARTIAL"
@@ -25,12 +26,14 @@ class OrderStatus(Enum):
 
 class OrderSide(Enum):
     """Order side (buy or sell)"""
+
     BUY = "BUY"
     SELL = "SELL"
 
 
 class OrderType(Enum):
     """Order types"""
+
     MARKET = "MARKET"
     LIMIT = "LIMIT"
 
@@ -43,6 +46,7 @@ class OrderType(Enum):
 @dataclass(frozen=True)
 class MarketDataPoint:
     """Immutable market tick data"""
+
     timestamp: datetime.datetime
     symbol: str
     price: float
@@ -71,6 +75,7 @@ class Order:
         filled_quantity: Amount filled so far
         average_fill_price: Average price of fills
     """
+
     symbol: str
     side: OrderSide
     order_type: OrderType
@@ -110,7 +115,9 @@ class Order:
         if quantity <= 0:
             raise ValueError("Fill quantity must be positive")
         if quantity > self.remaining_quantity:
-            raise ValueError(f"Fill quantity {quantity} exceeds remaining {self.remaining_quantity}")
+            raise ValueError(
+                f"Fill quantity {quantity} exceeds remaining {self.remaining_quantity}"
+            )
 
         # Update average fill price
         total_value = self.average_fill_price * self.filled_quantity + price * quantity
@@ -131,6 +138,7 @@ class Trade:
 
     A single order can generate multiple trades if partially filled.
     """
+
     trade_id: str
     order_id: str
     timestamp: datetime.datetime
@@ -174,7 +182,7 @@ class Position:
         symbol: str,
         quantity: float = 0.0,
         average_cost: float = 0.0,
-        realized_pnl: float = 0.0
+        realized_pnl: float = 0.0,
     ):
         self.symbol = symbol
         self.quantity = quantity
@@ -197,8 +205,11 @@ class Position:
         new_quantity = self.quantity + trade_qty
 
         # Case 1: Opening or adding to position
-        if self.quantity == 0 or (self.quantity > 0 and new_quantity > self.quantity) or \
-           (self.quantity < 0 and new_quantity < self.quantity):
+        if (
+            self.quantity == 0
+            or (self.quantity > 0 and new_quantity > self.quantity)
+            or (self.quantity < 0 and new_quantity < self.quantity)
+        ):
             # Update average cost
             if self.quantity == 0:
                 self.average_cost = trade.price
@@ -208,8 +219,9 @@ class Position:
             self.quantity = new_quantity
 
         # Case 2: Reducing or closing position
-        elif (self.quantity > 0 and trade.side == OrderSide.SELL) or \
-             (self.quantity < 0 and trade.side == OrderSide.BUY):
+        elif (self.quantity > 0 and trade.side == OrderSide.SELL) or (
+            self.quantity < 0 and trade.side == OrderSide.BUY
+        ):
             # Realize P&L on the closed portion
             closed_qty = min(abs(trade_qty), abs(self.quantity))
             if self.quantity > 0:
@@ -220,8 +232,9 @@ class Position:
             self.quantity = new_quantity
 
             # If position reversed, update average cost
-            if (self.quantity > 0 and trade.side == OrderSide.BUY) or \
-               (self.quantity < 0 and trade.side == OrderSide.SELL):
+            if (self.quantity > 0 and trade.side == OrderSide.BUY) or (
+                self.quantity < 0 and trade.side == OrderSide.SELL
+            ):
                 self.average_cost = trade.price
 
     def update_unrealized_pnl(self, current_price: float) -> None:
@@ -238,9 +251,11 @@ class Position:
         return self.realized_pnl + self.unrealized_pnl
 
     def __repr__(self) -> str:
-        return (f"Position(symbol={self.symbol}, qty={self.quantity:.2f}, "
-                f"avg_cost={self.average_cost:.2f}, realized_pnl={self.realized_pnl:.2f}, "
-                f"unrealized_pnl={self.unrealized_pnl:.2f})")
+        return (
+            f"Position(symbol={self.symbol}, qty={self.quantity:.2f}, "
+            f"avg_cost={self.average_cost:.2f}, realized_pnl={self.realized_pnl:.2f}, "
+            f"unrealized_pnl={self.unrealized_pnl:.2f})"
+        )
 
 
 # ============================================================================
@@ -255,6 +270,7 @@ class Portfolio:
     NOTE: For new code, use src.trading.portfolio.Portfolio instead.
     This is kept to support old moving average strategies.
     """
+
     def __init__(self, initial_cash: float):
         self.cash: float = initial_cash
         self.positions: dict[str, Position] = {}
@@ -272,10 +288,14 @@ class Portfolio:
         if order.symbol not in self.positions:
             self.positions[order.symbol] = Position(
                 symbol=order.symbol,
-                quantity=order.quantity if order.side == OrderSide.BUY else -order.quantity,
+                quantity=order.quantity
+                if order.side == OrderSide.BUY
+                else -order.quantity,
             )
         else:
-            qty_delta = order.quantity if order.side == OrderSide.BUY else -order.quantity
+            qty_delta = (
+                order.quantity if order.side == OrderSide.BUY else -order.quantity
+            )
             self.positions[order.symbol].quantity += qty_delta
 
         self.cash += self.calculate_pnl(order)
@@ -289,6 +309,7 @@ class Strategy(ABC):
     NOTE: For new trading strategies, use src.strategies.base.TradingStrategy instead.
     This is kept to support old moving average strategies.
     """
+
     @abstractmethod
     def generate_signal(self, tick: MarketDataPoint) -> Order:
         pass

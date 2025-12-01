@@ -13,7 +13,7 @@ from dataclasses import dataclass
 import logging
 from typing import Dict, List
 
-from AlpacaTrading.models import MarketDataPoint, Order, OrderSide, OrderType
+from AlpacaTrading.models import MarketDataPoint, Order, OrderSide
 from AlpacaTrading.trading.portfolio import TradingPortfolio
 from .base import TradingStrategy
 
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class StrategyPerformance:
     """Track performance metrics for a single strategy."""
+
     strategy_name: str
     total_pnl: float = 0.0
     recent_pnl: float = 0.0  # P&L since last rebalance
@@ -71,7 +72,7 @@ class AdaptivePortfolioStrategy(TradingStrategy):
         min_allocation: float = 0.05,
         max_allocation: float = 0.40,
         performance_lookback: int = 360,
-        allocation_method: str = 'pnl'
+        allocation_method: str = "pnl",
     ):
         super().__init__("AdaptivePortfolio")
 
@@ -79,15 +80,21 @@ class AdaptivePortfolioStrategy(TradingStrategy):
         if not strategies:
             raise ValueError("Must provide at least one strategy")
         if rebalance_period <= 0:
-            raise ValueError(f"rebalance_period must be positive, got {rebalance_period}")
+            raise ValueError(
+                f"rebalance_period must be positive, got {rebalance_period}"
+            )
         if not (0 < min_allocation < 1):
-            raise ValueError(f"min_allocation must be between 0 and 1, got {min_allocation}")
+            raise ValueError(
+                f"min_allocation must be between 0 and 1, got {min_allocation}"
+            )
         if not (0 < max_allocation <= 1):
-            raise ValueError(f"max_allocation must be between 0 and 1, got {max_allocation}")
+            raise ValueError(
+                f"max_allocation must be between 0 and 1, got {max_allocation}"
+            )
         if min_allocation >= max_allocation:
-            raise ValueError(f"min_allocation must be < max_allocation")
-        if allocation_method not in ['pnl', 'sharpe', 'win_rate']:
-            raise ValueError(f"allocation_method must be 'pnl', 'sharpe', or 'win_rate'")
+            raise ValueError("min_allocation must be < max_allocation")
+        if allocation_method not in ["pnl", "sharpe", "win_rate"]:
+            raise ValueError("allocation_method must be 'pnl', 'sharpe', or 'win_rate'")
 
         self.strategies = strategies
         self.rebalance_period = rebalance_period
@@ -98,8 +105,7 @@ class AdaptivePortfolioStrategy(TradingStrategy):
 
         # Track performance for each strategy
         self.performance: Dict[str, StrategyPerformance] = {
-            name: StrategyPerformance(strategy_name=name)
-            for name in strategies.keys()
+            name: StrategyPerformance(strategy_name=name) for name in strategies.keys()
         }
 
         # Initialize equal allocation
@@ -114,13 +120,16 @@ class AdaptivePortfolioStrategy(TradingStrategy):
 
         # Track P&L history for Sharpe calculation
         self.pnl_history: Dict[str, deque] = {
-            name: deque(maxlen=performance_lookback)
-            for name in strategies.keys()
+            name: deque(maxlen=performance_lookback) for name in strategies.keys()
         }
 
         # Track entry prices for P&L attribution
-        self.entry_prices: Dict[str, Dict[str, float]] = defaultdict(dict)  # {strategy: {symbol: price}}
-        self.strategy_positions: Dict[str, Dict[str, float]] = defaultdict(lambda: defaultdict(float))  # {strategy: {symbol: qty}}
+        self.entry_prices: Dict[str, Dict[str, float]] = defaultdict(
+            dict
+        )  # {strategy: {symbol: price}}
+        self.strategy_positions: Dict[str, Dict[str, float]] = defaultdict(
+            lambda: defaultdict(float)
+        )  # {strategy: {symbol: qty}}
 
     def _calculate_sharpe(self, strategy_name: str) -> float:
         """Calculate Sharpe ratio for a strategy."""
@@ -133,7 +142,7 @@ class AdaptivePortfolioStrategy(TradingStrategy):
             return 0.0
 
         variance = sum((pnl - mean_pnl) ** 2 for pnl in pnls) / len(pnls)
-        std_dev = variance ** 0.5
+        std_dev = variance**0.5
 
         if std_dev == 0:
             return 0.0
@@ -151,16 +160,16 @@ class AdaptivePortfolioStrategy(TradingStrategy):
         scores = {}
 
         for name, perf in self.performance.items():
-            if self.allocation_method == 'pnl':
+            if self.allocation_method == "pnl":
                 # Use recent P&L
                 scores[name] = max(0, perf.recent_pnl)  # No negative scores
 
-            elif self.allocation_method == 'sharpe':
+            elif self.allocation_method == "sharpe":
                 # Use Sharpe ratio
                 sharpe = self._calculate_sharpe(name)
                 scores[name] = max(0, sharpe)
 
-            elif self.allocation_method == 'win_rate':
+            elif self.allocation_method == "win_rate":
                 # Use win rate
                 scores[name] = perf.win_rate
 
@@ -173,15 +182,14 @@ class AdaptivePortfolioStrategy(TradingStrategy):
             return {name: equal_weight for name in self.strategies.keys()}
 
         # Calculate raw allocations
-        raw_allocations = {
-            name: score / total_score
-            for name, score in scores.items()
-        }
+        raw_allocations = {name: score / total_score for name, score in scores.items()}
 
         # Apply min/max constraints
         allocations = {}
         for name, alloc in raw_allocations.items():
-            allocations[name] = max(self.min_allocation, min(self.max_allocation, alloc))
+            allocations[name] = max(
+                self.min_allocation, min(self.max_allocation, alloc)
+            )
 
         # Renormalize to sum to 1
         total_alloc = sum(allocations.values())
@@ -196,17 +204,19 @@ class AdaptivePortfolioStrategy(TradingStrategy):
         Returns:
             List of orders to execute rebalancing
         """
-        logger.info(f"\n{'='*80}")
+        logger.info(f"\n{'=' * 80}")
         logger.info(f"REBALANCING ADAPTIVE PORTFOLIO at tick {self.global_tick_count}")
-        logger.info(f"{'='*80}")
+        logger.info(f"{'=' * 80}")
 
         # Calculate new allocations
         new_allocations = self._calculate_allocations()
 
         # Log performance and new allocations
-        logger.info(f"\nStrategy Performance & Allocations:")
-        logger.info(f"{'Strategy':<20} {'Recent P&L':>12} {'Total P&L':>12} {'Win Rate':>10} {'Old%':>6} {'New%':>6}")
-        logger.info(f"{'-'*20} {'-'*12} {'-'*12} {'-'*10} {'-'*6} {'-'*6}")
+        logger.info("\nStrategy Performance & Allocations:")
+        logger.info(
+            f"{'Strategy':<20} {'Recent P&L':>12} {'Total P&L':>12} {'Win Rate':>10} {'Old%':>6} {'New%':>6}"
+        )
+        logger.info(f"{'-' * 20} {'-' * 12} {'-' * 12} {'-' * 10} {'-' * 6} {'-' * 6}")
 
         for name in sorted(self.strategies.keys()):
             perf = self.performance[name]
@@ -217,7 +227,7 @@ class AdaptivePortfolioStrategy(TradingStrategy):
                 f"{name:<20} "
                 f"${perf.recent_pnl:>11,.2f} "
                 f"${perf.total_pnl:>11,.2f} "
-                f"{perf.win_rate*100:>9.1f}% "
+                f"{perf.win_rate * 100:>9.1f}% "
                 f"{old_alloc:>5.1f}% "
                 f"{new_alloc:>5.1f}%"
             )
@@ -230,16 +240,14 @@ class AdaptivePortfolioStrategy(TradingStrategy):
         for perf in self.performance.values():
             perf.recent_pnl = 0.0
 
-        logger.info(f"\n{'='*80}\n")
+        logger.info(f"\n{'=' * 80}\n")
 
         # Note: Actual position rebalancing happens gradually through
         # scaled order execution in on_market_data
         return []
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> List[Order]:
         """
         Run all strategies and scale orders by their allocations.
@@ -280,7 +288,9 @@ class AdaptivePortfolioStrategy(TradingStrategy):
             for order in strategy_orders:
                 # Calculate scaled quantity based on strategy allocation
                 order_value = order.quantity * tick.price
-                max_value = strategy_capital * 0.9  # Use 90% of allocated capital per order
+                max_value = (
+                    strategy_capital * 0.9
+                )  # Use 90% of allocated capital per order
 
                 if order_value > max_value:
                     # Scale down quantity
@@ -292,18 +302,27 @@ class AdaptivePortfolioStrategy(TradingStrategy):
                             side=order.side,
                             order_type=order.order_type,
                             quantity=scaled_qty,
-                            price=order.price
+                            price=order.price,
                         )
 
                         # Track for P&L attribution
                         if order.side == OrderSide.BUY:
                             self.entry_prices[strategy_name][order.symbol] = tick.price
-                            self.strategy_positions[strategy_name][order.symbol] += scaled_qty
+                            self.strategy_positions[strategy_name][order.symbol] += (
+                                scaled_qty
+                            )
                         else:
                             # Attribute P&L
                             if order.symbol in self.entry_prices[strategy_name]:
-                                entry_price = self.entry_prices[strategy_name][order.symbol]
-                                pnl = (tick.price - entry_price) * min(scaled_qty, self.strategy_positions[strategy_name][order.symbol])
+                                entry_price = self.entry_prices[strategy_name][
+                                    order.symbol
+                                ]
+                                pnl = (tick.price - entry_price) * min(
+                                    scaled_qty,
+                                    self.strategy_positions[strategy_name][
+                                        order.symbol
+                                    ],
+                                )
 
                                 # Update performance
                                 perf = self.performance[strategy_name]
@@ -318,11 +337,13 @@ class AdaptivePortfolioStrategy(TradingStrategy):
                                 # Record for Sharpe calculation
                                 self.pnl_history[strategy_name].append(pnl)
 
-                            self.strategy_positions[strategy_name][order.symbol] -= scaled_qty
+                            self.strategy_positions[strategy_name][order.symbol] -= (
+                                scaled_qty
+                            )
 
                         all_orders.append(scaled_order)
                         logger.debug(
-                            f"{strategy_name} ({allocation*100:.1f}% allocation): "
+                            f"{strategy_name} ({allocation * 100:.1f}% allocation): "
                             f"{scaled_order.side.value} {scaled_order.quantity} {scaled_order.symbol}"
                         )
                 else:
@@ -332,11 +353,16 @@ class AdaptivePortfolioStrategy(TradingStrategy):
                     # Track for P&L attribution
                     if order.side == OrderSide.BUY:
                         self.entry_prices[strategy_name][order.symbol] = tick.price
-                        self.strategy_positions[strategy_name][order.symbol] += order.quantity
+                        self.strategy_positions[strategy_name][order.symbol] += (
+                            order.quantity
+                        )
                     else:
                         if order.symbol in self.entry_prices[strategy_name]:
                             entry_price = self.entry_prices[strategy_name][order.symbol]
-                            pnl = (tick.price - entry_price) * min(order.quantity, self.strategy_positions[strategy_name][order.symbol])
+                            pnl = (tick.price - entry_price) * min(
+                                order.quantity,
+                                self.strategy_positions[strategy_name][order.symbol],
+                            )
 
                             perf = self.performance[strategy_name]
                             perf.total_pnl += pnl
@@ -349,19 +375,27 @@ class AdaptivePortfolioStrategy(TradingStrategy):
 
                             self.pnl_history[strategy_name].append(pnl)
 
-                        self.strategy_positions[strategy_name][order.symbol] -= order.quantity
+                        self.strategy_positions[strategy_name][order.symbol] -= (
+                            order.quantity
+                        )
 
         return all_orders
 
     def on_start(self, portfolio: TradingPortfolio) -> None:
         """Initialize all sub-strategies."""
         super().on_start(portfolio)
-        logger.info(f"\nAdaptive Portfolio initialized with {len(self.strategies)} strategies:")
+        logger.info(
+            f"\nAdaptive Portfolio initialized with {len(self.strategies)} strategies:"
+        )
         for name in self.strategies.keys():
-            logger.info(f"  - {name} ({self.performance[name].current_allocation*100:.1f}% allocation)")
+            logger.info(
+                f"  - {name} ({self.performance[name].current_allocation * 100:.1f}% allocation)"
+            )
         logger.info(f"\nRebalancing every {self.rebalance_period} ticks")
         logger.info(f"Allocation method: {self.allocation_method}")
-        logger.info(f"Allocation range: {self.min_allocation*100:.1f}% - {self.max_allocation*100:.1f}%\n")
+        logger.info(
+            f"Allocation range: {self.min_allocation * 100:.1f}% - {self.max_allocation * 100:.1f}%\n"
+        )
 
         # Call on_start for all sub-strategies
         for strategy in self.strategies.values():
@@ -370,11 +404,13 @@ class AdaptivePortfolioStrategy(TradingStrategy):
     def on_end(self, portfolio: TradingPortfolio) -> None:
         """Finalize all sub-strategies."""
         # Print final performance
-        logger.info(f"\n{'='*80}")
-        logger.info(f"ADAPTIVE PORTFOLIO FINAL PERFORMANCE")
-        logger.info(f"{'='*80}")
-        logger.info(f"{'Strategy':<20} {'Total P&L':>12} {'Trades':>8} {'Win Rate':>10} {'Final%':>8}")
-        logger.info(f"{'-'*20} {'-'*12} {'-'*8} {'-'*10} {'-'*8}")
+        logger.info(f"\n{'=' * 80}")
+        logger.info("ADAPTIVE PORTFOLIO FINAL PERFORMANCE")
+        logger.info(f"{'=' * 80}")
+        logger.info(
+            f"{'Strategy':<20} {'Total P&L':>12} {'Trades':>8} {'Win Rate':>10} {'Final%':>8}"
+        )
+        logger.info(f"{'-' * 20} {'-' * 12} {'-' * 8} {'-' * 10} {'-' * 8}")
 
         for name in sorted(self.strategies.keys()):
             perf = self.performance[name]
@@ -382,11 +418,11 @@ class AdaptivePortfolioStrategy(TradingStrategy):
                 f"{name:<20} "
                 f"${perf.total_pnl:>11,.2f} "
                 f"{perf.num_trades:>8} "
-                f"{perf.win_rate*100:>9.1f}% "
-                f"{perf.target_allocation*100:>7.1f}%"
+                f"{perf.win_rate * 100:>9.1f}% "
+                f"{perf.target_allocation * 100:>7.1f}%"
             )
 
-        logger.info(f"{'='*80}\n")
+        logger.info(f"{'=' * 80}\n")
 
         super().on_end(portfolio)
 

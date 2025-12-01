@@ -61,7 +61,7 @@ class RelativeStrengthStrategy(TradingStrategy):
         volatility_weight: float = 0.2,
         position_size: float = 10000,
         max_position: int = 100,
-        min_stocks: int = 5
+        min_stocks: int = 5,
     ):
         super().__init__("RelativeStrength")
 
@@ -73,7 +73,9 @@ class RelativeStrengthStrategy(TradingStrategy):
         if volatility_period <= 1:
             raise ValueError(f"volatility_period must be > 1, got {volatility_period}")
         if rebalance_period <= 0:
-            raise ValueError(f"rebalance_period must be positive, got {rebalance_period}")
+            raise ValueError(
+                f"rebalance_period must be positive, got {rebalance_period}"
+            )
         if top_n <= 0:
             raise ValueError(f"top_n must be positive, got {top_n}")
 
@@ -132,9 +134,9 @@ class RelativeStrengthStrategy(TradingStrategy):
         if len(prices) < self.rsi_period + 1:
             return None
 
-        changes = [prices[i] - prices[i-1] for i in range(1, len(prices))]
-        gains = [max(c, 0) for c in changes[-self.rsi_period:]]
-        losses = [abs(min(c, 0)) for c in changes[-self.rsi_period:]]
+        changes = [prices[i] - prices[i - 1] for i in range(1, len(prices))]
+        gains = [max(c, 0) for c in changes[-self.rsi_period :]]
+        losses = [abs(min(c, 0)) for c in changes[-self.rsi_period :]]
 
         avg_gain = sum(gains) / self.rsi_period
         avg_loss = sum(losses) / self.rsi_period
@@ -155,9 +157,9 @@ class RelativeStrengthStrategy(TradingStrategy):
             return None
 
         returns = [
-            (prices[i] - prices[i-1]) / prices[i-1]
+            (prices[i] - prices[i - 1]) / prices[i - 1]
             for i in range(-self.volatility_period, 0)
-            if prices[i-1] != 0
+            if prices[i - 1] != 0
         ]
 
         if not returns:
@@ -189,9 +191,9 @@ class RelativeStrengthStrategy(TradingStrategy):
 
         # Composite score
         score = (
-            self.momentum_weight * momentum_normalized +
-            self.rsi_weight * rsi +
-            self.volatility_weight * volatility
+            self.momentum_weight * momentum_normalized
+            + self.rsi_weight * rsi
+            + self.volatility_weight * volatility
         )
 
         return score
@@ -219,18 +221,14 @@ class RelativeStrengthStrategy(TradingStrategy):
 
         # Sort by composite score (descending)
         sorted_symbols = sorted(
-            valid_symbols,
-            key=lambda s: self.composite_scores[s],
-            reverse=True
+            valid_symbols, key=lambda s: self.composite_scores[s], reverse=True
         )
 
         # Return top N
-        return sorted_symbols[:min(self.top_n, len(sorted_symbols))]
+        return sorted_symbols[: min(self.top_n, len(sorted_symbols))]
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Process market data and rebalance to top-ranked stocks.
@@ -245,7 +243,9 @@ class RelativeStrengthStrategy(TradingStrategy):
 
         # Initialize price history
         if tick.symbol not in self.price_history:
-            max_period = max(self.momentum_period, self.rsi_period, self.volatility_period)
+            max_period = max(
+                self.momentum_period, self.rsi_period, self.volatility_period
+            )
             self.price_history[tick.symbol] = deque(maxlen=max_period + 10)
             logger.info(f"Added {tick.symbol} to relative strength universe")
 
@@ -261,9 +261,9 @@ class RelativeStrengthStrategy(TradingStrategy):
             return []
 
         # Rebalance!
-        logger.info(f"\n{'='*80}")
+        logger.info(f"\n{'=' * 80}")
         logger.info(f"REBALANCING RELATIVE STRENGTH at tick {self.global_tick_count}")
-        logger.info(f"{'='*80}")
+        logger.info(f"{'=' * 80}")
 
         # Rank stocks
         top_stocks = self._rank_stocks()
@@ -287,13 +287,17 @@ class RelativeStrengthStrategy(TradingStrategy):
             current_qty = position.quantity if position else 0
 
             if symbol not in self.target_holdings and current_qty > 0:
-                logger.info(f"Closing position in {symbol} (no longer in top {self.top_n})")
-                orders.append(Order(
-                    symbol=symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                logger.info(
+                    f"Closing position in {symbol} (no longer in top {self.top_n})"
+                )
+                orders.append(
+                    Order(
+                        symbol=symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
 
         # Open/adjust positions in top N
         for symbol in top_stocks:
@@ -301,21 +305,20 @@ class RelativeStrengthStrategy(TradingStrategy):
             position = portfolio.get_position(symbol)
             current_qty = position.quantity if position else 0
 
-            target_qty = min(
-                int(self.position_size / price),
-                self.max_position
-            )
+            target_qty = min(int(self.position_size / price), self.max_position)
 
             qty_diff = target_qty - current_qty
 
             if qty_diff > 0:
                 logger.info(f"Buying {qty_diff} shares of {symbol}")
-                orders.append(Order(
-                    symbol=symbol,
-                    side=OrderSide.BUY,
-                    order_type=OrderType.MARKET,
-                    quantity=qty_diff
-                ))
+                orders.append(
+                    Order(
+                        symbol=symbol,
+                        side=OrderSide.BUY,
+                        order_type=OrderType.MARKET,
+                        quantity=qty_diff,
+                    )
+                )
 
         self.last_rebalance_tick = self.global_tick_count
 

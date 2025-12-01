@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class SignalType(Enum):
     """Market signal types for MA crossover"""
+
     BULLISH = "BULLISH"  # Short MA > Long MA
     BEARISH = "BEARISH"  # Short MA < Long MA
     NEUTRAL = "NEUTRAL"  # MAs equal (rare)
@@ -43,7 +44,7 @@ class MovingAverageCrossoverStrategy(TradingStrategy):
         short_window: int = 10,
         long_window: int = 30,
         position_size: float = 10000,
-        max_position: int = 100
+        max_position: int = 100,
     ):
         super().__init__("MA_Crossover")
 
@@ -70,12 +71,12 @@ class MovingAverageCrossoverStrategy(TradingStrategy):
         self.price_history: dict[str, deque] = {}
         self.short_ma: dict[str, float] = {}
         self.long_ma: dict[str, float] = {}
-        self.prev_signal: dict[str, SignalType] = {}  # Track previous signal to detect crossovers
+        self.prev_signal: dict[
+            str, SignalType
+        ] = {}  # Track previous signal to detect crossovers
 
     def on_market_data(
-        self,
-        tick: MarketDataPoint,
-        portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio
     ) -> list[Order]:
         """
         Generate trading signals based on MA crossover.
@@ -85,7 +86,9 @@ class MovingAverageCrossoverStrategy(TradingStrategy):
         """
         # Validate tick price
         if tick.price <= 0:
-            logger.warning(f"Invalid price {tick.price} for {tick.symbol}, skipping tick")
+            logger.warning(
+                f"Invalid price {tick.price} for {tick.symbol}, skipping tick"
+            )
             return []
 
         # Initialize for new symbol
@@ -103,7 +106,9 @@ class MovingAverageCrossoverStrategy(TradingStrategy):
 
         # Calculate moving averages (optimized: avoid numpy conversion)
         price_list = list(self.price_history[tick.symbol])
-        self.short_ma[tick.symbol] = sum(price_list[-self.short_window:]) / self.short_window
+        self.short_ma[tick.symbol] = (
+            sum(price_list[-self.short_window :]) / self.short_window
+        )
         self.long_ma[tick.symbol] = sum(price_list) / self.long_window
 
         # Determine current signal
@@ -129,10 +134,7 @@ class MovingAverageCrossoverStrategy(TradingStrategy):
         # Golden Cross: short MA crosses above long MA -> BUY
         if prev != SignalType.BULLISH and current_signal == SignalType.BULLISH:
             # Calculate target position
-            target_qty = min(
-                int(self.position_size / tick.price),
-                self.max_position
-            )
+            target_qty = min(int(self.position_size / tick.price), self.max_position)
 
             # Calculate quantity to buy (handles flat, long, and short positions)
             if current_qty < target_qty:
@@ -142,12 +144,14 @@ class MovingAverageCrossoverStrategy(TradingStrategy):
                     f"long_ma={long_ma:.2f}, buying {buy_qty} shares "
                     f"(current_qty={current_qty}, target={target_qty})"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.BUY,
-                    order_type=OrderType.MARKET,
-                    quantity=buy_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.BUY,
+                        order_type=OrderType.MARKET,
+                        quantity=buy_qty,
+                    )
+                )
 
         # Death Cross: short MA crosses below long MA -> SELL
         elif prev != SignalType.BEARISH and current_signal == SignalType.BEARISH:
@@ -157,12 +161,14 @@ class MovingAverageCrossoverStrategy(TradingStrategy):
                     f"DEATH CROSS for {tick.symbol}: short_ma={short_ma:.2f}, "
                     f"long_ma={long_ma:.2f}, selling {current_qty} shares"
                 )
-                orders.append(Order(
-                    symbol=tick.symbol,
-                    side=OrderSide.SELL,
-                    order_type=OrderType.MARKET,
-                    quantity=current_qty
-                ))
+                orders.append(
+                    Order(
+                        symbol=tick.symbol,
+                        side=OrderSide.SELL,
+                        order_type=OrderType.MARKET,
+                        quantity=current_qty,
+                    )
+                )
             # Note: Not handling short positions (sell when already short)
             # as this is a long-only mean reversion strategy
 
