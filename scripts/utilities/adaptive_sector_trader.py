@@ -302,7 +302,7 @@ Examples:
     print(f"Total ticks:         {result.total_ticks:,}")
     print("\nPERFORMANCE:")
     print(f"  Initial cash:      ${args.initial_cash:,.2f}")
-    print(f"  Final equity:      ${result.portfolio.get_total_equity():,.2f}")
+    print(f"  Final equity:      ${result.portfolio.get_total_value():,.2f}")
     print(f"  Total return:      {result.performance_metrics['total_return']:.2f}%")
     print(f"  Total P&L:         ${result.performance_metrics['total_pnl']:,.2f}")
     print(f"  Max drawdown:      {result.performance_metrics['max_drawdown']:.2f}%")

@@ -144,7 +144,7 @@ class TradingStrategy(ABC):
             portfolio: Final portfolio state
         """
         logger.info(
-            f"{self.name} ended with final equity: ${portfolio.get_total_equity():,.2f}, "
+            f"{self.name} ended with final equity: ${portfolio.get_total_value():,.2f}, "
             f"total P&L: ${portfolio.get_total_pnl():,.2f}"
         )
 

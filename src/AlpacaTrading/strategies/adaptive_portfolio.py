@@ -282,7 +282,7 @@ class AdaptivePortfolioStrategy(TradingStrategy):
 
             # Scale orders by allocation
             # Determine available capital for this strategy
-            total_equity = portfolio.get_total_equity()
+            total_equity = portfolio.get_total_value()
             strategy_capital = total_equity * allocation
 
             for order in strategy_orders:

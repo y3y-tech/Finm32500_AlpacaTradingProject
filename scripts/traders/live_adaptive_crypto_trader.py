@@ -80,9 +80,7 @@ LIQUID_CRYPTOS = [
     "SUSHI/USD",
     "TRUMP/USD",
     "UNI/USD",
-    "USDC/USD",
     "USDG/USD",
-    "USDT/USD",
     "XRP/USD",
     "XTZ/USD",
     "YFI/USD",
@@ -369,7 +367,7 @@ class LiveAdaptiveCryptoTrader:
 
             # Log status periodically
             if self.total_bars_received % 100 == 0:
-                equity = self.portfolio.get_total_equity()
+                equity = self.portfolio.get_total_value()
                 pnl = self.portfolio.get_total_pnl()
                 logger.info(
                     f"📊 Status: Bars={self.total_bars_received}, "
@@ -471,7 +469,7 @@ class LiveAdaptiveCryptoTrader:
             logger.info(f"Trading was active: {self.trading_active}")
 
             if self.trading_active:
-                equity = self.portfolio.get_total_equity()
+                equity = self.portfolio.get_total_value()
                 pnl = self.portfolio.get_total_pnl()
                 ret = (equity - self.initial_cash) / self.initial_cash * 100
 

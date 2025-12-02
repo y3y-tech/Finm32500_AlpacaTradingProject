@@ -61,7 +61,7 @@ def run_single_backtest(args_tuple):
             "max_drawdown": result.performance_metrics["max_drawdown"],
             "win_rate": result.performance_metrics["win_rate"],
             "total_trades": result.performance_metrics["total_trades"],
-            "final_equity": result.portfolio.get_total_equity(),
+            "final_equity": result.portfolio.get_total_value(),
         }
 
         print(
