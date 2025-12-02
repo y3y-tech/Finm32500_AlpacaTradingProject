@@ -265,14 +265,14 @@ class LiveAdaptiveSectorTrader:
             return
 
         self.trading_active = True
-        logger.info(f"\n{'=' * 80}")
+        logger.info(f"{'=' * 80}")
         logger.info(f"{'=' * 80}TRADING ACTIVATED!")
         logger.info(f"{'=' * 80}")
         logger.info(f"Warmup complete: All symbols have {self.min_warmup_bars}+ bars")
         logger.info(f"Total bars collected: {self.total_bars_received}")
         logger.info("Starting adaptive multi-strategy trading...")
         logger.info(f"Rebalancing every {self.rebalance_period} bars")
-        logger.info(f"{'=' * 80}\n")
+        logger.info(f"{'=' * 80}")
 
         # Initialize strategy
         self.strategy.on_start(self.portfolio)
@@ -410,7 +410,7 @@ class LiveAdaptiveSectorTrader:
 
     async def run(self):
         """Start the live trading system."""
-        logger.info(f"\n{'=' * 80}")
+        logger.info(f"{'=' * 80}")
         logger.info("LIVE ADAPTIVE SECTOR ETF TRADER")
         logger.info(f"{'=' * 80}")
         logger.info(f"Mode: {'PAPER TRADING' if self.paper else '=4 LIVE TRADING =4'}")
@@ -423,8 +423,8 @@ class LiveAdaptiveSectorTrader:
         logger.info(f"Save data: {self.save_data}")
         if self.save_data:
             logger.info(f"Data file: {self.data_file}")
-        logger.info(f"{'=' * 80}\n")
-        logger.info("Starting warmup phase - collecting data before trading...\n")
+        logger.info(f"{'=' * 80}")
+        logger.info("Starting warmup phase - collecting data before trading...")
 
         # Subscribe to bars for all sector ETFs
         for symbol in SECTOR_ETFS:
@@ -435,10 +435,10 @@ class LiveAdaptiveSectorTrader:
             await self.data_stream._run_forever()
 
         except KeyboardInterrupt:
-            logger.info("\n\n Shutting down gracefully...")
+            logger.info("Shutting down gracefully...")
 
             # Final statistics
-            logger.info(f"\n{'=' * 80}")
+            logger.info(f"{'=' * 80}")
             logger.info("SESSION SUMMARY")
             logger.info(f"{'=' * 80}")
             logger.info(f"Total bars received: {self.total_bars_received}")
@@ -450,20 +450,20 @@ class LiveAdaptiveSectorTrader:
                 pnl = self.portfolio.get_total_pnl()
                 ret = (equity - self.initial_cash) / self.initial_cash * 100
 
-                logger.info("\nPERFORMANCE:")
+                logger.info("PERFORMANCE:")
                 logger.info(f"  Final equity: ${equity:,.2f}")
                 logger.info(f"  Total P&L: ${pnl:,.2f}")
                 logger.info(f"  Return: {ret:.2f}%")
 
                 # Strategy performance
-                logger.info("\nSTRATEGY ALLOCATIONS:")
+                logger.info("STRATEGY ALLOCATIONS:")
                 for name, perf in self.strategy.performance.items():
                     logger.info(
                         f"  {name:<20} {perf.target_allocation * 100:>5.1f}% "
                         f"(P&L: ${perf.total_pnl:>8,.2f})"
                     )
 
-            logger.info(f"{'=' * 80}\n")
+            logger.info(f"{'=' * 80}")
 
             # Save data if enabled
             if self.save_data:
@@ -582,12 +582,12 @@ Environment Variables Required:
 
     # Warning for live trading
     if args.live:
-        print("\n" + "=" * 80)
+        print("=" * 80)
         print("=  WARNING: LIVE TRADING MODE =")
         print("=" * 80)
         print("You are about to trade with REAL MONEY!")
         print(f"Initial capital: ${args.initial_cash:,.2f}")
-        print("\nAre you sure you want to continue?")
+        print("Are you sure you want to continue?")
         response = input("Type 'YES' to confirm: ")
         if response != "YES":
             print("Aborted.")

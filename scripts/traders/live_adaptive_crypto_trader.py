@@ -279,14 +279,14 @@ class LiveAdaptiveCryptoTrader:
             return
 
         self.trading_active = True
-        logger.info(f"\n{'=' * 80}")
+        logger.info("=" * 80)
         logger.info("🚀 TRADING ACTIVATED!")
-        logger.info(f"{'=' * 80}")
+        logger.info("=" * 80)
         logger.info(f"Warmup complete: All symbols have {self.min_warmup_bars}+ bars")
         logger.info(f"Total bars collected: {self.total_bars_received}")
         logger.info("Starting adaptive multi-strategy crypto trading...")
         logger.info(f"Rebalancing every {self.rebalance_period} bars")
-        logger.info(f"{'=' * 80}\n")
+        logger.info("=" * 80)
 
         # Initialize strategy
         self.strategy.on_start(self.portfolio)
@@ -431,9 +431,9 @@ class LiveAdaptiveCryptoTrader:
 
     async def run(self):
         """Start the live crypto trading system."""
-        logger.info(f"\n{'=' * 80}")
+        logger.info("=" * 80)
         logger.info("🪙 LIVE ADAPTIVE CRYPTO TRADER 🪙")
-        logger.info(f"{'=' * 80}")
+        logger.info("=" * 80)
         logger.info(
             f"Mode: {'📄 PAPER TRADING' if self.paper else '⚠️  LIVE TRADING ⚠️ '}"
         )
@@ -446,8 +446,8 @@ class LiveAdaptiveCryptoTrader:
         logger.info(f"Save data: {self.save_data}")
         if self.save_data:
             logger.info(f"Data file: {self.data_file}")
-        logger.info(f"{'=' * 80}\n")
-        logger.info("⏳ Starting warmup phase - collecting data before trading...\n")
+        logger.info("=" * 80)
+        logger.info("⏳ Starting warmup phase - collecting data before trading...")
 
         # Subscribe to bars for all cryptos
         for symbol in LIQUID_CRYPTOS:
@@ -458,10 +458,10 @@ class LiveAdaptiveCryptoTrader:
             await self.data_stream._run_forever()
 
         except KeyboardInterrupt:
-            logger.info("\n\n🛑 Shutting down gracefully...")
+            logger.info("🛑 Shutting down gracefully...")
 
             # Final statistics
-            logger.info(f"\n{'=' * 80}")
+            logger.info("=" * 80)
             logger.info("SESSION SUMMARY")
             logger.info(f"{'=' * 80}")
             logger.info(f"Total bars received: {self.total_bars_received}")
@@ -473,20 +473,20 @@ class LiveAdaptiveCryptoTrader:
                 pnl = self.portfolio.get_total_pnl()
                 ret = (equity - self.initial_cash) / self.initial_cash * 100
 
-                logger.info("\nPERFORMANCE:")
+                logger.info("PERFORMANCE:")
                 logger.info(f"  Final equity: ${equity:,.2f}")
                 logger.info(f"  Total P&L: ${pnl:,.2f}")
                 logger.info(f"  Return: {ret:.2f}%")
 
                 # Strategy performance
-                logger.info("\nSTRATEGY ALLOCATIONS:")
+                logger.info("STRATEGY ALLOCATIONS:")
                 for name, perf in self.strategy.performance.items():
                     logger.info(
                         f"  {name:<20} {perf.target_allocation * 100:>5.1f}% "
                         f"(P&L: ${perf.total_pnl:>8,.2f})"
                     )
 
-            logger.info(f"{'=' * 80}\n")
+            logger.info("=" * 80)
 
             # Save data if enabled
             if self.save_data:
@@ -607,7 +607,7 @@ Note: Crypto markets trade 24/7, so this will work anytime!
 
     # Warning for live trading
     if args.live:
-        print("\n" + "=" * 80)
+        print("=" * 80)
         print("⚠️  WARNING: LIVE CRYPTO TRADING MODE ⚠️ ")
         print("=" * 80)
         print("You are about to trade with REAL MONEY!")

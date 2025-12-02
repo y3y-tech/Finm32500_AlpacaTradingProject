@@ -429,7 +429,7 @@ class LiveTradingEngine:
         if not self.running:
             return
 
-        logger.info("\n" + "=" * 60)
+        logger.info("=" * 60)
         logger.info("SHUTTING DOWN")
         logger.info("=" * 60)
 
