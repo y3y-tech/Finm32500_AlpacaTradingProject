@@ -538,9 +538,8 @@ class LiveAdaptiveTrader:
         logger.info("=" * 80)
         logger.info("⏳ Starting warmup phase - collecting data before trading...")
 
-        # Subscribe to bars for all tickers
-        for ticker in self.tickers:
-            self.data_stream.subscribe_bars(self._handle_bar, ticker)
+        # Subscribe to bars for all tickers (single subscription for all symbols)
+        self.data_stream.subscribe_bars(self._handle_bar, *self.tickers)
 
         try:
             # Start streaming
@@ -548,45 +547,57 @@ class LiveAdaptiveTrader:
 
         except KeyboardInterrupt:
             logger.info("🛑 Shutting down gracefully...")
-
-            # Final statistics
-            logger.info("=" * 80)
-            logger.info("SESSION SUMMARY")
-            logger.info("=" * 80)
-            logger.info(f"Total bars received: {self.total_bars_received}")
-            logger.info(f"Orders submitted: {self.orders_submitted}")
-            logger.info(f"Trading was active: {self.trading_active}")
-
-            if self.trading_active:
-                equity = self.portfolio.get_total_value()
-                pnl = self.portfolio.get_total_pnl()
-                ret = (equity - self.initial_cash) / self.initial_cash * 100
-
-                logger.info("PERFORMANCE:")
-                logger.info(f"  Final equity: ${equity:,.2f}")
-                logger.info(f"  Total P&L: ${pnl:,.2f}")
-                logger.info(f"  Return: {ret:.2f}%")
-
-                # Strategy performance
-                logger.info("STRATEGY ALLOCATIONS:")
-                for name, perf in self.strategy.performance.items():
-                    logger.info(
-                        f"  {name:<20} {perf.target_allocation * 100:>5.1f}% "
-                        f"(P&L: ${perf.total_pnl:>8,.2f})"
-                    )
-
-            logger.info("=" * 80)
-
-            # Save data if enabled
-            if self.save_data:
-                logger.info("Saving collected data...")
-                self._save_data_to_csv()
-
-            logger.info("✅ Shutdown complete")
+            self._print_session_summary()
 
         except Exception as e:
             logger.error(f"Fatal error: {e}", exc_info=True)
             raise
+
+        finally:
+            # Always close the connection properly
+            try:
+                logger.info("Closing WebSocket connection...")
+                await self.data_stream.close()
+                logger.info("✅ Connection closed")
+            except Exception as e:
+                logger.warning(f"Error closing connection: {e}")
+
+    def _print_session_summary(self):
+        """Print final session statistics."""
+        # Final statistics
+        logger.info("=" * 80)
+        logger.info("SESSION SUMMARY")
+        logger.info("=" * 80)
+        logger.info(f"Total bars received: {self.total_bars_received}")
+        logger.info(f"Orders submitted: {self.orders_submitted}")
+        logger.info(f"Trading was active: {self.trading_active}")
+
+        if self.trading_active:
+            equity = self.portfolio.get_total_value()
+            pnl = self.portfolio.get_total_pnl()
+            ret = (equity - self.initial_cash) / self.initial_cash * 100
+
+            logger.info("PERFORMANCE:")
+            logger.info(f"  Final equity: ${equity:,.2f}")
+            logger.info(f"  Total P&L: ${pnl:,.2f}")
+            logger.info(f"  Return: {ret:.2f}%")
+
+            # Strategy performance
+            logger.info("STRATEGY ALLOCATIONS:")
+            for name, perf in self.strategy.performance.items():
+                logger.info(
+                    f"  {name:<20} {perf.target_allocation * 100:>5.1f}% "
+                    f"(P&L: ${perf.total_pnl:>8,.2f})"
+                )
+
+        logger.info("=" * 80)
+
+        # Save data if enabled
+        if self.save_data:
+            logger.info("Saving collected data...")
+            self._save_data_to_csv()
+
+        logger.info("✅ Shutdown complete")
 
 
 def main():
