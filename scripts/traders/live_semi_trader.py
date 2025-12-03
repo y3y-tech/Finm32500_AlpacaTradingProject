@@ -78,10 +78,17 @@ def main():
     parser.add_argument("--max-position", type=int, default=12)
     parser.add_argument("--save-data", action="store_true")
     parser.add_argument("--data-file", default="logs/live_semi_data.csv")
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING"],
+        help="Logging level (default: INFO)",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
-        level=logging.INFO,
+        level=getattr(logging, args.log_level),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(),
