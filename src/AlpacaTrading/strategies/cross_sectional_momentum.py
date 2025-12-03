@@ -13,7 +13,6 @@ Excellent for trading competitions with multiple symbols.
 
 from collections import deque
 import logging
-from typing import Dict
 
 from AlpacaTrading.models import MarketDataPoint, Order, OrderSide, OrderType
 from AlpacaTrading.trading.portfolio import TradingPortfolio
@@ -93,9 +92,9 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
         self.min_stocks = min_stocks
 
         # Track price history for all symbols
-        self.price_history: Dict[str, deque] = {}
-        self.current_prices: Dict[str, float] = {}
-        self.momentum_scores: Dict[str, float] = {}
+        self.price_history: dict[str, deque] = {}
+        self.current_prices: dict[str, float] = {}
+        self.momentum_scores: dict[str, float] = {}
 
         # Track rebalancing
         self.global_tick_count = 0

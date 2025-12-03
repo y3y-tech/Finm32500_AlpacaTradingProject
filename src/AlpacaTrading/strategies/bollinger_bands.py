@@ -12,6 +12,7 @@ or ranging markets (mean reversion).
 from collections import deque
 import logging
 import math
+from typing import Literal
 
 from AlpacaTrading.models import MarketDataPoint, Order, OrderSide, OrderType
 from AlpacaTrading.trading.portfolio import TradingPortfolio
@@ -47,7 +48,7 @@ class BollingerBandsStrategy(TradingStrategy):
         self,
         period: int = 20,
         num_std_dev: float = 2.0,
-        mode: str = "breakout",
+        mode: Literal["breakout", "reversion"] = "breakout",
         position_size: float = 10000,
         max_position: int = 100,
         band_threshold: float = 0.001,
