@@ -303,9 +303,9 @@ class LiveAdaptiveTrader:
             "cross_sectional": CrossSectionalMomentumStrategy(
                 lookback_period=20,
                 rebalance_period=30,
-                long_percentile=0.30,
-                short_percentile=0.1,
-                enable_shorting=False,
+                long_percentile=0.20,
+                short_percentile=0.20,
+                enable_shorting=True,
                 position_size=self.position_size,
                 max_position_per_stock=self.max_position,
                 min_stocks=min(3, len(self.tickers)),
@@ -404,9 +404,7 @@ class LiveAdaptiveTrader:
                 else:
                     # Log warmup progress every 10 bars
                     if self.total_bars_received % 10 == 0:
-                        min_bars = min(
-                            self.bar_count.get(s, 0) for s in self.tickers
-                        )
+                        min_bars = min(self.bar_count.get(s, 0) for s in self.tickers)
                         logger.info(
                             f"Warmup: {min_bars}/{self.min_warmup_bars} bars "
                             f"(Total: {self.total_bars_received})"
@@ -430,7 +428,11 @@ class LiveAdaptiveTrader:
                     order,
                     self.portfolio.cash,
                     self.portfolio.positions,
-                    {s: self.data_buffer[s][-1].price for s in self.tickers if self.data_buffer[s]},
+                    {
+                        s: self.data_buffer[s][-1].price
+                        for s in self.tickers
+                        if self.data_buffer[s]
+                    },
                 )
 
                 if is_valid:
