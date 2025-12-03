@@ -418,8 +418,16 @@ class LiveAdaptiveTrader:
                         logger.info(f"  Per-symbol: {symbol_counts}")
                 return
 
-            # Trading is active - run strategy
-            orders = self.strategy.process_market_data(tick, self.portfolio)
+            # Trading is active - get current buying power from Alpaca
+            try:
+                account = self.trading_client.get_account()
+                buying_power = float(account.buying_power)
+            except Exception as e:
+                logger.warning(f"Failed to get buying power, using portfolio cash: {e}")
+                buying_power = self.portfolio.cash
+
+            # Run strategy with actual buying power
+            orders = self.strategy.process_market_data(tick, self.portfolio, buying_power)
 
             # Process orders
             for order in orders:
@@ -454,9 +462,15 @@ class LiveAdaptiveTrader:
             if self.total_bars_received % 100 == 0:
                 equity = self.portfolio.get_total_value()
                 pnl = self.portfolio.get_total_pnl()
+                # Get current buying power
+                try:
+                    account = self.trading_client.get_account()
+                    bp = float(account.buying_power)
+                except Exception:
+                    bp = self.portfolio.cash
                 logger.info(
                     f"📊 Status: Bars={self.total_bars_received}, "
-                    f"Equity=${equity:,.2f}, P&L=${pnl:,.2f}, "
+                    f"Equity=${equity:,.2f}, BuyPower=${bp:,.2f}, P&L=${pnl:,.2f}, "
                     f"Orders={self.orders_submitted}"
                 )
 

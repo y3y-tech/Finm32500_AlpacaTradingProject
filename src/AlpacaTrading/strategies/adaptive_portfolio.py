@@ -130,6 +130,33 @@ class AdaptivePortfolioStrategy(TradingStrategy):
         self.strategy_positions: Dict[str, Dict[str, float]] = defaultdict(
             lambda: defaultdict(float)
         )  # {strategy: {symbol: qty}}
+        # Track current prices for unrealized P&L
+        self.current_prices: Dict[str, float] = {}  # {symbol: latest_price}
+
+    def _calculate_unrealized_pnl(self, current_prices: Dict[str, float]) -> Dict[str, float]:
+        """
+        Calculate unrealized P&L for all open positions.
+
+        Args:
+            current_prices: Dict of {symbol: current_price}
+
+        Returns:
+            Dict of {strategy_name: unrealized_pnl}
+        """
+        unrealized_pnl = {}
+
+        for strategy_name in self.strategies.keys():
+            pnl = 0.0
+            # Calculate unrealized P&L for each position
+            for symbol, qty in self.strategy_positions[strategy_name].items():
+                if qty != 0 and symbol in self.entry_prices[strategy_name]:
+                    entry_price = self.entry_prices[strategy_name][symbol]
+                    current_price = current_prices.get(symbol, entry_price)
+                    pnl += (current_price - entry_price) * qty
+
+            unrealized_pnl[strategy_name] = pnl
+
+        return unrealized_pnl
 
     def _calculate_sharpe(self, strategy_name: str) -> float:
         """Calculate Sharpe ratio for a strategy."""
@@ -197,9 +224,13 @@ class AdaptivePortfolioStrategy(TradingStrategy):
 
         return allocations
 
-    def _rebalance(self, portfolio: TradingPortfolio) -> List[Order]:
+    def _rebalance(self, portfolio: TradingPortfolio, current_prices: Dict[str, float]) -> List[Order]:
         """
         Rebalance capital allocation across strategies.
+
+        Args:
+            portfolio: Trading portfolio
+            current_prices: Dict of {symbol: current_price} for unrealized P&L calculation
 
         Returns:
             List of orders to execute rebalancing
@@ -208,25 +239,35 @@ class AdaptivePortfolioStrategy(TradingStrategy):
         logger.info(f"REBALANCING ADAPTIVE PORTFOLIO at tick {self.global_tick_count}")
         logger.info(f"{'=' * 80}")
 
+        # Calculate unrealized P&L for all strategies
+        unrealized_pnl = self._calculate_unrealized_pnl(current_prices)
+
+        # Add unrealized P&L to recent P&L for allocation calculation
+        for name, upnl in unrealized_pnl.items():
+            self.performance[name].recent_pnl += upnl
+
         # Calculate new allocations
         new_allocations = self._calculate_allocations()
 
         # Log performance and new allocations
         logger.info("\nStrategy Performance & Allocations:")
         logger.info(
-            f"{'Strategy':<20} {'Recent P&L':>12} {'Total P&L':>12} {'Win Rate':>10} {'Old%':>6} {'New%':>6}"
+            f"{'Strategy':<20} {'Recent P&L':>12} {'Realized':>10} {'Unrealized':>12} {'Win Rate':>10} {'Old%':>6} {'New%':>6}"
         )
-        logger.info(f"{'-' * 20} {'-' * 12} {'-' * 12} {'-' * 10} {'-' * 6} {'-' * 6}")
+        logger.info(f"{'-' * 20} {'-' * 12} {'-' * 10} {'-' * 12} {'-' * 10} {'-' * 6} {'-' * 6}")
 
         for name in sorted(self.strategies.keys()):
             perf = self.performance[name]
+            upnl = unrealized_pnl[name]
+            realized_pnl = perf.total_pnl
             old_alloc = perf.current_allocation * 100
             new_alloc = new_allocations[name] * 100
 
             logger.info(
                 f"{name:<20} "
                 f"${perf.recent_pnl:>11,.2f} "
-                f"${perf.total_pnl:>11,.2f} "
+                f"${realized_pnl:>9,.2f} "
+                f"${upnl:>11,.2f} "
                 f"{perf.win_rate * 100:>9.1f}% "
                 f"{old_alloc:>5.1f}% "
                 f"{new_alloc:>5.1f}%"
@@ -234,9 +275,10 @@ class AdaptivePortfolioStrategy(TradingStrategy):
 
         # Update allocations
         for name, alloc in new_allocations.items():
+            self.performance[name].current_allocation = self.performance[name].target_allocation
             self.performance[name].target_allocation = alloc
 
-        # Reset recent P&L for next period
+        # Reset recent P&L for next period (but keep the realized P&L)
         for perf in self.performance.values():
             perf.recent_pnl = 0.0
 
@@ -247,10 +289,15 @@ class AdaptivePortfolioStrategy(TradingStrategy):
         return []
 
     def on_market_data(
-        self, tick: MarketDataPoint, portfolio: TradingPortfolio
+        self, tick: MarketDataPoint, portfolio: TradingPortfolio, buying_power: float = None
     ) -> List[Order]:
         """
         Run all strategies and scale orders by their allocations.
+
+        Args:
+            tick: Market data point
+            portfolio: Trading portfolio
+            buying_power: Available buying power (if None, uses portfolio total value)
 
         Returns:
             Combined list of orders from all strategies
@@ -259,12 +306,15 @@ class AdaptivePortfolioStrategy(TradingStrategy):
         if tick.price <= 0:
             return []
 
+        # Update current price for this symbol
+        self.current_prices[tick.symbol] = tick.price
+
         # Increment tick count
         self.global_tick_count += 1
 
         # Check if time to rebalance
         if self.global_tick_count - self.last_rebalance_tick >= self.rebalance_period:
-            self._rebalance(portfolio)
+            self._rebalance(portfolio, self.current_prices)
             self.last_rebalance_tick = self.global_tick_count
 
         # Run each strategy and collect orders
@@ -281,20 +331,27 @@ class AdaptivePortfolioStrategy(TradingStrategy):
             allocation = self.performance[strategy_name].target_allocation
 
             # Scale orders by allocation
-            # Determine available capital for this strategy
-            total_equity = portfolio.get_total_value()
-            strategy_capital = total_equity * allocation
+            # Use actual buying power if provided, otherwise fall back to total equity
+            if buying_power is not None:
+                available_capital = buying_power
+            else:
+                available_capital = portfolio.get_total_value()
+
+            strategy_capital = available_capital * allocation
 
             for order in strategy_orders:
+                # Get current price for this symbol
+                order_price = self.current_prices.get(order.symbol, tick.price)
+
                 # Calculate scaled quantity based on strategy allocation
-                order_value = order.quantity * tick.price
+                order_value = order.quantity * order_price
                 max_value = (
                     strategy_capital * 0.9
                 )  # Use 90% of allocated capital per order
 
                 if order_value > max_value:
                     # Scale down quantity
-                    scaled_qty = int(max_value / tick.price)
+                    scaled_qty = int(max_value / order_price)
                     if scaled_qty > 0:
                         # Create scaled order
                         scaled_order = Order(
@@ -307,7 +364,7 @@ class AdaptivePortfolioStrategy(TradingStrategy):
 
                         # Track for P&L attribution
                         if order.side == OrderSide.BUY:
-                            self.entry_prices[strategy_name][order.symbol] = tick.price
+                            self.entry_prices[strategy_name][order.symbol] = order_price
                             self.strategy_positions[strategy_name][order.symbol] += (
                                 scaled_qty
                             )
@@ -317,7 +374,7 @@ class AdaptivePortfolioStrategy(TradingStrategy):
                                 entry_price = self.entry_prices[strategy_name][
                                     order.symbol
                                 ]
-                                pnl = (tick.price - entry_price) * min(
+                                pnl = (order_price - entry_price) * min(
                                     scaled_qty,
                                     self.strategy_positions[strategy_name][
                                         order.symbol
@@ -352,14 +409,14 @@ class AdaptivePortfolioStrategy(TradingStrategy):
 
                     # Track for P&L attribution
                     if order.side == OrderSide.BUY:
-                        self.entry_prices[strategy_name][order.symbol] = tick.price
+                        self.entry_prices[strategy_name][order.symbol] = order_price
                         self.strategy_positions[strategy_name][order.symbol] += (
                             order.quantity
                         )
                     else:
                         if order.symbol in self.entry_prices[strategy_name]:
                             entry_price = self.entry_prices[strategy_name][order.symbol]
-                            pnl = (tick.price - entry_price) * min(
+                            pnl = (order_price - entry_price) * min(
                                 order.quantity,
                                 self.strategy_positions[strategy_name][order.symbol],
                             )
