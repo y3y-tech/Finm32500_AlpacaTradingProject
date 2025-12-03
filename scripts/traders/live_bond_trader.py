@@ -204,8 +204,8 @@ def main():
             "cross_sectional": CrossSectionalMomentumStrategy(
                 lookback_period=20,
                 rebalance_period=60,
-                long_percentile=0.33,  # Top 2 of 6
-                short_percentile=0.0,
+                long_percentile=0.2,
+                short_percentile=0.2,
                 enable_shorting=False,
                 position_size=position_size,
                 max_position_per_stock=max_position,

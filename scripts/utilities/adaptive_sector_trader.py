@@ -153,7 +153,7 @@ def create_adaptive_portfolio(
         "cross_sectional": CrossSectionalMomentumStrategy(
             lookback_period=20,
             rebalance_period=30,  # More frequent rebalancing
-            long_percentile=0.27,  # Top 3 out of 11 ETFs (~27%)
+            long_percentile=0.27,
             short_percentile=0.0,  # Long-only
             enable_shorting=False,
             position_size=1000,
