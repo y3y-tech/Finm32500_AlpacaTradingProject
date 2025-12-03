@@ -439,10 +439,13 @@ class LiveTradingEngine:
         logger.info("Stopping market data stream...")
         self.trader.stop_streaming()
 
-        # Call strategy cleanup
-        self.strategy.on_end()  # TODO: figure ts out man
+        # Call strategy cleanup with portfolio
+        self.strategy.on_end(self.portfolio)
 
-        # TODO: write portfolio.log_metric or whatever
+        # Log portfolio metrics to file
+        self.portfolio.log_metrics()
+        logger.info("✓ Portfolio metrics logged")
+
         logger.info("\n📈 FINAL PERFORMANCE:")
         metrics = self.portfolio.get_performance_metrics()
         logger.info(f"\tTotal Return: {metrics['total_return']:+.2f}%")
