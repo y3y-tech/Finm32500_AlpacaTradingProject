@@ -169,9 +169,71 @@ class TradingPortfolio:
         """
         return sum(pos.unrealized_pnl for pos in self.positions.values())
 
-    # TODO: write ts
-    def log_metrics(self) -> None:
-        pass
+    def log_metrics(self, log_file: str = "logs/portfolio_metrics.csv") -> None:
+        """
+        Log portfolio metrics to CSV file for monitoring and analysis.
+
+        Args:
+            log_file: Path to metrics log file (default: logs/portfolio_metrics.csv)
+        """
+        from pathlib import Path
+        import csv
+
+        metrics = self.get_performance_metrics()
+        total_value = self.get_total_value()
+        timestamp = datetime.now()
+
+        # Create log directory if needed
+        Path(log_file).parent.mkdir(parents=True, exist_ok=True)
+
+        # Check if file exists to write header
+        file_exists = Path(log_file).exists()
+
+        # Write metrics to CSV
+        with open(log_file, "a", newline="") as f:
+            writer = csv.writer(f)
+
+            # Write header if new file
+            if not file_exists:
+                writer.writerow(
+                    [
+                        "timestamp",
+                        "cash",
+                        "total_value",
+                        "total_return_%",
+                        "total_pnl",
+                        "realized_pnl",
+                        "unrealized_pnl",
+                        "num_positions",
+                        "num_trades",
+                        "win_rate_%",
+                        "max_drawdown_%",
+                        "current_drawdown_%",
+                    ]
+                )
+
+            # Write metrics row
+            writer.writerow(
+                [
+                    timestamp.isoformat(),
+                    f"{self.cash:.2f}",
+                    f"{total_value:.2f}",
+                    f"{metrics['total_return']:.2f}",
+                    f"{metrics['total_pnl']:.2f}",
+                    f"{metrics['realized_pnl']:.2f}",
+                    f"{metrics['unrealized_pnl']:.2f}",
+                    len(self.positions),
+                    metrics["num_trades"],
+                    f"{metrics['win_rate']:.2f}",
+                    f"{metrics['max_drawdown']:.2f}",
+                    f"{metrics['current_drawdown']:.2f}",
+                ]
+            )
+
+        logger.debug(
+            f"Logged metrics: Value=${total_value:,.2f}, Return={metrics['total_return']:+.2f}%, "
+            f"Drawdown={metrics['current_drawdown']:.2f}%"
+        )
 
     def get_performance_metrics(self) -> dict:
         """
