@@ -427,7 +427,12 @@ class LiveAdaptiveTrader:
                 buying_power = self.portfolio.cash
 
             # Run strategy with actual buying power
-            orders = self.strategy.process_market_data(tick, self.portfolio, buying_power)
+            orders = self.strategy.process_market_data(tick, self.portfolio)
+            prices = {
+                s: self.data_buffer[s][-1].price
+                for s in self.tickers
+                if self.data_buffer[s]
+            }
 
             # Process orders
             for order in orders:
@@ -436,11 +441,7 @@ class LiveAdaptiveTrader:
                     order,
                     self.portfolio.cash,
                     self.portfolio.positions,
-                    {
-                        s: self.data_buffer[s][-1].price
-                        for s in self.tickers
-                        if self.data_buffer[s]
-                    },
+                    prices,
                 )
 
                 if is_valid:

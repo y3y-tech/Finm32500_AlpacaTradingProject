@@ -16,17 +16,19 @@ Usage:
 import sys
 from pathlib import Path
 
+from AlpacaTrading.strategies.base import TradingStrategy
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 # FAANG+ mega-cap tech stocks
 DEFAULT_TICKERS = [
-    "META",   # Meta (Facebook)
-    "AAPL",   # Apple
-    "AMZN",   # Amazon
-    "NVDA",   # NVIDIA
+    "META",  # Meta (Facebook)
+    "AAPL",  # Apple
+    "AMZN",  # Amazon
+    "NVDA",  # NVIDIA
     "GOOGL",  # Alphabet
-    "MSFT",   # Microsoft
-    "TSLA",   # Tesla
+    "MSFT",  # Microsoft
+    "TSLA",  # Tesla
 ]
 
 
@@ -34,30 +36,28 @@ def main():
     import argparse
     import logging
     import os
-    from collections import defaultdict, deque
+    from collections import defaultdict
 
     import pandas as pd
     from alpaca.data.live import StockDataStream
     from alpaca.trading.client import TradingClient
-    from alpaca.trading.enums import OrderSide as AlpacaOrderSide, TimeInForce
+    from alpaca.trading.enums import OrderSide as AlpacaOrderSide
+    from alpaca.trading.enums import TimeInForce
     from alpaca.trading.requests import MarketOrderRequest
     from dotenv import load_dotenv
 
-    from AlpacaTrading.models import MarketDataPoint, Order, OrderSide
+    from AlpacaTrading.models import MarketDataPoint, OrderSide
     from AlpacaTrading.strategies.adaptive_portfolio import AdaptivePortfolioStrategy
-    from AlpacaTrading.strategies.momentum import MomentumStrategy
-    from AlpacaTrading.strategies.rsi_strategy import RSIStrategy
     from AlpacaTrading.strategies.bollinger_bands import BollingerBandsStrategy
+    from AlpacaTrading.strategies.keltner_channel import KeltnerChannelStrategy
+    from AlpacaTrading.strategies.macd_strategy import MACDStrategy
+    from AlpacaTrading.strategies.momentum import MomentumStrategy
+    from AlpacaTrading.strategies.rate_of_change import RateOfChangeStrategy
+    from AlpacaTrading.strategies.rsi_strategy import RSIStrategy
+    from AlpacaTrading.strategies.stochastic_strategy import StochasticStrategy
     from AlpacaTrading.strategies.volume_breakout import VolumeBreakoutStrategy
     from AlpacaTrading.trading.order_manager import OrderManager, RiskConfig
     from AlpacaTrading.trading.portfolio import TradingPortfolio
-
-    # Import new strategies
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-    from strategies.macd_strategy import MACDStrategy
-    from strategies.rate_of_change import RateOfChangeStrategy
-    from strategies.keltner_channel import KeltnerChannelStrategy
-    from strategies.stochastic_strategy import StochasticStrategy
 
     load_dotenv()
 
@@ -66,10 +66,14 @@ def main():
     parser.add_argument("--live", action="store_true")
     parser.add_argument("--initial-cash", type=float, default=15000)
     parser.add_argument("--rebalance-period", type=int, default=45)
-    parser.add_argument("--allocation-method", default="pnl", choices=["pnl", "sharpe", "win_rate"])
+    parser.add_argument(
+        "--allocation-method", default="pnl", choices=["pnl", "sharpe", "win_rate"]
+    )
     parser.add_argument("--min-warmup-bars", type=int, default=40)
     parser.add_argument("--position-size", type=float, default=1500)
-    parser.add_argument("--max-position", type=int, default=10)  # Lower due to high prices
+    parser.add_argument(
+        "--max-position", type=int, default=10
+    )  # Lower due to high prices
     parser.add_argument("--save-data", action="store_true")
     parser.add_argument("--data-file", default="logs/live_faang_data.csv")
     args = parser.parse_args()
@@ -92,7 +96,9 @@ def main():
         sys.exit(1)
 
     # Mixed momentum + reversion strategies for volatile stocks
-    def create_strategies(position_size: float, max_position: int):
+    def create_strategies(
+        position_size: float, max_position: int
+    ) -> dict[str, TradingStrategy]:
         return {
             # Momentum for trends
             "momentum_fast": MomentumStrategy(
@@ -175,7 +181,7 @@ def main():
         }
 
     strategies = create_strategies(args.position_size, args.max_position)
-    
+
     adaptive = AdaptivePortfolioStrategy(
         strategies=strategies,
         rebalance_period=args.rebalance_period,
@@ -222,15 +228,17 @@ def main():
         bar_count[symbol] += 1
 
         if args.save_data:
-            data_buffer.append({
-                "timestamp": timestamp,
-                "symbol": symbol,
-                "open": bar.open,
-                "high": bar.high,
-                "low": bar.low,
-                "close": price,
-                "volume": volume,
-            })
+            data_buffer.append(
+                {
+                    "timestamp": timestamp,
+                    "symbol": symbol,
+                    "open": bar.open,
+                    "high": bar.high,
+                    "low": bar.low,
+                    "close": price,
+                    "volume": volume,
+                }
+            )
 
         min_bars = min(bar_count[t] for t in args.tickers)
         if not trading_active:
@@ -251,16 +259,20 @@ def main():
         )
 
         orders = adaptive.on_market_data(tick, portfolio)
+        prices = {s: data_buffer[s][-1].price for s in args.tickers if data_buffer[s]}
 
         for order in orders:
-            validated, reason = order_manager.validate_order(order, portfolio)
+            validated, reason = order_manager.validate_order(
+                order, portfolio.cash, portfolio.positions, prices
+            )
             if not validated:
                 logger.warning(f"Order rejected: {reason}")
                 continue
 
             try:
                 alpaca_side = (
-                    AlpacaOrderSide.BUY if order.side == OrderSide.BUY 
+                    AlpacaOrderSide.BUY
+                    if order.side == OrderSide.BUY
                     else AlpacaOrderSide.SELL
                 )
                 request = MarketOrderRequest(
@@ -270,13 +282,15 @@ def main():
                     time_in_force=TimeInForce.DAY,
                 )
                 trading_client.submit_order(request)
-                logger.info(f"ORDER SUBMITTED: {order.side.value} {order.quantity} {order.symbol}")
-                
+                logger.info(
+                    f"ORDER SUBMITTED: {order.side.value} {order.quantity} {order.symbol}"
+                )
+
                 if order.side == OrderSide.BUY:
                     portfolio.cash -= price * order.quantity
                 else:
                     portfolio.cash += price * order.quantity
-                    
+
             except Exception as e:
                 logger.error(f"Order failed: {e}")
 

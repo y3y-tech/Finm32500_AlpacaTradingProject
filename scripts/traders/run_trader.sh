@@ -90,6 +90,9 @@ fi
 PYTHON_CMD="python $PYTHON_SCRIPT"
 
 # Add default flags (unless they're already provided in args)
+if [[ ! "$*" =~ "--initial-cash" ]]; then
+    PYTHON_CMD="$PYTHON_CMD --initial-cash 4000"
+fi
 if [[ ! "$*" =~ "--min-warmup-bars" ]]; then
     PYTHON_CMD="$PYTHON_CMD --min-warmup-bars 20"
 fi

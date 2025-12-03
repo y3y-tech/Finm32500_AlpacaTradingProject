@@ -17,6 +17,8 @@ Usage:
 import sys
 from pathlib import Path
 
+from AlpacaTrading.strategies.base import TradingStrategy
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 # Treasury and bond ETFs
@@ -38,27 +40,29 @@ def main():
     import pandas as pd
     from alpaca.data.live import StockDataStream
     from alpaca.trading.client import TradingClient
-    from alpaca.trading.enums import OrderSide as AlpacaOrderSide, TimeInForce
+    from alpaca.trading.enums import OrderSide as AlpacaOrderSide
+    from alpaca.trading.enums import TimeInForce
     from alpaca.trading.requests import MarketOrderRequest
     from dotenv import load_dotenv
 
-    from AlpacaTrading.models import MarketDataPoint, Order, OrderSide
+    from AlpacaTrading.models import MarketDataPoint, OrderSide
     from AlpacaTrading.strategies.adaptive_portfolio import AdaptivePortfolioStrategy
-    from AlpacaTrading.strategies.rsi_strategy import RSIStrategy
     from AlpacaTrading.strategies.bollinger_bands import BollingerBandsStrategy
-    from AlpacaTrading.strategies.mean_reversion import MovingAverageCrossoverStrategy
     from AlpacaTrading.strategies.cross_sectional_momentum import (
         CrossSectionalMomentumStrategy,
     )
+    from AlpacaTrading.strategies.macd_strategy import MACDStrategy
+    from AlpacaTrading.strategies.mean_reversion import MovingAverageCrossoverStrategy
+    from AlpacaTrading.strategies.multi_indicator_reversion import (
+        MultiIndicatorReversionStrategy,
+    )
+    from AlpacaTrading.strategies.rsi_strategy import RSIStrategy
+    from AlpacaTrading.strategies.stochastic_strategy import StochasticStrategy
+    from AlpacaTrading.strategies.zscore_mean_reversion import (
+        ZScoreMeanReversionStrategy,
+    )
     from AlpacaTrading.trading.order_manager import OrderManager, RiskConfig
     from AlpacaTrading.trading.portfolio import TradingPortfolio
-
-    # Import new strategies
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-    from strategies.zscore_mean_reversion import ZScoreMeanReversionStrategy
-    from strategies.multi_indicator_reversion import MultiIndicatorReversionStrategy
-    from strategies.stochastic_strategy import StochasticStrategy
-    from strategies.macd_strategy import MACDStrategy
 
     load_dotenv()
 
@@ -97,7 +101,9 @@ def main():
         sys.exit(1)
 
     # Mean-reversion focused for bonds
-    def create_strategies(position_size: float, max_position: int, num_tickers: int):
+    def create_strategies(
+        position_size: float, max_position: int, num_tickers: int
+    ) -> dict[str, TradingStrategy]:
         return {
             # Z-Score with different parameters
             "zscore_tight": ZScoreMeanReversionStrategy(
@@ -281,9 +287,12 @@ def main():
         )
 
         orders = adaptive.on_market_data(tick, portfolio)
+        prices = {s: data_buffer[s][-1].price for s in args.tickers if data_buffer[s]}
 
         for order in orders:
-            validated, reason = order_manager.validate_order(order, portfolio)
+            validated, reason = order_manager.validate_order(
+                order, portfolio.cash, portfolio.positions, prices
+            )
             if not validated:
                 logger.warning(f"Order rejected: {reason}")
                 continue
