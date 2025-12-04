@@ -21,8 +21,6 @@ from AlpacaTrading.trading import (
 from AlpacaTrading.models import (
     Trade,
     OrderSide,
-    Order,
-    OrderType,
 )
 
 
@@ -325,7 +323,9 @@ class TestCircuitBreaker(unittest.TestCase):
         """Test manual circuit breaker reset."""
         # Trigger breaker
         self.risk_manager.check_stops(
-            current_prices={}, portfolio_value=94_000, positions=self.portfolio.positions
+            current_prices={},
+            portfolio_value=94_000,
+            positions=self.portfolio.positions,
         )
         self.assertTrue(self.risk_manager.circuit_breaker_triggered)
 
@@ -340,9 +340,7 @@ class TestRiskManagerIntegration(unittest.TestCase):
     def test_full_workflow_with_stop_trigger(self):
         """Test complete workflow: enter position, trigger stop, exit."""
         # Setup
-        config = StopLossConfig(
-            position_stop_pct=5.0, enable_circuit_breaker=False
-        )
+        config = StopLossConfig(position_stop_pct=5.0, enable_circuit_breaker=False)
         risk_manager = RiskManager(config, 100_000)
         portfolio = TradingPortfolio(100_000)
 

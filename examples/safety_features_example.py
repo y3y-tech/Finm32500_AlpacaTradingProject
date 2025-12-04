@@ -25,14 +25,6 @@ from AlpacaTrading.trading import (
     StopLossConfig,
     TradingPortfolio,
 )
-from AlpacaTrading.models import (
-    MarketDataPoint,
-    Order,
-    OrderSide,
-    OrderType,
-    Trade,
-)
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +121,9 @@ def example_trailing_stop():
     entry_price = 200.0
     quantity = 50
 
-    risk_mgr.add_position_stop(symbol=symbol, entry_price=entry_price, quantity=quantity)
+    risk_mgr.add_position_stop(
+        symbol=symbol, entry_price=entry_price, quantity=quantity
+    )
 
     print(f"\n✓ Position entered: {quantity} shares of {symbol} @ ${entry_price:.2f}")
     print(f"  Initial trailing stop: ${entry_price * 0.93:.2f} (7% below entry)")
@@ -197,8 +191,10 @@ def example_circuit_breaker():
         print(f"  ${value:,} (-{loss_pct:.1f}%) → {status}")
 
         if exit_orders:
-            print(f"\n⚠️ ALL TRADING HALTED")
-            print(f"  Reason: Portfolio loss exceeded {config.portfolio_stop_pct}% limit")
+            print("\n⚠️ ALL TRADING HALTED")
+            print(
+                f"  Reason: Portfolio loss exceeded {config.portfolio_stop_pct}% limit"
+            )
             break
 
 
@@ -219,7 +215,7 @@ def example_integration_with_strategy():
     risk_mgr = RiskManager(config, initial_portfolio_value=100_000)
     portfolio = TradingPortfolio(initial_cash=100_000)
 
-    print("\n✓ Trading system initialized with risk management")
+    print("✓ Trading system initialized with risk management")
     print(f"  Risk config: {config}")
 
     # Example trading loop integration
@@ -297,7 +293,9 @@ def example_risk_status_monitoring():
     status = risk_mgr.get_status()
 
     print("\n📊 Risk Manager Status:")
-    print(f"  Circuit Breaker: {'TRIGGERED ⚠️' if status['circuit_breaker_triggered'] else 'ACTIVE ✓'}")
+    print(
+        f"  Circuit Breaker: {'TRIGGERED ⚠️' if status['circuit_breaker_triggered'] else 'ACTIVE ✓'}"
+    )
     print(f"  Active Stops: {status['num_active_stops']}")
     print(f"  High Water Mark: ${status['high_water_mark']:,.2f}")
     print(f"  Daily Start Value: ${status['daily_start_value']:,.2f}")

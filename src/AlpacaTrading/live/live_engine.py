@@ -156,7 +156,7 @@ class LiveTradingEngine:
             # If circuit breaker triggered, don't generate new signals
             if self.risk_manager.circuit_breaker_triggered:
                 if self.tick_count % 100 == 0:  # logger.info reminder periodically
-                    logger.info("\n🛑 CIRCUIT BREAKER ACTIVE - Trading halted")
+                    logger.info("CIRCUIT BREAKER ACTIVE - Trading halted")
                 return
 
             # Pass to strategy for signal generation (with error handling wrapper)
@@ -342,7 +342,7 @@ class LiveTradingEngine:
         logger.info(f"\tTrades: {len(self.portfolio.trades)}")
 
         if self.risk_manager.circuit_breaker_triggered:
-            logger.info("\t⚠️  Circuit Breaker: TRIGGERED")
+            logger.info("Circuit Breaker: TRIGGERED")
 
     def run(self, symbols: list[str], data_type: str = "trades") -> None:
         """
@@ -372,7 +372,7 @@ class LiveTradingEngine:
         # Sync positions from Alpaca
         self._sync_positions()
 
-        logger.info("\n🚀 Starting market data stream...")
+        logger.info("Starting market data stream...")
         logger.info("Press Ctrl+C to stop\n")
 
         self.running = True
@@ -384,10 +384,10 @@ class LiveTradingEngine:
                 symbols=symbols, callback=self._on_market_data, data_type=data_type
             )
         except KeyboardInterrupt:
-            logger.info("\n\n⏹️  Keyboard interrupt received")
+            logger.warning("--- Keyboard interrupt received ---")
             self.stop()
-        except Exception as e:
-            logger.exception(f"\n\n❌ Fatal error: {e}")
+        except Exception:
+            logger.exception("Fatal error")
             self.stop()
 
     def _sync_positions(self) -> None:
@@ -395,9 +395,7 @@ class LiveTradingEngine:
         positions = self.trader.get_positions()
 
         if positions:
-            logger.info(
-                f"📦 Syncing {len(positions)} existing positions from Alpaca..."
-            )
+            logger.info(f"Syncing {len(positions)} existing positions from Alpaca...")
             for pos in positions:
                 logger.info(
                     f"\t{pos['symbol']}: {pos['quantity']} @ ${pos['avg_entry_price']:.2f}"
@@ -446,26 +444,26 @@ class LiveTradingEngine:
         self.portfolio.log_metrics()
         logger.info("✓ Portfolio metrics logged")
 
-        logger.info("\n📈 FINAL PERFORMANCE:")
+        logger.info("FINAL PERFORMANCE:")
         metrics = self.portfolio.get_performance_metrics()
-        logger.info(f"\tTotal Return: {metrics['total_return']:+.2f}%")
-        logger.info(f"\tTotal P&L: ${metrics['total_pnl']:,.2f}")
-        logger.info(f"\tRealized P&L: ${metrics['realized_pnl']:,.2f}")
-        logger.info(f"\tUnrealized P&L: ${metrics['unrealized_pnl']:,.2f}")
-        logger.info(f"\tTotal Trades: {metrics['num_trades']}")
-        logger.info(f"\tWin Rate: {metrics['win_rate']:.1f}%")
-        logger.info(f"\tMax Drawdown: {metrics['max_drawdown']:.2f}%")
+        logger.info(f"├─ Total Return: {metrics['total_return']:+.2f}%")
+        logger.info(f"├─ Total P&L: ${metrics['total_pnl']:,.2f}")
+        logger.info(f"├─ Realized P&L: ${metrics['realized_pnl']:,.2f}")
+        logger.info(f"├─ Unrealized P&L: ${metrics['unrealized_pnl']:,.2f}")
+        logger.info(f"├─ Total Trades: {metrics['num_trades']}")
+        logger.info(f"├─ Win Rate: {metrics['win_rate']:.1f}%")
+        logger.info(f"└─ Max Drawdown: {metrics['max_drawdown']:.2f}%")
 
         # logger.info positions
         if self.portfolio.positions:
-            logger.info("\n📦 OPEN POSITIONS:")
+            logger.info("OPEN POSITIONS:")
             for symbol, pos in self.portfolio.positions.items():
                 if pos.quantity != 0:
                     logger.info(
                         f"\t{symbol}: {pos.quantity} @ ${pos.average_cost:.2f} (P&L: ${pos.total_pnl:+,.2f})"
                     )
 
-        logger.info("\n✅ Shutdown complete")
+        logger.info("Shutdown complete")
         logger.info("=" * 60 + "\n")
 
     def __repr__(self) -> str:

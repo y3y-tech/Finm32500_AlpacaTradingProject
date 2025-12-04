@@ -34,8 +34,6 @@ from AlpacaTrading import setup_logging
 from AlpacaTrading.live import (
     AlpacaConfig,
     AlpacaTrader,
-    LiveTradingEngine,
-    LiveEngineConfig,
 )
 from AlpacaTrading.strategies.adaptive_portfolio import AdaptivePortfolioStrategy
 from AlpacaTrading.strategies.momentum import MomentumStrategy
@@ -152,7 +150,9 @@ class SafeLiveTrader:
 
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals gracefully."""
-        logger.warning(f"\n⚠️ Received signal {signum} - initiating graceful shutdown...")
+        logger.warning(
+            f"\n⚠️ Received signal {signum} - initiating graceful shutdown..."
+        )
         self.stop()
 
     def _log_metrics_if_needed(self):
@@ -180,7 +180,8 @@ class SafeLiveTrader:
                 f"(Max: {metrics['max_drawdown']:.2f}%)"
             )
             logger.info(
-                f"  Trades: {metrics['num_trades']} " f"(Win Rate: {metrics['win_rate']:.1f}%)"
+                f"  Trades: {metrics['num_trades']} "
+                f"(Win Rate: {metrics['win_rate']:.1f}%)"
             )
 
     def _check_safety(self, current_prices: dict[str, float]) -> bool:
@@ -195,9 +196,7 @@ class SafeLiveTrader:
         """
         # Check circuit breaker FIRST
         if self.risk_manager.circuit_breaker_triggered:
-            logger.critical(
-                "🚨 CIRCUIT BREAKER TRIGGERED - ALL TRADING HALTED 🚨"
-            )
+            logger.critical("🚨 CIRCUIT BREAKER TRIGGERED - ALL TRADING HALTED 🚨")
             logger.critical(f"Reason: {self.risk_manager.get_status()}")
             return False
 
@@ -265,7 +264,7 @@ class SafeLiveTrader:
 
     def run(self):
         """Run the trading loop."""
-        logger.info("\n🚀 Starting trading loop...\n")
+        logger.info("Starting trading loop")
         self.running = True
 
         # Initialize strategy
@@ -355,7 +354,7 @@ class SafeLiveTrader:
         if not self.running:
             return
 
-        logger.info("\n" + "=" * 80)
+        logger.info("=" * 80)
         logger.info("SHUTTING DOWN")
         logger.info("=" * 80)
 
@@ -369,22 +368,22 @@ class SafeLiveTrader:
 
         # Print final summary
         metrics = self.portfolio.get_performance_metrics()
-        logger.info("\n📈 FINAL PERFORMANCE:")
-        logger.info(f"  Total Return: {metrics['total_return']:+.2f}%")
-        logger.info(f"  Total P&L: ${metrics['total_pnl']:,.2f}")
-        logger.info(f"  Total Trades: {metrics['num_trades']}")
-        logger.info(f"  Win Rate: {metrics['win_rate']:.1f}%")
-        logger.info(f"  Max Drawdown: {metrics['max_drawdown']:.2f}%")
+        logger.info("FINAL PERFORMANCE:")
+        logger.info(f"├─ Total Return: {metrics['total_return']:+.2f}%")
+        logger.info(f"├─ Total P&L: ${metrics['total_pnl']:,.2f}")
+        logger.info(f"├─ Total Trades: {metrics['num_trades']}")
+        logger.info(f"├─ Win Rate: {metrics['win_rate']:.1f}%")
+        logger.info(f"└─ Max Drawdown: {metrics['max_drawdown']:.2f}%")
 
         # Print risk manager status
         risk_status = self.risk_manager.get_status()
-        logger.info("\n🛡️ RISK MANAGER STATUS:")
+        logger.info("RISK MANAGER STATUS:")
         logger.info(
-            f"  Circuit Breaker: {'TRIGGERED ⚠️' if risk_status['circuit_breaker_triggered'] else 'OK ✓'}"
+            f"├─ Circuit Breaker: {'TRIGGERED ⚠️' if risk_status['circuit_breaker_triggered'] else 'OK ✓'}"
         )
-        logger.info(f"  Active Stops: {risk_status['num_active_stops']}")
+        logger.info(f"└─ Active Stops: {risk_status['num_active_stops']}")
 
-        logger.info("\n✅ Shutdown complete")
+        logger.info("Shutdown complete")
 
 
 def main():
