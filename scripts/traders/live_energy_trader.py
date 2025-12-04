@@ -24,10 +24,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_ENERGY_ETFS = [
-    "USO",   # WTI Crude Oil
-    "BNO",   # Brent Crude Oil
-    "UNG",   # Natural Gas
-    "UGA",   # Gasoline
+    "USO",  # WTI Crude Oil
+    "BNO",  # Brent Crude Oil
+    "UNG",  # Natural Gas
+    "UGA",  # Gasoline
 ]
 
 
@@ -54,6 +54,7 @@ def main():
         sys.argv.extend(["--rebalance-period", "45"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

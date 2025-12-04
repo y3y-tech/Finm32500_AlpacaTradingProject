@@ -24,10 +24,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_METALS_ETFS = [
     "CPER",  # Copper
-    "DBB",   # Base Metals (copper, aluminum, zinc)
-    "GDX",   # Gold Miners
-    "SIL",   # Silver Miners
-    "XME",   # Metals & Mining equities
+    "DBB",  # Base Metals (copper, aluminum, zinc)
+    "GDX",  # Gold Miners
+    "SIL",  # Silver Miners
+    "XME",  # Metals & Mining equities
     "PICK",  # Global Metals & Mining
 ]
 
@@ -50,6 +50,7 @@ def main():
         sys.argv.extend(["--max-position", "12"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

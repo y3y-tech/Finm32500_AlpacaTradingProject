@@ -23,13 +23,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_EM_ETFS = [
-    "FXI",   # China Large-Cap
+    "FXI",  # China Large-Cap
     "INDA",  # India
-    "EWZ",   # Brazil
-    "EWT",   # Taiwan
-    "EWY",   # South Korea
-    "EWW",   # Mexico
-    "THD",   # Thailand
+    "EWZ",  # Brazil
+    "EWT",  # Taiwan
+    "EWY",  # South Korea
+    "EWW",  # Mexico
+    "THD",  # Thailand
 ]
 
 
@@ -55,6 +55,7 @@ def main():
         sys.argv.extend(["--rebalance-period", "45"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

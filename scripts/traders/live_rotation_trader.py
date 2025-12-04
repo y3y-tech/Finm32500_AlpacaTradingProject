@@ -27,13 +27,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_ROTATION_ETFS = [
     # Growth/Offensive sectors
-    "XLK",   # Technology
-    "XLY",   # Consumer Discretionary
-    "XLC",   # Communication Services
+    "XLK",  # Technology
+    "XLY",  # Consumer Discretionary
+    "XLC",  # Communication Services
     # Defensive sectors
-    "XLU",   # Utilities
-    "XLP",   # Consumer Staples
-    "XLV",   # Health Care
+    "XLU",  # Utilities
+    "XLP",  # Consumer Staples
+    "XLV",  # Health Care
 ]
 
 
@@ -54,6 +54,7 @@ def main():
         sys.argv.extend(["--max-position", "20"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

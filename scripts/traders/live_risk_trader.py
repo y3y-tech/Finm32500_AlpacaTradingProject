@@ -27,13 +27,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_RISK_ETFS = [
     # Risk-On assets
-    "QQQ",   # Tech/Growth equities
-    "HYG",   # High Yield (credit risk)
-    "EEM",   # Emerging Markets
+    "QQQ",  # Tech/Growth equities
+    "HYG",  # High Yield (credit risk)
+    "EEM",  # Emerging Markets
     # Risk-Off assets
-    "TLT",   # Long Treasuries (flight to quality)
-    "GLD",   # Gold (safe haven)
-    "UUP",   # US Dollar (reserve currency)
+    "TLT",  # Long Treasuries (flight to quality)
+    "GLD",  # Gold (safe haven)
+    "UUP",  # US Dollar (reserve currency)
 ]
 
 
@@ -58,6 +58,7 @@ def main():
         sys.argv.extend(["--rebalance-period", "45"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

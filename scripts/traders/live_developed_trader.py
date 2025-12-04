@@ -23,13 +23,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_DEVELOPED_ETFS = [
-    "VGK",   # FTSE Europe
-    "EWJ",   # MSCI Japan
-    "EWC",   # MSCI Canada
-    "EWA",   # MSCI Australia
-    "EWU",   # MSCI United Kingdom
-    "EWG",   # MSCI Germany
-    "EWL",   # MSCI Switzerland
+    "VGK",  # FTSE Europe
+    "EWJ",  # MSCI Japan
+    "EWC",  # MSCI Canada
+    "EWA",  # MSCI Australia
+    "EWU",  # MSCI United Kingdom
+    "EWG",  # MSCI Germany
+    "EWL",  # MSCI Switzerland
 ]
 
 
@@ -50,6 +50,7 @@ def main():
         sys.argv.extend(["--max-position", "15"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

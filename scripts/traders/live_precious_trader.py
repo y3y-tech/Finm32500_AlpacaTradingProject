@@ -23,8 +23,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_PRECIOUS_ETFS = [
-    "GLD",   # Gold
-    "SLV",   # Silver
+    "GLD",  # Gold
+    "SLV",  # Silver
     "PPLT",  # Platinum
     "PALL",  # Palladium
 ]
@@ -47,6 +47,7 @@ def main():
         sys.argv.extend(["--max-position", "15"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

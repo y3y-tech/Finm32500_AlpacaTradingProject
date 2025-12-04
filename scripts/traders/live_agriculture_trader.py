@@ -24,11 +24,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_AGRICULTURE_ETFS = [
-    "DBA",   # Broad Agriculture
+    "DBA",  # Broad Agriculture
     "CORN",  # Corn
     "WEAT",  # Wheat
     "SOYB",  # Soybeans
-    "COW",   # Livestock
+    "COW",  # Livestock
 ]
 
 
@@ -55,6 +55,7 @@ def main():
         sys.argv.extend(["--rebalance-period", "90"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

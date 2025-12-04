@@ -23,12 +23,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_MACRO_ETFS = [
-    "SPY",   # US Equities
-    "TLT",   # Long Treasuries (rate hedge)
-    "GLD",   # Gold (inflation/crisis hedge)
-    "UUP",   # US Dollar
-    "EEM",   # Emerging Markets
-    "VGK",   # Europe
+    "SPY",  # US Equities
+    "TLT",  # Long Treasuries (rate hedge)
+    "GLD",  # Gold (inflation/crisis hedge)
+    "UUP",  # US Dollar
+    "EEM",  # Emerging Markets
+    "VGK",  # Europe
 ]
 
 
@@ -49,6 +49,7 @@ def main():
         sys.argv.extend(["--max-position", "15"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

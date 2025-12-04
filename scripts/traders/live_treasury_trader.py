@@ -23,10 +23,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_TREASURY_ETFS = [
-    "IEI",   # 3-7 Year Treasury
-    "IEF",   # 7-10 Year Treasury
-    "TLH",   # 10-20 Year Treasury
-    "TLT",   # 20+ Year Treasury
+    "IEI",  # 3-7 Year Treasury
+    "IEF",  # 7-10 Year Treasury
+    "TLH",  # 10-20 Year Treasury
+    "TLT",  # 20+ Year Treasury
 ]
 
 
@@ -53,6 +53,7 @@ def main():
         sys.argv.extend(["--rebalance-period", "120"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 

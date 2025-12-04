@@ -24,12 +24,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 DEFAULT_CURRENCY_ETFS = [
-    "UUP",   # US Dollar Index (long USD)
-    "FXE",   # Euro
-    "FXY",   # Japanese Yen
-    "FXB",   # British Pound
-    "FXC",   # Canadian Dollar
-    "FXA",   # Australian Dollar
+    "UUP",  # US Dollar Index (long USD)
+    "FXE",  # Euro
+    "FXY",  # Japanese Yen
+    "FXB",  # British Pound
+    "FXC",  # Canadian Dollar
+    "FXA",  # Australian Dollar
 ]
 
 
@@ -56,6 +56,7 @@ def main():
         sys.argv.extend(["--rebalance-period", "120"])
 
     from live_adaptive_trader import main as generic_main
+
     generic_main()
 
 
