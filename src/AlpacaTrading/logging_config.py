@@ -9,6 +9,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import colorlog
+
 
 def setup_logging(
     level: int | str = logging.INFO,
@@ -16,6 +18,7 @@ def setup_logging(
     format_string: str | None = None,
     datefmt: str = "%Y-%m-%d %H:%M:%S",
     console_output: bool = True,
+    use_colors: bool = True,
 ) -> logging.Logger:
     """
     Configure logging for the AlpacaTrading package.
@@ -29,6 +32,7 @@ def setup_logging(
         format_string: Custom format string (uses sensible default if None)
         datefmt: Date format for timestamps
         console_output: Whether to also output logs to console (default: True)
+        use_colors: Whether to use colored output for console logs (default: True, requires colorlog)
 
     Returns:
         The root logger for the AlpacaTrading package
@@ -36,7 +40,7 @@ def setup_logging(
     Example:
         from AlpacaTrading import setup_logging
 
-        # Basic setup - INFO level to console and timestamped file
+        # Basic setup - INFO level to console and timestamped file with colors
         setup_logging()
 
         # Debug level with custom file name
@@ -44,6 +48,9 @@ def setup_logging(
 
         # File only (no console output)
         setup_logging(console_output=False)
+
+        # Disable colored output
+        setup_logging(use_colors=False)
     """
     # Convert string level to int if needed
     if isinstance(level, str):
@@ -67,7 +74,32 @@ def setup_logging(
     if console_output:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(level)
-        console_handler.setFormatter(formatter)
+
+        # Use colored formatter for console if available and enabled
+        if use_colors:
+            color_format = (
+                "%(log_color)s%(asctime)s%(reset)s | "
+                "%(log_color)s%(levelname)-8s%(reset)s | "
+                "%(cyan)s%(name)s%(reset)s | "
+                "%(message)s"
+            )
+            console_formatter = colorlog.ColoredFormatter(
+                color_format,
+                datefmt=datefmt,
+                log_colors={
+                    "DEBUG": "blue",
+                    "INFO": "green",
+                    "WARNING": "yellow",
+                    "ERROR": "red",
+                    "CRITICAL": "red,bg_white",
+                },
+                secondary_log_colors={},
+                style="%",
+            )
+            console_handler.setFormatter(console_formatter)
+        else:
+            console_handler.setFormatter(formatter)
+
         logger.addHandler(console_handler)
 
     # File handler - always enabled with timestamped filename
@@ -92,8 +124,9 @@ def setup_logging(
     # Prevent propagation to root logger (avoid duplicate logs)
     logger.propagate = False
 
+    colors_status = "enabled" if (use_colors and console_output) else "disabled"
     logger.info(
-        f"Logging configured: level={logging.getLevelName(level)}, file={log_file}"
+        f"Logging configured: level={logging.getLevelName(level)}, file={log_file}, colors={colors_status}"
     )
 
     return logger
