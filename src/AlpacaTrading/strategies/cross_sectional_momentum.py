@@ -284,13 +284,13 @@ class CrossSectionalMomentumStrategy(TradingStrategy):
             return []
 
         # Log rankings
-        logger.info("\nTop performers (LONG):")
+        logger.info("Top performers (LONG):")
         for symbol in long_list:
             momentum = self.momentum_scores.get(symbol, 0)
             logger.info(f"  {symbol}: momentum={momentum * 100:.2f}%")
 
         if short_list:
-            logger.info("\nBottom performers (SHORT):")
+            logger.info("Bottom performers (SHORT):")
             for symbol in short_list:
                 momentum = self.momentum_scores.get(symbol, 0)
                 logger.info(f"  {symbol}: momentum={momentum * 100:.2f}%")

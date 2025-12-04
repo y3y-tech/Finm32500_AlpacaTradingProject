@@ -89,10 +89,10 @@ class DonchianBreakoutStrategy(TradingStrategy):
             return []
 
         # Calculate channels
-        entry_high = max(list(highs)[-self.entry_period:])
-        entry_low = min(list(lows)[-self.entry_period:])
-        exit_high = max(list(highs)[-self.exit_period:])
-        exit_low = min(list(lows)[-self.exit_period:])
+        entry_high = max(list(highs)[-self.entry_period :])
+        entry_low = min(list(lows)[-self.entry_period :])
+        exit_high = max(list(highs)[-self.exit_period :])
+        exit_low = min(list(lows)[-self.exit_period :])
 
         position = portfolio.get_position(symbol)
         current_qty = position.quantity if position else 0

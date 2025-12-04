@@ -83,7 +83,7 @@ class ADXTrendStrategy(TradingStrategy):
     ) -> tuple[float, float, float]:
         """
         Calculate True Range and Directional Movement.
-        
+
         Simplified version using price changes (full version needs High/Low).
         """
         # Simplified TR (would use High-Low, |High-PrevClose|, |Low-PrevClose| normally)
@@ -177,12 +177,12 @@ class ADXTrendStrategy(TradingStrategy):
 
         if self.adx.get(symbol) is None:
             # Initialize ADX as average of DX values
-            self.adx[symbol] = sum(self.dx_history[symbol]) / len(self.dx_history[symbol])
+            self.adx[symbol] = sum(self.dx_history[symbol]) / len(
+                self.dx_history[symbol]
+            )
         else:
             # Smooth ADX
-            self.adx[symbol] = self._smooth_value(
-                self.adx[symbol], dx, self.adx_period
-            )
+            self.adx[symbol] = self._smooth_value(self.adx[symbol], dx, self.adx_period)
 
         adx = self.adx[symbol]
 
@@ -260,9 +260,7 @@ class ADXTrendStrategy(TradingStrategy):
                         quantity=current_qty,
                     )
                 )
-                logger.info(
-                    f"ADX EXIT LONG {symbol}: -DI dominant, ADX={adx:.1f}"
-                )
+                logger.info(f"ADX EXIT LONG {symbol}: -DI dominant, ADX={adx:.1f}")
 
             # Open short if enabled
             if self.enable_shorting and current_qty >= 0:

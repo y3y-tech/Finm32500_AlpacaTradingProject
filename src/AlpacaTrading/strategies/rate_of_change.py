@@ -94,12 +94,16 @@ class RateOfChangeStrategy(TradingStrategy):
             # Initialize with SMA
             rocs = list(self.roc_history[symbol])
             if len(rocs) >= self.smoothing_period:
-                self.smoothed_roc[symbol] = sum(rocs[-self.smoothing_period:]) / self.smoothing_period
+                self.smoothed_roc[symbol] = (
+                    sum(rocs[-self.smoothing_period :]) / self.smoothing_period
+                )
             return roc
 
         # EMA smoothing
         multiplier = 2 / (self.smoothing_period + 1)
-        self.smoothed_roc[symbol] = (roc - self.smoothed_roc[symbol]) * multiplier + self.smoothed_roc[symbol]
+        self.smoothed_roc[symbol] = (
+            roc - self.smoothed_roc[symbol]
+        ) * multiplier + self.smoothed_roc[symbol]
         return self.smoothed_roc[symbol]
 
     def on_market_data(

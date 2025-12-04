@@ -79,7 +79,7 @@ class KeltnerChannelStrategy(TradingStrategy):
             # Initialize with SMA
             prices = list(self.price_history[symbol])
             if len(prices) >= self.ema_period:
-                self.ema[symbol] = sum(prices[-self.ema_period:]) / self.ema_period
+                self.ema[symbol] = sum(prices[-self.ema_period :]) / self.ema_period
             return self.ema.get(symbol)
 
         # EMA formula
@@ -112,7 +112,9 @@ class KeltnerChannelStrategy(TradingStrategy):
             return self.atr.get(symbol)
 
         # Smoothed ATR
-        self.atr[symbol] = (self.atr[symbol] * (self.atr_period - 1) + tr) / self.atr_period
+        self.atr[symbol] = (
+            self.atr[symbol] * (self.atr_period - 1) + tr
+        ) / self.atr_period
         return self.atr[symbol]
 
     def on_market_data(
@@ -123,7 +125,9 @@ class KeltnerChannelStrategy(TradingStrategy):
 
         # Initialize
         if symbol not in self.price_history:
-            self.price_history[symbol] = deque(maxlen=max(self.ema_period, self.atr_period) + 5)
+            self.price_history[symbol] = deque(
+                maxlen=max(self.ema_period, self.atr_period) + 5
+            )
 
         self.price_history[symbol].append(price)
 
@@ -170,9 +174,7 @@ class KeltnerChannelStrategy(TradingStrategy):
                         quantity=current_qty,
                     )
                 )
-                logger.info(
-                    f"KELTNER EXIT {symbol}: {price:.2f} < EMA {ema:.2f}"
-                )
+                logger.info(f"KELTNER EXIT {symbol}: {price:.2f} < EMA {ema:.2f}")
 
         elif self.mode == "reversion":
             # Buy at lower band

@@ -66,14 +66,16 @@ class ZScoreMeanReversionStrategy(TradingStrategy):
 
         self.price_history: dict[str, deque] = {}
 
-    def _calculate_zscore(self, prices: list[float], current_price: float) -> float | None:
+    def _calculate_zscore(
+        self, prices: list[float], current_price: float
+    ) -> float | None:
         """Calculate z-score of current price relative to history."""
         if len(prices) < self.lookback_period:
             return None
 
-        recent = prices[-self.lookback_period:]
+        recent = prices[-self.lookback_period :]
         mean = sum(recent) / len(recent)
-        
+
         # Calculate standard deviation
         variance = sum((p - mean) ** 2 for p in recent) / len(recent)
         std = math.sqrt(variance)
@@ -135,7 +137,9 @@ class ZScoreMeanReversionStrategy(TradingStrategy):
             )
 
         # Short entry: z-score very positive (overbought)
-        elif self.enable_shorting and current_qty == 0 and zscore > self.entry_threshold:
+        elif (
+            self.enable_shorting and current_qty == 0 and zscore > self.entry_threshold
+        ):
             qty = min(int(self.position_size / price), self.max_position)
             if qty > 0:
                 orders.append(

@@ -80,7 +80,7 @@ class StochasticStrategy(TradingStrategy):
         if len(prices) < self.k_period:
             return None
 
-        recent = prices[-self.k_period:]
+        recent = prices[-self.k_period :]
         highest_high = max(recent)
         lowest_low = min(recent)
 
@@ -117,13 +117,13 @@ class StochasticStrategy(TradingStrategy):
 
         # Calculate %K (smoothed for slow stochastic)
         if self.use_slow_stoch and len(k_values) >= self.d_period:
-            k = sum(k_values[-self.d_period:]) / self.d_period
+            k = sum(k_values[-self.d_period :]) / self.d_period
         else:
             k = raw_k
 
         # Calculate %D (SMA of %K)
         if len(k_values) >= self.d_period:
-            d = sum(k_values[-self.d_period:]) / self.d_period
+            d = sum(k_values[-self.d_period :]) / self.d_period
         else:
             d = k
 
@@ -169,7 +169,11 @@ class StochasticStrategy(TradingStrategy):
                     f"STOCH OVERBOUGHT SELL {symbol}: %K={k:.1f} > {self.overbought_threshold}"
                 )
 
-        elif self.signal_type == "crossover" and prev_k is not None and prev_d is not None:
+        elif (
+            self.signal_type == "crossover"
+            and prev_k is not None
+            and prev_d is not None
+        ):
             # Bullish crossover from oversold
             if (
                 current_qty == 0

@@ -119,8 +119,8 @@ class MACDStrategy(TradingStrategy):
         else:
             multiplier = 2 / (self.signal_period + 1)
             self.signal_ema[symbol] = (
-                (macd - self.signal_ema[symbol]) * multiplier + self.signal_ema[symbol]
-            )
+                macd - self.signal_ema[symbol]
+            ) * multiplier + self.signal_ema[symbol]
 
         signal = self.signal_ema[symbol]
         histogram = macd - signal
@@ -219,7 +219,9 @@ class MACDStrategy(TradingStrategy):
                             quantity=qty,
                         )
                     )
-                    logger.info(f"MACD HISTOGRAM POSITIVE {symbol}: hist={histogram:.4f}")
+                    logger.info(
+                        f"MACD HISTOGRAM POSITIVE {symbol}: hist={histogram:.4f}"
+                    )
 
             # Bearish: Histogram turning negative
             elif (

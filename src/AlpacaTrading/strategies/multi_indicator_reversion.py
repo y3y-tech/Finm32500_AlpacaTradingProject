@@ -118,12 +118,14 @@ class MultiIndicatorReversionStrategy(TradingStrategy):
         else:
             return (rsi - 50) * 5  # 0 to +100
 
-    def _calculate_bollinger_score(self, prices: list[float], current: float) -> float | None:
+    def _calculate_bollinger_score(
+        self, prices: list[float], current: float
+    ) -> float | None:
         """Calculate position within Bollinger Bands as score."""
         if len(prices) < self.lookback_period:
             return None
 
-        recent = prices[-self.lookback_period:]
+        recent = prices[-self.lookback_period :]
         mean = sum(recent) / len(recent)
         variance = sum((p - mean) ** 2 for p in recent) / len(recent)
         std = math.sqrt(variance)
@@ -138,12 +140,14 @@ class MultiIndicatorReversionStrategy(TradingStrategy):
         z_score = max(-2, min(2, z_score))
         return z_score * 50  # -100 to +100
 
-    def _calculate_ma_distance_score(self, prices: list[float], current: float) -> float | None:
+    def _calculate_ma_distance_score(
+        self, prices: list[float], current: float
+    ) -> float | None:
         """Calculate distance from MA as score."""
         if len(prices) < self.lookback_period:
             return None
 
-        ma = sum(prices[-self.lookback_period:]) / self.lookback_period
+        ma = sum(prices[-self.lookback_period :]) / self.lookback_period
 
         if ma == 0:
             return 0
@@ -162,7 +166,9 @@ class MultiIndicatorReversionStrategy(TradingStrategy):
         price = tick.price
 
         if symbol not in self.price_history:
-            self.price_history[symbol] = deque(maxlen=max(self.lookback_period, self.rsi_period) + 5)
+            self.price_history[symbol] = deque(
+                maxlen=max(self.lookback_period, self.rsi_period) + 5
+            )
 
         self.price_history[symbol].append(price)
         prices = list(self.price_history[symbol])

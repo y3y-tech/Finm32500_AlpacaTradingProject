@@ -9,7 +9,6 @@ Works well with: US equities during market hours
 Note: Requires intraday data with timestamps
 """
 
-from collections import deque
 from datetime import datetime, time
 import logging
 
@@ -130,7 +129,9 @@ class OpeningRangeBreakoutStrategy(TradingStrategy):
                     quantity=abs(current_qty),
                 )
             )
-            logger.info(f"ORB EOD EXIT {symbol}: closing position at {tick_time.time()}")
+            logger.info(
+                f"ORB EOD EXIT {symbol}: closing position at {tick_time.time()}"
+            )
             return orders
 
         # Building opening range
@@ -141,12 +142,8 @@ class OpeningRangeBreakoutStrategy(TradingStrategy):
             if self._is_in_opening_range(tick_time, symbol):
                 # Track high/low
                 self.opening_prices[symbol].append(price)
-                self.range_high[symbol] = max(
-                    self.range_high[symbol] or price, price
-                )
-                self.range_low[symbol] = min(
-                    self.range_low[symbol] or price, price
-                )
+                self.range_high[symbol] = max(self.range_high[symbol] or price, price)
+                self.range_low[symbol] = min(self.range_low[symbol] or price, price)
                 return []
             else:
                 # Range period ended - establish range
@@ -161,7 +158,7 @@ class OpeningRangeBreakoutStrategy(TradingStrategy):
                         f"ORB RANGE ESTABLISHED {symbol}: "
                         f"High={self.range_high[symbol]:.2f}, "
                         f"Low={self.range_low[symbol]:.2f}, "
-                        f"Size={range_size*100:.2f}%"
+                        f"Size={range_size * 100:.2f}%"
                     )
 
                     # Check if range size is tradeable
@@ -173,9 +170,8 @@ class OpeningRangeBreakoutStrategy(TradingStrategy):
                         self.traded_today[symbol] = True
 
         # Trading after range established
-        if (
-            self.range_established.get(symbol, False)
-            and not self.traded_today.get(symbol, False)
+        if self.range_established.get(symbol, False) and not self.traded_today.get(
+            symbol, False
         ):
             range_high = self.range_high[symbol]
             range_low = self.range_low[symbol]
@@ -213,8 +209,6 @@ class OpeningRangeBreakoutStrategy(TradingStrategy):
                         quantity=current_qty,
                     )
                 )
-                logger.info(
-                    f"ORB STOP LOSS {symbol}: {price:.2f} < {breakout_low:.2f}"
-                )
+                logger.info(f"ORB STOP LOSS {symbol}: {price:.2f} < {breakout_low:.2f}")
 
         return orders
