@@ -290,12 +290,16 @@ class MultiTraderCoordinator:
             return
 
         try:
+            # Determine time_in_force based on asset type
+            # Crypto requires GTC or IOC, stocks typically use DAY
+            time_in_force = TimeInForce.GTC if instance.is_crypto else TimeInForce.DAY
+
             # Place market order
             order_request = MarketOrderRequest(
                 symbol=ticker,
                 qty=position_size,
                 side=OrderSide.BUY,
-                time_in_force=TimeInForce.DAY,
+                time_in_force=time_in_force,
             )
 
             order = self.trading_client.submit_order(order_request)
@@ -323,12 +327,16 @@ class MultiTraderCoordinator:
             return
 
         try:
+            # Determine time_in_force based on asset type
+            # Crypto requires GTC or IOC, stocks typically use DAY
+            time_in_force = TimeInForce.GTC if instance.is_crypto else TimeInForce.DAY
+
             # Place market order
             order_request = MarketOrderRequest(
                 symbol=ticker,
                 qty=position_size,
                 side=OrderSide.SELL,
-                time_in_force=TimeInForce.DAY,
+                time_in_force=time_in_force,
             )
 
             order = self.trading_client.submit_order(order_request)
