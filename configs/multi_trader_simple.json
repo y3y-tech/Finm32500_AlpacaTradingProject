@@ -1,0 +1,55 @@
+{
+  "strategies": [
+    {
+      "name": "SPY_MeanReversion",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 10,
+        "long_window": 30,
+        "position_size": 1000,
+        "max_position": 20
+      },
+      "tickers": ["SPY"],
+      "initial_cash": 10000.0,
+      "min_warmup_bars": 50,
+      "risk_config": {
+        "max_position_size": 0.95,
+        "max_daily_trades": 10
+      }
+    },
+    {
+      "name": "QQQ_Momentum",
+      "strategy_type": "momentum",
+      "strategy_params": {
+        "lookback_period": 20,
+        "momentum_threshold": 0.01,
+        "position_size": 1000,
+        "max_position": 20
+      },
+      "tickers": ["QQQ"],
+      "initial_cash": 10000.0,
+      "min_warmup_bars": 30,
+      "risk_config": {
+        "max_position_size": 0.9,
+        "max_daily_trades": 8
+      }
+    },
+    {
+      "name": "BTC_MeanReversion",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 15,
+        "long_window": 50,
+        "position_size": 500,
+        "max_position": 10
+      },
+      "tickers": ["BTC/USD"],
+      "initial_cash": 10000.0,
+      "min_warmup_bars": 60,
+      "risk_config": {
+        "max_position_size": 0.8,
+        "max_daily_trades": 5
+      }
+    }
+  ]
+}

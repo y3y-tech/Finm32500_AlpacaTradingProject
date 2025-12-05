@@ -1,0 +1,58 @@
+{
+  "strategies": [
+    {
+      "name": "Macro_RiskOn_Momentum",
+      "strategy_type": "momentum",
+      "strategy_params": {
+        "lookback_period": 12,
+        "momentum_threshold": 0.008,
+        "position_size": 800,
+        "max_position": 15
+      },
+      "tickers": ["SPY", "QQQ", "EEM", "HYG"],
+      "initial_cash": 4000.0,
+      "min_warmup_bars": 45,
+      "risk_config": {
+        "max_position_size": 0.25,
+        "max_daily_trades": 10,
+        "max_daily_loss": 300.0
+      }
+    },
+    {
+      "name": "Macro_RiskOff_MeanReversion",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 10,
+        "long_window": 35,
+        "position_size": 800,
+        "max_position": 15
+      },
+      "tickers": ["TLT", "GLD", "UUP"],
+      "initial_cash": 3000.0,
+      "min_warmup_bars": 60,
+      "risk_config": {
+        "max_position_size": 0.3,
+        "max_daily_trades": 8,
+        "max_daily_loss": 250.0
+      }
+    },
+    {
+      "name": "Currency_MeanReversion",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 15,
+        "long_window": 50,
+        "position_size": 1500,
+        "max_position": 30
+      },
+      "tickers": ["UUP", "FXE", "FXY", "FXB", "FXC", "FXA"],
+      "initial_cash": 3000.0,
+      "min_warmup_bars": 90,
+      "risk_config": {
+        "max_position_size": 0.17,
+        "max_daily_trades": 6,
+        "max_daily_loss": 200.0
+      }
+    }
+  ]
+}

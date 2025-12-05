@@ -15,6 +15,7 @@ Usage:
     python scripts/traders/live_spy_trader.py
     python scripts/traders/live_spy_trader.py --initial-cash 20000
     python scripts/traders/live_spy_trader.py --save-data
+    python scripts/traders/live_spy_trader.py --close-on-exit  # Liquidate on Ctrl-C
 """
 
 import argparse
@@ -22,12 +23,8 @@ import asyncio
 import logging
 import os
 import sys
-from pathlib import Path
 
 from dotenv import load_dotenv
-
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 from AlpacaTrading.logging_config import setup_logging
 from AlpacaTrading.strategies.adaptive_portfolio import AdaptivePortfolioStrategy
@@ -233,6 +230,11 @@ def main():
     parser.add_argument("--save-data", action="store_true")
     parser.add_argument("--data-file", default="logs/live_spy_data.csv")
     parser.add_argument(
+        "--close-on-exit",
+        action="store_true",
+        help="Close all positions on Ctrl-C/shutdown (default: False)",
+    )
+    parser.add_argument(
         "--log-level",
         type=str,
         default="INFO",
@@ -294,6 +296,7 @@ def main():
         save_data=args.save_data,
         data_file=args.data_file,
         risk_config=risk_config,
+        close_positions_on_shutdown=args.close_on_exit,
     )
 
     asyncio.run(trader.run())

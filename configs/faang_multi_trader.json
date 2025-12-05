@@ -1,0 +1,40 @@
+{
+  "strategies": [
+    {
+      "name": "FAANG_Momentum",
+      "strategy_type": "momentum",
+      "strategy_params": {
+        "lookback_period": 10,
+        "momentum_threshold": 0.012,
+        "position_size": 1500,
+        "max_position": 10
+      },
+      "tickers": ["META", "AAPL", "AMZN", "NVDA", "GOOGL", "MSFT", "TSLA"],
+      "initial_cash": 7500.0,
+      "min_warmup_bars": 40,
+      "risk_config": {
+        "max_position_size": 0.15,
+        "max_daily_trades": 20,
+        "max_daily_loss": 500.0
+      }
+    },
+    {
+      "name": "FAANG_MeanReversion",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 8,
+        "long_window": 20,
+        "position_size": 1500,
+        "max_position": 10
+      },
+      "tickers": ["META", "AAPL", "AMZN", "NVDA", "GOOGL", "MSFT", "TSLA"],
+      "initial_cash": 7500.0,
+      "min_warmup_bars": 40,
+      "risk_config": {
+        "max_position_size": 0.15,
+        "max_daily_trades": 15,
+        "max_daily_loss": 500.0
+      }
+    }
+  ]
+}

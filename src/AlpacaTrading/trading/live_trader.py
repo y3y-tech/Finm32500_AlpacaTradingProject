@@ -63,6 +63,7 @@ class LiveTrader:
         save_frequency_bars: int = 50,
         save_frequency_seconds: int = 300,
         risk_config: RiskConfig | None = None,
+        close_positions_on_shutdown: bool = False,
     ):
         """
         Initialize live trader.
@@ -80,6 +81,7 @@ class LiveTrader:
             save_frequency_bars: Save data every N bars
             save_frequency_seconds: Save data every N seconds
             risk_config: Risk management configuration (uses defaults if None)
+            close_positions_on_shutdown: Close all positions on Ctrl-C/shutdown
         """
         self.tickers = tickers
         self.strategy = strategy
@@ -92,6 +94,7 @@ class LiveTrader:
         self.data_file = data_file
         self.save_frequency_bars = save_frequency_bars
         self.save_frequency_seconds = save_frequency_seconds
+        self.close_positions_on_shutdown = close_positions_on_shutdown
 
         # Auto-detect asset type from tickers
         self.is_crypto = self._detect_crypto_tickers(tickers)
@@ -382,6 +385,34 @@ class LiveTrader:
         except Exception as e:
             logger.error(f"Failed to save data: {e}")
 
+    def _close_all_positions(self):
+        """Close all open positions via Alpaca API."""
+        try:
+            # Get all open positions from Alpaca
+            positions = self.trading_client.get_all_positions()
+
+            if not positions:
+                logger.info("No open positions to close")
+                return
+
+            logger.info(f"Closing {len(positions)} open position(s)...")
+
+            for position in positions:
+                try:
+                    # Close position (Alpaca handles the side automatically)
+                    self.trading_client.close_position(position.symbol)
+                    logger.info(
+                        f"✅ Closed position: {position.symbol} "
+                        f"(qty={position.qty}, unrealized_pl=${float(position.unrealized_pl):,.2f})"
+                    )
+                except Exception as e:
+                    logger.error(f"❌ Failed to close {position.symbol}: {e}")
+
+            logger.info("✅ All positions closed")
+
+        except Exception as e:
+            logger.error(f"Error closing positions: {e}", exc_info=True)
+
     def _print_session_summary(self):
         """Print final session statistics."""
         logger.info("=" * 80)
@@ -438,6 +469,11 @@ class LiveTrader:
             raise
 
         finally:
+            # Close all positions if requested
+            if self.close_positions_on_shutdown:
+                logger.info("Closing all positions (close_positions_on_shutdown=True)...")
+                self._close_all_positions()
+
             # Save data if enabled
             if self.save_data:
                 logger.info("Saving collected data...")

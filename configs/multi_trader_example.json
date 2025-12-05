@@ -1,0 +1,186 @@
+{
+  "strategies": [
+    {
+      "name": "SPY_MeanReversion",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 10,
+        "long_window": 30,
+        "position_size": 1000,
+        "max_position": 20
+      },
+      "tickers": ["SPY"],
+      "initial_cash": 10000.0,
+      "min_warmup_bars": 50,
+      "risk_config": {
+        "max_position_size": 0.95,
+        "max_daily_trades": 10,
+        "max_daily_loss": 500.0
+      }
+    },
+    {
+      "name": "QQQ_Momentum",
+      "strategy_type": "momentum",
+      "strategy_params": {
+        "lookback_period": 20,
+        "momentum_threshold": 0.02,
+        "position_size": 1000,
+        "max_position": 20
+      },
+      "tickers": ["QQQ"],
+      "initial_cash": 10000.0,
+      "min_warmup_bars": 30,
+      "risk_config": {
+        "max_position_size": 0.9,
+        "max_daily_trades": 8,
+        "max_daily_loss": 500.0
+      }
+    },
+    {
+      "name": "IWM_RSI",
+      "strategy_type": "rsi",
+      "strategy_params": {
+        "rsi_period": 14,
+        "oversold_threshold": 30,
+        "overbought_threshold": 70,
+        "position_size": 1000,
+        "max_position": 20
+      },
+      "tickers": ["IWM"],
+      "initial_cash": 10000.0,
+      "min_warmup_bars": 20,
+      "risk_config": {
+        "max_position_size": 0.9,
+        "max_daily_trades": 10,
+        "max_daily_loss": 400.0
+      }
+    },
+    {
+      "name": "FAANG_Basket",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 5,
+        "long_window": 20,
+        "position_size": 1500,
+        "max_position": 15
+      },
+      "tickers": ["AAPL", "MSFT", "GOOGL", "AMZN", "META"],
+      "initial_cash": 25000.0,
+      "min_warmup_bars": 30,
+      "risk_config": {
+        "max_position_size": 0.18,
+        "max_daily_trades": 25,
+        "max_daily_loss": 1200.0
+      }
+    },
+    {
+      "name": "Energy_Sector",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 10,
+        "long_window": 30,
+        "position_size": 1500,
+        "max_position": 25
+      },
+      "tickers": ["XLE", "XOM", "CVX"],
+      "initial_cash": 15000.0,
+      "min_warmup_bars": 25,
+      "risk_config": {
+        "max_position_size": 0.3,
+        "max_daily_trades": 15,
+        "max_daily_loss": 750.0
+      }
+    },
+    {
+      "name": "Crypto_Portfolio",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 15,
+        "long_window": 50,
+        "position_size": 800,
+        "max_position": 10
+      },
+      "tickers": ["BTC/USD", "ETH/USD"],
+      "initial_cash": 10000.0,
+      "min_warmup_bars": 60,
+      "risk_config": {
+        "max_position_size": 0.4,
+        "max_daily_trades": 10,
+        "max_daily_loss": 800.0
+      }
+    },
+    {
+      "name": "Treasury_Bonds",
+      "strategy_type": "momentum",
+      "strategy_params": {
+        "lookback_period": 30,
+        "momentum_threshold": 0.01,
+        "position_size": 1500,
+        "max_position": 25
+      },
+      "tickers": ["TLT", "IEF", "SHY"],
+      "initial_cash": 12000.0,
+      "min_warmup_bars": 40,
+      "risk_config": {
+        "max_position_size": 0.3,
+        "max_daily_trades": 8,
+        "max_daily_loss": 500.0
+      }
+    },
+    {
+      "name": "Semiconductors",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 8,
+        "long_window": 25,
+        "position_size": 1500,
+        "max_position": 15
+      },
+      "tickers": ["NVDA", "AMD", "INTC"],
+      "initial_cash": 15000.0,
+      "min_warmup_bars": 30,
+      "risk_config": {
+        "max_position_size": 0.3,
+        "max_daily_trades": 12,
+        "max_daily_loss": 900.0
+      }
+    },
+    {
+      "name": "Commodities",
+      "strategy_type": "mean_reversion",
+      "strategy_params": {
+        "short_window": 15,
+        "long_window": 40,
+        "position_size": 1000,
+        "max_position": 18
+      },
+      "tickers": ["GLD", "SLV", "USO"],
+      "initial_cash": 10000.0,
+      "min_warmup_bars": 30,
+      "risk_config": {
+        "max_position_size": 0.3,
+        "max_daily_trades": 10,
+        "max_daily_loss": 600.0
+      }
+    },
+    {
+      "name": "Emerging_Markets",
+      "strategy_type": "rsi",
+      "strategy_params": {
+        "rsi_period": 14,
+        "oversold_threshold": 25,
+        "overbought_threshold": 75,
+        "position_size": 800,
+        "max_position": 15
+      },
+      "tickers": ["EEM", "VWO"],
+      "initial_cash": 8000.0,
+      "min_warmup_bars": 20,
+      "risk_config": {
+        "max_position_size": 0.45,
+        "max_daily_trades": 8,
+        "max_daily_loss": 500.0
+      }
+    }
+  ]
+}
