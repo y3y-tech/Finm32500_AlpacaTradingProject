@@ -177,6 +177,32 @@ class MovingAverageCrossoverStrategy(TradingStrategy):
 
         return orders
 
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close' column and datetime index
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.long_window:
+            return 0
+
+        # Calculate moving averages
+        prices = df['close'].values
+        short_ma = sum(prices[-self.short_window:]) / self.short_window
+        long_ma = sum(prices[-self.long_window:]) / self.long_window
+
+        # Generate signal based on MA relationship
+        if short_ma > long_ma:
+            return 1  # Bullish (golden cross)
+        elif short_ma < long_ma:
+            return -1  # Bearish (death cross)
+        else:
+            return 0  # Neutral
+
     def __repr__(self) -> str:
         return (
             f"MovingAverageCrossoverStrategy("

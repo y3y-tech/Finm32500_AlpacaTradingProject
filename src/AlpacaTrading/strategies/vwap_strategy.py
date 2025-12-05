@@ -198,6 +198,43 @@ class VWAPStrategy(TradingStrategy):
 
         return orders
 
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close', 'open', 'high', 'low', 'volume' columns
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.min_samples or 'volume' not in df.columns:
+            return 0
+
+        prices = df['close'].values
+        volumes = df['volume'].values
+
+        # Calculate VWAP
+        pv_sum = sum(prices[i] * volumes[i] for i in range(len(prices)))
+        volume_sum = sum(volumes)
+
+        if volume_sum == 0:
+            return 0
+
+        vwap = pv_sum / volume_sum
+        current_price = prices[-1]
+
+        # Calculate deviation from VWAP
+        deviation = (current_price - vwap) / vwap
+
+        # Generate signal
+        if deviation < -self.deviation_threshold:
+            return 1  # Buy signal: price below VWAP (cheap)
+        elif deviation > self.deviation_threshold:
+            return -1  # Sell signal: price above VWAP (expensive)
+        else:
+            return 0  # No action: price close to VWAP
+
     def on_start(self, portfolio: TradingPortfolio) -> None:
         """Log strategy start."""
         super().on_start(portfolio)

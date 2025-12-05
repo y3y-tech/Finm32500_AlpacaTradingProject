@@ -169,3 +169,48 @@ class ZScoreMeanReversionStrategy(TradingStrategy):
             )
 
         return orders
+
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close' column and datetime index
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.lookback_period:
+            return 0
+
+        prices = df['close'].values
+        current_price = prices[-1]
+
+        # Calculate z-score
+        recent_prices = prices[-self.lookback_period:]
+        mean = sum(recent_prices) / len(recent_prices)
+
+        # Calculate standard deviation
+        variance = sum((p - mean) ** 2 for p in recent_prices) / len(recent_prices)
+        std = math.sqrt(variance)
+
+        if std == 0:
+            return 0
+
+        zscore = (current_price - mean) / std
+
+        # Generate signal
+        if zscore < -self.entry_threshold:
+            return 1  # Long entry: oversold
+        elif zscore > self.entry_threshold:
+            return -1  # Short entry: overbought (or long exit)
+        elif abs(zscore) <= abs(self.exit_threshold):
+            return -1  # Exit: reverted to mean
+        else:
+            return 0  # No action
+
+    def __repr__(self) -> str:
+        return (
+            f"ZScoreMeanReversionStrategy(lookback={self.lookback_period}, "
+            f"entry_threshold={self.entry_threshold})"
+        )

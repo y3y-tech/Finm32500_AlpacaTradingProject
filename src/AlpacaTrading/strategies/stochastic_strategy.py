@@ -215,3 +215,85 @@ class StochasticStrategy(TradingStrategy):
                 )
 
         return orders
+
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close', 'open', 'high', 'low', 'volume' columns
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.k_period:
+            return 0
+
+        # Use high/low if available, otherwise use close
+        if 'high' in df.columns and 'low' in df.columns:
+            highs = df['high'].values
+            lows = df['low'].values
+            closes = df['close'].values
+        else:
+            highs = df['close'].values
+            lows = df['close'].values
+            closes = df['close'].values
+
+        # Calculate %K values
+        k_values = []
+        for i in range(max(self.k_period, len(df) - 10), len(df)):
+            if i < self.k_period:
+                continue
+            recent_highs = highs[i-self.k_period:i+1]
+            recent_lows = lows[i-self.k_period:i+1]
+            highest_high = max(recent_highs)
+            lowest_low = min(recent_lows)
+
+            if highest_high == lowest_low:
+                continue
+
+            k = ((closes[i] - lowest_low) / (highest_high - lowest_low)) * 100
+            k_values.append(k)
+
+        if not k_values:
+            return 0
+
+        # Calculate current %K (smoothed for slow stochastic if enabled)
+        if self.use_slow_stoch and len(k_values) >= self.d_period:
+            k = sum(k_values[-self.d_period:]) / self.d_period
+        else:
+            k = k_values[-1]
+
+        # Calculate %D
+        if len(k_values) >= self.d_period:
+            d = sum(k_values[-self.d_period:]) / self.d_period
+        else:
+            d = k
+
+        if self.signal_type == "oversold":
+            # Buy in oversold territory
+            if k < self.oversold_threshold:
+                return 1
+            # Sell in overbought territory
+            elif k > self.overbought_threshold:
+                return -1
+            else:
+                return 0
+
+        elif self.signal_type == "crossover":
+            # Bullish crossover from oversold
+            if k < self.oversold_threshold + 10 and k > d:
+                return 1
+            # Bearish crossover from overbought
+            elif k > self.overbought_threshold - 10 and k < d:
+                return -1
+            else:
+                return 0
+
+        return 0
+
+    def __repr__(self) -> str:
+        return (
+            f"StochasticStrategy(k_period={self.k_period}, "
+            f"oversold={self.oversold_threshold}, overbought={self.overbought_threshold})"
+        )

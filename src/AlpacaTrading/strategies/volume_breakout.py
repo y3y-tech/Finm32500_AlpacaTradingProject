@@ -235,6 +235,50 @@ class VolumeBreakoutStrategy(TradingStrategy):
 
         return orders
 
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close', 'open', 'high', 'low', 'volume' columns
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.volume_period or 'volume' not in df.columns:
+            return 0
+
+        volumes = df['volume'].values
+        prices = df['close'].values
+
+        # Calculate average volume
+        avg_vol = sum(volumes[-self.volume_period:]) / self.volume_period
+
+        if avg_vol == 0:
+            return 0
+
+        current_volume = volumes[-1]
+        current_price = prices[-1]
+
+        # Detect volume spike
+        volume_spike = current_volume > avg_vol * self.volume_multiplier
+
+        if not volume_spike:
+            return 0
+
+        # Check price momentum
+        if len(prices) >= self.price_momentum_period:
+            recent_prices = prices[-self.price_momentum_period:]
+            avg_recent_price = sum(recent_prices) / len(recent_prices)
+            price_change_pct = (current_price - avg_recent_price) / avg_recent_price
+
+            if price_change_pct >= self.min_price_change:
+                return 1  # Buy signal: volume breakout with positive momentum
+            else:
+                return 0
+        else:
+            return 0
+
     def __repr__(self) -> str:
         return (
             f"VolumeBreakoutStrategy(vol_mult={self.volume_multiplier}x, "

@@ -208,3 +208,73 @@ class KeltnerChannelStrategy(TradingStrategy):
                 )
 
         return orders
+
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close' column and datetime index
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        min_required = max(self.ema_period, self.atr_period)
+        if len(df) < min_required:
+            return 0
+
+        prices = df['close'].values
+
+        # Calculate EMA
+        if len(prices) >= self.ema_period:
+            ema = sum(prices[-self.ema_period:]) / self.ema_period
+            # Approximate EMA with recent smoothing
+            multiplier = 2 / (self.ema_period + 1)
+            for price in prices[-self.ema_period:]:
+                ema = (price - ema) * multiplier + ema
+        else:
+            return 0
+
+        # Calculate ATR (simplified using price changes)
+        if len(prices) >= self.atr_period + 1:
+            ranges = [abs(prices[i] - prices[i-1]) for i in range(-self.atr_period, 0)]
+            atr = sum(ranges) / len(ranges)
+        else:
+            return 0
+
+        if atr == 0:
+            return 0
+
+        # Calculate channels
+        upper_band = ema + (self.atr_multiplier * atr)
+        lower_band = ema - (self.atr_multiplier * atr)
+
+        current_price = prices[-1]
+
+        if self.mode == "breakout":
+            # Buy on upper band breakout
+            if current_price > upper_band:
+                return 1
+            # Exit on middle line cross down
+            elif current_price < ema:
+                return -1
+            else:
+                return 0
+
+        elif self.mode == "reversion":
+            # Buy at lower band
+            if current_price <= lower_band:
+                return 1
+            # Sell at upper band
+            elif current_price >= upper_band:
+                return -1
+            else:
+                return 0
+
+        return 0
+
+    def __repr__(self) -> str:
+        return (
+            f"KeltnerChannelStrategy(ema={self.ema_period}, "
+            f"atr={self.atr_period}, mode={self.mode})"
+        )

@@ -245,6 +245,46 @@ class RSIStrategy(TradingStrategy):
 
         return orders
 
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close' column and datetime index
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.rsi_period + 1:
+            return 0
+
+        # Calculate price changes
+        prices = df['close'].values
+        changes = [prices[i] - prices[i - 1] for i in range(1, len(prices))]
+
+        # Separate gains and losses for RSI calculation
+        gains = [max(change, 0) for change in changes[-self.rsi_period :]]
+        losses = [abs(min(change, 0)) for change in changes[-self.rsi_period :]]
+
+        # Calculate average gain and loss
+        avg_gain = sum(gains) / self.rsi_period
+        avg_loss = sum(losses) / self.rsi_period
+
+        # Calculate RSI
+        if avg_loss == 0:
+            rsi = 100.0 if avg_gain > 0 else 50.0
+        else:
+            rs = avg_gain / avg_loss
+            rsi = 100 - (100 / (1 + rs))
+
+        # Generate signal
+        if rsi < self.oversold_threshold:
+            return 1  # Buy signal (oversold)
+        elif rsi > self.overbought_threshold:
+            return -1  # Sell signal (overbought)
+        else:
+            return 0  # No action
+
     def __repr__(self) -> str:
         return (
             f"RSIStrategy(period={self.rsi_period}, "

@@ -156,6 +156,39 @@ class MomentumStrategy(TradingStrategy):
 
         return orders
 
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close' column and datetime index
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.lookback_period:
+            return 0
+
+        # Get close prices
+        prices = df['close'].values
+
+        # Calculate momentum
+        first_price = prices[-self.lookback_period]
+        last_price = prices[-1]
+
+        if first_price == 0:
+            return 0
+
+        momentum = (last_price - first_price) / first_price
+
+        # Generate signal
+        if momentum > self.momentum_threshold:
+            return 1  # Buy signal
+        elif momentum < -self.momentum_threshold:
+            return -1  # Sell signal
+        else:
+            return 0  # No action
+
     def __repr__(self) -> str:
         return (
             f"MomentumStrategy(lookback={self.lookback_period}, "

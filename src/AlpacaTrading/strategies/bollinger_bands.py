@@ -239,6 +239,58 @@ class BollingerBandsStrategy(TradingStrategy):
 
         return orders
 
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close' column and datetime index
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.period:
+            return 0
+
+        # Get recent prices
+        prices = df['close'].values[-self.period:]
+        current_price = prices[-1]
+
+        # Calculate SMA (middle band)
+        sma = sum(prices) / self.period
+
+        # Calculate standard deviation
+        variance = sum((p - sma) ** 2 for p in prices) / self.period
+        std_dev = math.sqrt(variance)
+
+        # Calculate bands
+        upper = sma + (self.num_std_dev * std_dev)
+        lower = sma - (self.num_std_dev * std_dev)
+
+        # BREAKOUT MODE
+        if self.mode == "breakout":
+            # Buy when price breaks above upper band
+            if current_price > upper * (1 + self.band_threshold):
+                return 1
+            # Sell when price falls below middle band
+            elif current_price < sma:
+                return -1
+            else:
+                return 0
+
+        # MEAN REVERSION MODE
+        elif self.mode == "reversion":
+            # Buy when price touches lower band (oversold)
+            if current_price <= lower * (1 + self.band_threshold):
+                return 1
+            # Sell when price reaches middle band or above
+            elif current_price >= sma:
+                return -1
+            else:
+                return 0
+
+        return 0
+
     def __repr__(self) -> str:
         return (
             f"BollingerBandsStrategy(period={self.period}, "

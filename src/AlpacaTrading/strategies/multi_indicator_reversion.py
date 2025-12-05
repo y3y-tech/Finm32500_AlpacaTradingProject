@@ -229,3 +229,86 @@ class MultiIndicatorReversionStrategy(TradingStrategy):
         # Overbought - could add short logic here if desired
 
         return orders
+
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close' column and datetime index
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        min_required = max(self.lookback_period, self.rsi_period) + 1
+        if len(df) < min_required:
+            return 0
+
+        prices = df['close'].values
+
+        # Calculate RSI score
+        changes = [prices[i] - prices[i-1] for i in range(1, len(prices))]
+        gains = [max(change, 0) for change in changes[-self.rsi_period:]]
+        losses = [abs(min(change, 0)) for change in changes[-self.rsi_period:]]
+
+        avg_gain = sum(gains) / self.rsi_period
+        avg_loss = sum(losses) / self.rsi_period
+
+        if avg_loss == 0:
+            rsi = 100 if avg_gain > 0 else 50
+        else:
+            rs = avg_gain / avg_loss
+            rsi = 100 - (100 / (1 + rs))
+
+        # Convert RSI to score
+        if rsi <= 30:
+            rsi_score = -100
+        elif rsi >= 70:
+            rsi_score = 100
+        elif rsi < 50:
+            rsi_score = (rsi - 50) * 5
+        else:
+            rsi_score = (rsi - 50) * 5
+
+        # Calculate Bollinger Band score
+        recent_prices = prices[-self.lookback_period:]
+        mean = sum(recent_prices) / len(recent_prices)
+        variance = sum((p - mean) ** 2 for p in recent_prices) / len(recent_prices)
+        std = math.sqrt(variance)
+
+        if std == 0:
+            bb_score = 0
+        else:
+            z_score = (prices[-1] - mean) / std
+            z_score = max(-2, min(2, z_score))
+            bb_score = z_score * 50
+
+        # Calculate MA distance score
+        ma = sum(prices[-self.lookback_period:]) / self.lookback_period
+        if ma == 0:
+            ma_score = 0
+        else:
+            pct_distance = ((prices[-1] - ma) / ma) * 100
+            pct_distance = max(-5, min(5, pct_distance))
+            ma_score = pct_distance * 20
+
+        # Calculate composite score
+        composite_score = (
+            rsi_score * self.weights["rsi"]
+            + bb_score * self.weights["bollinger"]
+            + ma_score * self.weights["ma_distance"]
+        )
+
+        # Generate signal
+        if composite_score < -self.entry_score:
+            return 1  # Oversold - buy signal
+        elif composite_score >= self.exit_score:
+            return -1  # Reversion complete - sell signal
+        else:
+            return 0  # No action
+
+    def __repr__(self) -> str:
+        return (
+            f"MultiIndicatorReversionStrategy(lookback={self.lookback_period}, "
+            f"entry_score={self.entry_score})"
+        )

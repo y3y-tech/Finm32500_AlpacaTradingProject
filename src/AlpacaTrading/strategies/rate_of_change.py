@@ -192,3 +192,55 @@ class RateOfChangeStrategy(TradingStrategy):
             )
 
         return orders
+
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close' column and datetime index
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.lookback_period + 1:
+            return 0
+
+        prices = df['close'].values
+        current = prices[-1]
+        past = prices[-(self.lookback_period + 1)]
+
+        if past == 0:
+            return 0
+
+        # Calculate ROC
+        roc = ((current - past) / past) * 100
+
+        # Apply smoothing if enabled (simplified version)
+        if self.use_smoothing and len(prices) >= self.smoothing_period + self.lookback_period:
+            # Calculate multiple ROC values and average them
+            roc_values = []
+            for i in range(self.smoothing_period):
+                idx = -(i + 1)
+                past_idx = idx - self.lookback_period
+                if abs(past_idx) <= len(prices) and prices[past_idx] != 0:
+                    roc_val = ((prices[idx] - prices[past_idx]) / prices[past_idx]) * 100
+                    roc_values.append(roc_val)
+            if roc_values:
+                roc = sum(roc_values) / len(roc_values)
+
+        # Generate signal
+        if roc > self.entry_threshold:
+            return 1  # Long entry: strong positive momentum
+        elif roc < -self.entry_threshold:
+            return -1  # Short entry: strong negative momentum (or long exit)
+        elif abs(roc) < abs(self.exit_threshold):
+            return -1  # Exit: momentum fading
+        else:
+            return 0  # No action
+
+    def __repr__(self) -> str:
+        return (
+            f"RateOfChangeStrategy(lookback={self.lookback_period}, "
+            f"entry_threshold={self.entry_threshold}%)"
+        )

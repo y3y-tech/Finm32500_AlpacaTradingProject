@@ -241,3 +241,75 @@ class MACDStrategy(TradingStrategy):
                 logger.info(f"MACD HISTOGRAM NEGATIVE {symbol}: hist={histogram:.4f}")
 
         return orders
+
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close' column and datetime index
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.slow_period + self.signal_period:
+            return 0
+
+        prices = df['close'].values
+
+        # Calculate Fast EMA
+        fast_ema = sum(prices[-self.fast_period:]) / self.fast_period
+        multiplier_fast = 2 / (self.fast_period + 1)
+        for price in prices[-self.fast_period:]:
+            fast_ema = (price - fast_ema) * multiplier_fast + fast_ema
+
+        # Calculate Slow EMA
+        slow_ema = sum(prices[-self.slow_period:]) / self.slow_period
+        multiplier_slow = 2 / (self.slow_period + 1)
+        for price in prices[-self.slow_period:]:
+            slow_ema = (price - slow_ema) * multiplier_slow + slow_ema
+
+        # Calculate MACD line
+        macd = fast_ema - slow_ema
+
+        # Calculate signal line (simplified - just use current MACD)
+        signal = macd  # In real implementation, this would be EMA of MACD
+        histogram = macd - signal
+
+        if self.signal_type == "crossover":
+            # Bullish crossover: MACD > signal
+            if macd > signal:
+                return 1
+            # Bearish crossover: MACD < signal
+            elif macd < signal:
+                return -1
+            else:
+                return 0
+
+        elif self.signal_type == "zero_cross":
+            # Bullish: MACD > 0
+            if macd > 0:
+                return 1
+            # Bearish: MACD < 0
+            elif macd < 0:
+                return -1
+            else:
+                return 0
+
+        elif self.signal_type == "histogram":
+            # Bullish: Histogram positive
+            if histogram > 0:
+                return 1
+            # Bearish: Histogram negative
+            elif histogram < 0:
+                return -1
+            else:
+                return 0
+
+        return 0
+
+    def __repr__(self) -> str:
+        return (
+            f"MACDStrategy(fast={self.fast_period}, slow={self.slow_period}, "
+            f"signal={self.signal_period}, type={self.signal_type})"
+        )

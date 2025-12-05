@@ -164,3 +164,55 @@ class DonchianBreakoutStrategy(TradingStrategy):
             )
 
         return orders
+
+    def generate_signal(self, df):
+        """
+        Generate trading signal from DataFrame (for multi-trader coordinator).
+
+        Args:
+            df: DataFrame with 'close', 'open', 'high', 'low', 'volume' columns
+
+        Returns:
+            1 for buy signal, -1 for sell signal, 0 for no action
+        """
+        if len(df) < self.entry_period:
+            return 0
+
+        # Use high/low if available, otherwise use close
+        if 'high' in df.columns and 'low' in df.columns:
+            highs = df['high'].values
+            lows = df['low'].values
+        else:
+            highs = df['close'].values
+            lows = df['close'].values
+
+        current_price = df['close'].values[-1]
+
+        # Calculate channels
+        entry_high = max(highs[-self.entry_period:])
+        entry_low = min(lows[-self.entry_period:])
+
+        if len(df) >= self.exit_period:
+            exit_high = max(highs[-self.exit_period:])
+            exit_low = min(lows[-self.exit_period:])
+        else:
+            exit_high = entry_high
+            exit_low = entry_low
+
+        # Long entry: break above entry_high
+        if current_price >= entry_high:
+            return 1
+        # Long exit: break below exit_low
+        elif current_price <= exit_low:
+            return -1
+        # Short entry: break below entry_low (if shorting enabled)
+        elif self.enable_shorting and current_price <= entry_low:
+            return -1
+        else:
+            return 0
+
+    def __repr__(self) -> str:
+        return (
+            f"DonchianBreakoutStrategy(entry={self.entry_period}, "
+            f"exit={self.exit_period})"
+        )
