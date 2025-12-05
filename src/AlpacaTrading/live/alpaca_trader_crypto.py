@@ -196,12 +196,12 @@ class AlpacaTrader:
             AlpacaOrderSide.BUY if order.side == OrderSide.BUY else AlpacaOrderSide.SELL
         )
 
-        # Determine Time In Force
-        # Stocks typically use DAY, Crypto typically uses GTC (Good Till Cancelled)
-        time_in_force = TimeInForce.GTC if self.config.crypto else TimeInForce.DAY
-
         # Create order request based on type
         if order.order_type == OrderType.MARKET:
+            # Crypto market orders require IOC (Immediate or Cancel)
+            # Stock market orders typically use DAY
+            time_in_force = TimeInForce.IOC if self.config.crypto else TimeInForce.DAY
+
             order_request = MarketOrderRequest(
                 symbol=order.symbol,
                 qty=order.quantity,
@@ -211,6 +211,10 @@ class AlpacaTrader:
         elif order.order_type == OrderType.LIMIT:
             if order.price is None:
                 raise ValueError("Limit order requires price")
+
+            # Crypto limit orders can use GTC (Good Till Cancelled)
+            # Stock limit orders typically use DAY
+            time_in_force = TimeInForce.GTC if self.config.crypto else TimeInForce.DAY
 
             order_request = LimitOrderRequest(
                 symbol=order.symbol,

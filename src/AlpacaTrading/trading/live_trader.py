@@ -334,7 +334,8 @@ class LiveTrader:
             )
 
             # Use appropriate time in force based on asset type
-            time_in_force = TimeInForce.GTC if self.is_crypto else TimeInForce.DAY
+            # Crypto market orders require IOC (Immediate or Cancel)
+            time_in_force = TimeInForce.IOC if self.is_crypto else TimeInForce.DAY
 
             order_request = MarketOrderRequest(
                 symbol=order.symbol,

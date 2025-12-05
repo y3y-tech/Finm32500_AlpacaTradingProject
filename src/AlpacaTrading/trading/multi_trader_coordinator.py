@@ -291,8 +291,9 @@ class MultiTraderCoordinator:
 
         try:
             # Determine time_in_force based on asset type
-            # Crypto requires GTC or IOC, stocks typically use DAY
-            time_in_force = TimeInForce.GTC if instance.is_crypto else TimeInForce.DAY
+            # Crypto market orders require IOC (Immediate or Cancel)
+            # Stock orders typically use DAY
+            time_in_force = TimeInForce.IOC if instance.is_crypto else TimeInForce.DAY
 
             # Place market order
             order_request = MarketOrderRequest(
@@ -328,8 +329,9 @@ class MultiTraderCoordinator:
 
         try:
             # Determine time_in_force based on asset type
-            # Crypto requires GTC or IOC, stocks typically use DAY
-            time_in_force = TimeInForce.GTC if instance.is_crypto else TimeInForce.DAY
+            # Crypto market orders require IOC (Immediate or Cancel)
+            # Stock orders typically use DAY
+            time_in_force = TimeInForce.IOC if instance.is_crypto else TimeInForce.DAY
 
             # Place market order
             order_request = MarketOrderRequest(
