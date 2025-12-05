@@ -87,7 +87,7 @@ def load_config_file(config_path: str) -> list:
     return config.get("strategies", [])
 
 
-def parse_strategy_configs(config_list: list) -> list:
+def parse_strategy_configs(config_list: list, min_warmup_override: int | None = None) -> list:
     """Parse strategy configurations and create strategy instances."""
     strategies = []
 
@@ -108,13 +108,20 @@ def parse_strategy_configs(config_list: list) -> list:
         )
 
         # Build strategy config for coordinator
+        # Use override if provided, otherwise use config value
+        warmup_bars = (
+            min_warmup_override
+            if min_warmup_override is not None
+            else config.get("min_warmup_bars", 50)
+        )
+
         strategies.append(
             {
                 "name": config["name"],
                 "strategy": strategy,
                 "tickers": config["tickers"],
                 "initial_cash": config.get("initial_cash", 6000.0),
-                "min_warmup_bars": config.get("min_warmup_bars", 50),
+                "min_warmup_bars": warmup_bars,
                 "risk_config": risk_config,
             }
         )
@@ -149,6 +156,19 @@ def main():
         default="logs/crypto_adaptive_multi_data.csv",
         help="Path to save market data",
     )
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        help="Logging level (default: INFO)",
+    )
+    parser.add_argument(
+        "--min-warmup-bars",
+        type=int,
+        default=None,
+        help="Override minimum warmup bars for all strategies",
+    )
 
     args = parser.parse_args()
 
@@ -164,7 +184,8 @@ def main():
         sys.exit(1)
 
     # Setup logging
-    setup_logging(level=logging.INFO)
+    log_level = getattr(logging, args.log_level)
+    setup_logging(level=log_level)
 
     # Load strategy configurations
     config_path = Path(args.config)
@@ -174,7 +195,10 @@ def main():
 
     logger.info(f"Loading strategies from config: {args.config}")
     config_list = load_config_file(args.config)
-    strategies = parse_strategy_configs(config_list)
+    strategies = parse_strategy_configs(config_list, args.min_warmup_bars)
+
+    if args.min_warmup_bars is not None:
+        logger.info(f"Overriding all warmup bars to: {args.min_warmup_bars}")
 
     # Print configuration summary
     logger.info("\n" + "=" * 80)

@@ -303,6 +303,13 @@ def main():
         action="store_false",
         help="Do not liquidate all positions on exit (Ctrl-C)",
     )
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        help="Logging level (default: INFO)",
+    )
 
     args = parser.parse_args()
 
@@ -318,7 +325,8 @@ def main():
         sys.exit(1)
 
     # Setup logging
-    setup_logging(level=logging.INFO)
+    log_level = getattr(logging, args.log_level)
+    setup_logging(level=log_level)
 
     # Calculate position sizing
     position_size = args.initial_cash / 50  # ~$1,600 per position at $80k

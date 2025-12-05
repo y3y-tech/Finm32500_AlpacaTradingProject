@@ -11,6 +11,7 @@ Provides base LiveTrader class that coordinates:
 
 import asyncio
 import logging
+import time
 from collections import defaultdict, deque
 from datetime import datetime
 from pathlib import Path
@@ -130,6 +131,7 @@ class LiveTrader:
         self.orders_submitted = 0
         self.last_save_time = datetime.now()
         self.last_save_bar_count = 0
+        self.last_warmup_log_time = 0.0  # Track when we last logged warmup progress
 
     def _detect_crypto_tickers(self, tickers: list[str]) -> bool:
         """
@@ -232,12 +234,28 @@ class LiveTrader:
                 if self._check_warmup_complete():
                     self._activate_trading()
                 else:
-                    # Log warmup progress
-                    if self.total_bars_received % 10 == 0:
-                        min_bars = min(self.bar_count.get(s, 0) for s in self.tickers)
+                    # Log warmup progress periodically (every 10 seconds)
+                    current_time = time.time()
+                    if current_time - self.last_warmup_log_time > 10:
+                        self.last_warmup_log_time = current_time
+
+                        # Calculate overall progress
+                        total_bars = sum(self.bar_count.values())
+                        total_needed = len(self.tickers) * self.min_warmup_bars
+                        progress_pct = (total_bars / total_needed * 100) if total_needed > 0 else 0
+
+                        # Show per-ticker progress
+                        ticker_progress = ", ".join(
+                            f"{t}:{self.bar_count.get(t, 0)}/{self.min_warmup_bars}"
+                            for t in sorted(self.tickers)[:5]  # Show first 5 tickers
+                        )
+                        more_tickers = len(self.tickers) - 5
+                        if more_tickers > 0:
+                            ticker_progress += f" (+{more_tickers} more)"
+
                         logger.info(
-                            f"⏳ Warmup: {min_bars}/{self.min_warmup_bars} bars "
-                            f"(Total: {self.total_bars_received})"
+                            f"⏳ Warmup progress: {progress_pct:.1f}% "
+                            f"({total_bars}/{total_needed} bars) | {ticker_progress}"
                         )
                 return
 

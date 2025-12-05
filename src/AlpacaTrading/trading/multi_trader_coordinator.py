@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import time
 from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -51,6 +52,7 @@ class StrategyInstance:
     daily_trades: int = 0
     daily_pnl: float = 0.0
     last_trade_date: Optional[str] = None
+    last_warmup_log_time: float = 0.0  # Track when we last logged warmup progress
 
     def __post_init__(self):
         """Initialize data structures."""
@@ -185,6 +187,29 @@ class MultiTraderCoordinator:
                 f"[{instance.name}] Warming up {ticker}: "
                 f"{instance.bar_counts[ticker]}/{instance.min_warmup_bars}"
             )
+
+            # Log periodic INFO-level warmup progress (every 10 seconds)
+            current_time = time.time()
+            if current_time - instance.last_warmup_log_time > 10:
+                instance.last_warmup_log_time = current_time
+                # Calculate overall warmup progress
+                total_bars = sum(instance.bar_counts.values())
+                total_needed = len(instance.tickers) * instance.min_warmup_bars
+                progress_pct = (total_bars / total_needed * 100) if total_needed > 0 else 0
+
+                # Show per-ticker progress
+                ticker_progress = ", ".join(
+                    f"{t}:{instance.bar_counts.get(t, 0)}/{instance.min_warmup_bars}"
+                    for t in sorted(instance.tickers)[:5]  # Show first 5 tickers
+                )
+                more_tickers = len(instance.tickers) - 5
+                if more_tickers > 0:
+                    ticker_progress += f" (+{more_tickers} more)"
+
+                logger.info(
+                    f"[{instance.name}] Warmup progress: {progress_pct:.1f}% "
+                    f"({total_bars}/{total_needed} bars) | {ticker_progress}"
+                )
             return
 
         # Check if all tickers are warmed up
