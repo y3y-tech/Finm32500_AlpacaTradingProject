@@ -87,7 +87,9 @@ def load_config_file(config_path: str) -> list:
     return config.get("strategies", [])
 
 
-def parse_strategy_configs(config_list: list, min_warmup_override: int | None = None) -> list:
+def parse_strategy_configs(
+    config_list: list, min_warmup_override: int | None = None
+) -> list:
     """Parse strategy configurations and create strategy instances."""
     strategies = []
 
@@ -120,7 +122,7 @@ def parse_strategy_configs(config_list: list, min_warmup_override: int | None = 
                 "name": config["name"],
                 "strategy": strategy,
                 "tickers": config["tickers"],
-                "initial_cash": config.get("initial_cash", 6000.0),
+                "initial_cash": config.get("initial_cash", 2000.0),
                 "min_warmup_bars": warmup_bars,
                 "risk_config": risk_config,
             }
